@@ -17,17 +17,60 @@ using Windows.UI.Text;
 namespace Trivial.UI;
 using DependencyObjectProxy = DependencyObjectProxy<BlockHeader>;
 
+/// <summary>
+/// The block header control.
+/// </summary>
 public sealed partial class BlockHeader : UserControl
 {
+
+    /// <summary>
+    /// The dependency property of title.
+    /// </summary>
     public static readonly DependencyProperty TitleProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Title));
+
+    /// <summary>
+    /// The dependency property of title font size.
+    /// </summary>
     public static readonly DependencyProperty TitleFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleFontSize), 16d);
+
+    /// <summary>
+    /// The dependency property of font weight.
+    /// </summary>
     public static readonly DependencyProperty TitleFontWeightProperty = DependencyObjectProxy.RegisterFontWeightProperty(nameof(TitleFontWeight));
+
+    /// <summary>
+    /// The dependency property of font style.
+    /// </summary>
     public static readonly DependencyProperty TitleFontStyleProperty = DependencyObjectProxy.RegisterProperty<FontStyle>(nameof(TitleFontStyle));
+
+    /// <summary>
+    /// The dependency property of line height.
+    /// </summary>
     public static readonly DependencyProperty TitleLineHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleLineHeight), 0d);
+
+    /// <summary>
+    /// The dependency property of foreground.
+    /// </summary>
     public static readonly DependencyProperty TitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TitleForeground));
+
+    /// <summary>
+    /// The dependency property of icon URI.
+    /// </summary>
     public static readonly DependencyProperty IconUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(IconUri));
+
+    /// <summary>
+    /// The dependency property of icon width.
+    /// </summary>
     public static readonly DependencyProperty IconWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconWidth));
+
+    /// <summary>
+    /// The dependency property of icon height.
+    /// </summary>
     public static readonly DependencyProperty IconHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconHeight));
+
+    /// <summary>
+    /// The dependency property of icon margin.
+    /// </summary>
     public static readonly DependencyProperty IconMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(IconMargin));
 
     /// <summary>

@@ -81,16 +81,15 @@
         </Button.Resources>
         <StackPanel Orientation="{x:Bind Orientation}" >
             <Border x:Name="Top" ></Border>
-            <Grid CornerRadius="{x:Bind ImageCornerRadius}" Background="{x:Bind ImageBackground}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" >
+            <Grid CornerRadius="{x:Bind ImageCornerRadius}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" >
                 <Image Stretch="UniformToFill" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ImageUri}" />
                     </Image.Source>
                 </Image>
-                <!--<Image Stretch="UniformToFill" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="{x:Bind ImageSource}" />-->
                 <Border x:Name="ImageCover" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
             </Grid>
-            <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" Padding="{x:Bind TextPadding}" Margin="{x:Bind TextMargin}" >
+            <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" BackgroundSizing="{x:Bind TextBackgroundSizing}" Padding="{x:Bind TextPadding}" Margin="{x:Bind TextMargin}" >
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Border x:Name="BeforeText" ></Border>
                     <TextBlock Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" Visibility="{x:Bind NeedShowTitle}" Foreground="{x:Bind TitleForeground}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" />

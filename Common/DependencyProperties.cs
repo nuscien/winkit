@@ -86,7 +86,6 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <param name="name">The property name.</param>
     /// <param name="callback">The event handler on property value changed.</param>
     /// <param name="defaultValue">The default value of the property.</param>
-    /// <param name="converter">The property value converter.</param>
     /// <param name="stillUpdateEvenIfSame">true if still raise the event handler even on same; otherwise, false.</param>
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterInt32Property(string name, Action<TControl, ChangeEventArgs<int>, DependencyProperty> callback, int defaultValue = 0, bool stillUpdateEvenIfSame = false)
@@ -107,7 +106,6 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <param name="name">The property name.</param>
     /// <param name="callback">The event handler on property value changed.</param>
     /// <param name="defaultValue">The default value of the property.</param>
-    /// <param name="converter">The property value converter.</param>
     /// <param name="stillUpdateEvenIfSame">true if still raise the event handler even on same; otherwise, false.</param>
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterInt64Property(string name, Action<TControl, ChangeEventArgs<long>, DependencyProperty> callback, long defaultValue = 0L, bool stillUpdateEvenIfSame = false)
@@ -152,21 +150,42 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     public static DependencyProperty RegisterFontWeightProperty(string name, Action<TControl, ChangeEventArgs<FontWeight>, DependencyProperty> callback = null, FontWeight? defaultValue = null)
         => RegisterProperty(name, callback, defaultValue ?? FontWeights.Normal);
 
+    /// <summary>
+    /// Occurs on animated button pointer entered.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments.</param>
     public static void AnimatedButtonPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
         AnimatedIcon.SetState(icon, "PointerOver");
     }
 
+    /// <summary>
+    /// Occurs on animated button pointer exitesd.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments.</param>
     public static void AnimatedButtonPointerExited(object sender, PointerRoutedEventArgs e)
     {
         if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
         AnimatedIcon.SetState(icon, "PointerOver");
     }
 
+    /// <summary>
+    /// Finds a visual child of the control type.
+    /// </summary>
+    /// <param name="obj">The parent control.</param>
+    /// <returns>The first child found.</returns>
     public static TControl FindVisualChild(DependencyObject obj)
         => FindVisualChild(obj, short.MaxValue);
 
+    /// <summary>
+    /// Finds a visual child of the control type.
+    /// </summary>
+    /// <param name="obj">The parent control.</param>
+    /// <param name="deepLevel">The child levels to find recurrence.</param>
+    /// <returns>The first child found.</returns>
     public static TControl FindVisualChild(DependencyObject obj, int deepLevel)
     {
         if (obj == null || deepLevel <= 0) return null;

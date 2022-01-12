@@ -27,44 +27,204 @@ using DependencyObjectProxy = DependencyObjectProxy<TileItem>;
 /// </summary>
 public sealed partial class TileItem : UserControl
 {
+    /// <summary>
+    /// The dependency property of hover foreground.
+    /// </summary>
     public static readonly DependencyProperty HoverForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverForeground));
+    
+    /// <summary>
+    /// The dependency property of pressed foreground.
+    /// </summary>
     public static readonly DependencyProperty PressedForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(PressedForeground));
+    
+    /// <summary>
+    /// The dependency property of hover background.
+    /// </summary>
     public static readonly DependencyProperty HoverBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverBackground));
+
+    /// <summary>
+    /// The dependency property of pressed background.
+    /// </summary>
     public static readonly DependencyProperty PressedBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(PressedBackground));
+
+    /// <summary>
+    /// The dependency property of orientation.
+    /// </summary>
     public static readonly DependencyProperty OrientationProperty = DependencyObjectProxy.RegisterProperty(nameof(Orientation), Orientation.Vertical);
+
+    /// <summary>
+    /// The dependency property of text width.
+    /// </summary>
     public static readonly DependencyProperty TextWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TextWidth));
+
+    /// <summary>
+    /// The dependency property of text height.
+    /// </summary>
     public static readonly DependencyProperty TextHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TextHeight));
+
+    /// <summary>
+    /// The dependency property of text background.
+    /// </summary>
     public static readonly DependencyProperty TextBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TextBackground));
+
+    /// <summary>
+    /// The dependency property of text background sizing.
+    /// </summary>
+    public static readonly DependencyProperty TextBackgroundSizingProperty = DependencyObjectProxy.RegisterProperty<BackgroundSizing>(nameof(TextBackgroundSizing));
+
+    /// <summary>
+    /// The dependency property of text padding.
+    /// </summary>
     public static readonly DependencyProperty TextPaddingProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(TextPadding));
+
+    /// <summary>
+    /// The dependency property of text margin.
+    /// </summary>
     public static readonly DependencyProperty TextMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(TextMargin));
+
+    /// <summary>
+    /// The dependency property of text corner radius.
+    /// </summary>
     public static readonly DependencyProperty TextCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(TextCornerRadius));
+
+    /// <summary>
+    /// The dependency property of title property.
+    /// </summary>
     public static readonly DependencyProperty TitleProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Title));
+
+    /// <summary>
+    /// The dependency property of title font size.
+    /// </summary>
     public static readonly DependencyProperty TitleFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleFontSize), 14d);
+
+    /// <summary>
+    /// The dependency property of title font weight.
+    /// </summary>
     public static readonly DependencyProperty TitleFontWeightProperty = DependencyObjectProxy.RegisterFontWeightProperty(nameof(TitleFontWeight));
+
+    /// <summary>
+    /// The dependency property of title font style.
+    /// </summary>
     public static readonly DependencyProperty TitleFontStyleProperty = DependencyObjectProxy.RegisterProperty<FontStyle>(nameof(TitleFontStyle));
+
+    /// <summary>
+    /// The dependency property of title line height.
+    /// </summary>
     public static readonly DependencyProperty TitleLineHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleLineHeight), 0d);
+
+    /// <summary>
+    /// The dependency property of title foreground.
+    /// </summary>
     public static readonly DependencyProperty TitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TitleForeground));
+
+    /// <summary>
+    /// The dependency property of title width.
+    /// </summary>
     public static readonly DependencyProperty TitleWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TitleWidth));
+
+    /// <summary>
+    /// The dependency property of title height.
+    /// </summary>
     public static readonly DependencyProperty TitleHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TitleHeight));
+
+    /// <summary>
+    /// The dependency property of title wrapping.
+    /// </summary>
     public static readonly DependencyProperty TitleWrappingProperty = DependencyObjectProxy.RegisterProperty<TextWrapping>(nameof(TitleWrapping));
+
+    /// <summary>
+    /// The dependency property of title trimming.
+    /// </summary>
     public static readonly DependencyProperty TitleTrimmingProperty = DependencyObjectProxy.RegisterProperty<TextTrimming>(nameof(TitleTrimming));
+
+    /// <summary>
+    /// The dependency property of description.
+    /// </summary>
     public static readonly DependencyProperty DescriptionProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Description));
+
+    /// <summary>
+    /// The dependency property of description font size.
+    /// </summary>
     public static readonly DependencyProperty DescriptionFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(DescriptionFontSize), 12d);
+
+    /// <summary>
+    /// The dependency property of description font weight.
+    /// </summary>
     public static readonly DependencyProperty DescriptionFontWeightProperty = DependencyObjectProxy.RegisterFontWeightProperty(nameof(DescriptionFontWeight));
+
+    /// <summary>
+    /// The dependency property of description font style.
+    /// </summary>
     public static readonly DependencyProperty DescriptionFontStyleProperty = DependencyObjectProxy.RegisterProperty<FontStyle>(nameof(DescriptionFontStyle));
+
+    /// <summary>
+    /// The dependency property of description line height.
+    /// </summary>
     public static readonly DependencyProperty DescriptionLineHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(DescriptionLineHeight), 0d);
+
+    /// <summary>
+    /// The dependency property of description foreground.
+    /// </summary>
     public static readonly DependencyProperty DescriptionForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DescriptionForeground));
+
+    /// <summary>
+    /// The dependency property of description width.
+    /// </summary>
     public static readonly DependencyProperty DescriptionWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(DescriptionWidth));
+
+    /// <summary>
+    /// The dependency property of description height.
+    /// </summary>
     public static readonly DependencyProperty DescriptionHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(DescriptionHeight));
+
+    /// <summary>
+    /// The dependency property of description wrapping.
+    /// </summary>
     public static readonly DependencyProperty DescriptionWrappingProperty = DependencyObjectProxy.RegisterProperty<TextWrapping>(nameof(DescriptionWrapping));
+
+    /// <summary>
+    /// The dependency property of description trimming.
+    /// </summary>
     public static readonly DependencyProperty DescriptionTrimmingProperty = DependencyObjectProxy.RegisterProperty<TextTrimming>(nameof(DescriptionTrimming));
-    public static readonly DependencyProperty ImageUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(ImageUri), OnImageUriChanged);
-    //public static readonly DependencyProperty ImageSourceProperty = DependencyObjectProxy.RegisterProperty<ImageSource>(nameof(ImageSource));
+
+    /// <summary>
+    /// The dependency property of image URI.
+    /// </summary>
+    public static readonly DependencyProperty ImageUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(ImageUri));
+
+    /// <summary>
+    /// The dependency property of iamge width.
+    /// </summary>
     public static readonly DependencyProperty ImageWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(ImageWidth));
+
+    /// <summary>
+    /// The dependency property of iamge height.
+    /// </summary>
     public static readonly DependencyProperty ImageHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(ImageHeight));
+
+    /// <summary>
+    /// The dependency property of image background.
+    /// </summary>
     public static readonly DependencyProperty ImageBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(ImageBackground));
+
+    /// <summary>
+    /// The dependency property of image background sizing.
+    /// </summary>
+    public static readonly DependencyProperty ImageBackgroundSizingProperty = DependencyObjectProxy.RegisterProperty<BackgroundSizing>(nameof(ImageBackgroundSizing));
+
+    /// <summary>
+    /// The dependency property of image padding.
+    /// </summary>
     public static readonly DependencyProperty ImagePaddingProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(ImagePadding));
+
+    /// <summary>
+    /// The dependency property of image margin.
+    /// </summary>
     public static readonly DependencyProperty ImageMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(ImageMargin));
+
+    /// <summary>
+    /// The dependency property of image corner radius.
+    /// </summary>
     public static readonly DependencyProperty ImageCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(ImageCornerRadius));
 
     /// <summary>
@@ -159,6 +319,15 @@ public sealed partial class TileItem : UserControl
     {
         get => (Brush)GetValue(TextBackgroundProperty);
         set => SetValue(TextBackgroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the background sizing of text zone.
+    /// </summary>
+    public BackgroundSizing TextBackgroundSizing
+    {
+        get => (BackgroundSizing)GetValue(TextBackgroundSizingProperty);
+        set => SetValue(TextBackgroundSizingProperty, value);
     }
 
     /// <summary>
@@ -436,6 +605,15 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the background sizing of image.
+    /// </summary>
+    public BackgroundSizing ImageBackgroundSizing
+    {
+        get => (BackgroundSizing)GetValue(ImageBackgroundSizingProperty);
+        set => SetValue(ImageBackgroundSizingProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the padding of image.
     /// </summary>
     public Thickness ImagePadding
@@ -525,16 +703,5 @@ public sealed partial class TileItem : UserControl
 
     private void OwnerButton_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-    }
-
-    private static void OnImageUriChanged(TileItem c, ChangeEventArgs<Uri> e, DependencyProperty p)
-    {
-        //if (e == null)
-        //{
-        //    c.ImageSource = null;
-        //    return;
-        //}
-
-        //c.ImageSource = new BitmapImage(e.NewValue);
     }
 }

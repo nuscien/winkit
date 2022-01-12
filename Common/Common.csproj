@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <AssemblyName>Trivial.WindowsControls</AssemblyName>
+    <AssemblyName>Trivial.WindowsKit</AssemblyName>
     <RootNamespace>Trivial.UI</RootNamespace>
-    <PackageId>Trivial.WindowsControls</PackageId>
+    <PackageId>Trivial.WindowsKit</PackageId>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <Product>Trivial</Product>
@@ -13,7 +13,7 @@
     <Version>0.1.0</Version>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
-    <Description>Some complex visual controls for WinUI.</Description>
+    <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/nuscien/winkit</PackageProjectUrl>
@@ -23,9 +23,22 @@
     <RepositoryUrl>https://github.com/nuscien/winkit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageIcon>logo.png</PackageIcon>
     <PackageTags>ui tiles</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.WindowsKit.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.WindowsKit.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="BlockHeader.xaml" />
     <None Remove="TileCollection.xaml" />
@@ -54,5 +67,11 @@
     <Page Update="TileItem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="README.md" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
+    <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 </Project>

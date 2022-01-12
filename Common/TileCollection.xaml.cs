@@ -18,31 +18,130 @@ using Windows.UI.Text;
 namespace Trivial.UI;
 using DependencyObjectProxy = DependencyObjectProxy<TileCollection>;
 
+/// <summary>
+/// The tile collection control.
+/// </summary>
 public sealed partial class TileCollection : UserControl
 {
+
+    /// <summary>
+    /// The dependency property of item style.
+    /// </summary>
     public static readonly DependencyProperty ItemStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ItemStyle), OnItemStyleChanged);
+
+    /// <summary>
+    /// The dependency property of scroll view style.
+    /// </summary>
     public static readonly DependencyProperty ScrollViewStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ScrollViewStyle), (c, e, p) => c.ScrollViewStyle = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header height.
+    /// </summary>
     public static readonly DependencyProperty HeaderHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(HeaderHeight), (c, e, p) => c.HeaderHeight = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header font size.
+    /// </summary>
     public static readonly DependencyProperty HeaderFontSizeProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(HeaderFontSize), (c, e, p) => c.HeaderFontSize = e.NewValue, 12);
+
+    /// <summary>
+    /// The dependency property of header font weight.
+    /// </summary>
     public static readonly DependencyProperty HeaderFontWeightProperty = DependencyObjectProxy.RegisterFontWeightProperty(nameof(HeaderFontWeight), (c, e, p) => c.HeaderFontWeight = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header font style.
+    /// </summary>
     public static readonly DependencyProperty HeaderFontStyleProperty = DependencyObjectProxy.RegisterProperty<FontStyle>(nameof(HeaderFontStyle), (c, e, p) => c.HeaderFontStyle = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header foreground.
+    /// </summary>
     public static readonly DependencyProperty HeaderForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HeaderForeground), (c, e, p) => c.HeaderForeground = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header background.
+    /// </summary>
     public static readonly DependencyProperty HeaderBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HeaderBackground), (c, e, p) => c.HeaderBackground = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header background sizing.
+    /// </summary>
     public static readonly DependencyProperty HeaderBackgroundSizingProperty = DependencyObjectProxy.RegisterProperty<BackgroundSizing>(nameof(HeaderBackgroundSizing), (c, e, p) => c.HeaderBackgroundSizing = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header padding.
+    /// </summary>
     public static readonly DependencyProperty HeaderPaddingProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HeaderPadding), (c, e, p) => c.HeaderPadding = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header margin.
+    /// </summary>
     public static readonly DependencyProperty HeaderMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HeaderMargin), (c, e, p) => c.HeaderMargin = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header border thickness.
+    /// </summary>
     public static readonly DependencyProperty HeaderBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HeaderBorderThickness), (c, e, p) => c.HeaderBorderThickness = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header border brush.
+    /// </summary>
     public static readonly DependencyProperty HeaderBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HeaderBorderBrush), (c, e, p) => c.HeaderBorderBrush = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of corner radius.
+    /// </summary>
     public static readonly DependencyProperty HeaderCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(HeaderCornerRadius), (c, e, p) => c.HeaderCornerRadius = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of title.
+    /// </summary>
     public static readonly DependencyProperty TitleProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Title), (c, e, p) => c.Title = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of title font size.
+    /// </summary>
     public static readonly DependencyProperty TitleFontSizeProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TitleFontSize), (c, e, p) => c.TitleFontSize = e.NewValue, 18);
+
+    /// <summary>
+    /// The dependency property of title font weight.
+    /// </summary>
     public static readonly DependencyProperty TitleFontWeightProperty = DependencyObjectProxy.RegisterFontWeightProperty(nameof(TitleFontWeight), (c, e, p) => c.TitleFontWeight = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of title font style.
+    /// </summary>
     public static readonly DependencyProperty TitleFontStyleProperty = DependencyObjectProxy.RegisterProperty<FontStyle>(nameof(TitleFontStyle), (c, e, p) => c.TitleFontStyle = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of title line height.
+    /// </summary>
     public static readonly DependencyProperty TitleLineHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TitleLineHeight), (c, e, p) => c.TitleLineHeight = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of title foreground.
+    /// </summary>
     public static readonly DependencyProperty TitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TitleForeground), (c, e, p) => c.TitleForeground = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of icon URI.
+    /// </summary>
     public static readonly DependencyProperty IconUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(IconUri), (c, e, p) => c.IconUri = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of icon width.
+    /// </summary>
     public static readonly DependencyProperty IconWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconWidth), (c, e, p) => c.IconWidth = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of icon height.
+    /// </summary>
     public static readonly DependencyProperty IconHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconHeight), (c, e, p) => c.IconHeight = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of icon margin.
+    /// </summary>
     public static readonly DependencyProperty IconMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(IconMargin), (c, e, p) => c.IconMargin = e.NewValue);
 
     /// <summary>
@@ -346,6 +445,10 @@ public sealed partial class TileCollection : UserControl
         set => AfterPaging.Child = value;
     }
 
+    /// <summary>
+    /// Adds a new tile item.
+    /// </summary>
+    /// <returns>The tile item created to add.</returns>
     public TileItem AddItem()
     {
         var item = new TileItem
@@ -361,6 +464,11 @@ public sealed partial class TileCollection : UserControl
         return item;
     }
 
+    /// <summary>
+    /// Adds a new tile item.
+    /// </summary>
+    /// <param name="fillProperties">The callback to fill properties.</param>
+    /// <returns>The tile item created to add.</returns>
     public TileItem AddItem(Action<TileItem> fillProperties)
     {
         var item = new TileItem
@@ -372,6 +480,13 @@ public sealed partial class TileCollection : UserControl
         return item;
     }
 
+    /// <summary>
+    /// Adds a new tile item.
+    /// </summary>
+    /// <param name="title">The title.</param>
+    /// <param name="image">The image URI.</param>
+    /// <param name="description">The description</param>
+    /// <returns>The tile item created to add.</returns>
     public TileItem AddItem(string title, Uri image, string description = null)
     {
         var item = new TileItem

@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
-    <StackPanel Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+    <StackPanel x:Name="OwnerPanel" Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
         <Border x:Name="Top" ></Border>
         <local:BlockHeader
             x:Name="HeaderElement"
@@ -46,20 +46,14 @@
         </local:BlockHeader>
         <Grid>
             <ScrollViewer x:Name="ListScrollView" VerticalScrollMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden" PointerEntered="ScrollViewer_PointerEntered" PointerExited="ScrollViewer_PointerExited" >
-                <StackPanel x:Name="ListPanel" Orientation="Horizontal" >
+                <StackPanel x:Name="ListPanel" Orientation="Horizontal" Spacing="{x:Bind ListItemSpacing}" >
                 </StackPanel>
+                <!--<ItemsRepeater x:Name="ListPanel" >
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" Spacing="{x:Bind ListItemSpacing}" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>-->
             </ScrollViewer>
-            <!--<ListView
-                  ScrollViewer.HorizontalScrollMode="Enabled" 
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                  ScrollViewer.VerticalScrollMode="Disabled"
-                  ScrollViewer.VerticalScrollBarVisibility="Hidden">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsWrapGrid Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-            </ListView>-->
         </Grid>
         <Border x:Name="Bottom" ></Border>
     </StackPanel>

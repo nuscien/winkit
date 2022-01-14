@@ -1,0 +1,44 @@
+﻿<UserControl
+    x:Class="Trivial.UI.TileListView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <ListView x:Name="ListPanel" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+        <ListView.Header>
+            <StackPanel Orientation="Vertical">
+                <Border x:Name="Top" ></Border>
+                <local:BlockHeader
+                    x:Name="HeaderElement"
+                    FontSize="{x:Bind HeaderFontSize}"
+                    FontWeight="{x:Bind HeaderFontWeight}"
+                    FontStyle="{x:Bind HeaderFontStyle}"
+                    FontFamily="{x:Bind FontFamily}"
+                    Height="{x:Bind HeaderHeight}"
+                    Background="{x:Bind HeaderBackground}"
+                    BackgroundSizing="{x:Bind HeaderBackgroundSizing}"
+                    Padding="{x:Bind HeaderPadding}"
+                    Margin="{x:Bind HeaderMargin}"
+                    BorderThickness="{x:Bind HeaderBorderThickness}"
+                    BorderBrush="{x:Bind HeaderBorderBrush}"
+                    CornerRadius="{x:Bind HeaderCornerRadius}"
+                    Title="{x:Bind Title}"
+                    TitleFontSize="{x:Bind TitleFontSize}"
+                    TitleFontWeight="{x:Bind TitleFontWeight}"
+                    TitleFontStyle="{x:Bind TitleFontStyle}"
+                    TitleForeground="{x:Bind TitleForeground}"
+                    IconUri="{x:Bind IconUri}"
+                    IconWidth="{x:Bind IconWidth}"
+                    IconHeight="{x:Bind IconHeight}"
+                    IconMargin="{x:Bind IconMargin}" />
+            </StackPanel>
+        </ListView.Header>
+        <ListView.Footer>
+            <StackPanel Orientation="Vertical">
+                <Border x:Name="Bottom" ></Border>
+            </StackPanel>
+        </ListView.Footer>
+    </ListView>
+</UserControl>

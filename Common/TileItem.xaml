@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Button x:Name="OwnerButton" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" Click="Button_Click" PointerEntered="OwnerButton_PointerEntered" PointerExited="OwnerButton_PointerExited">
+    <Button x:Name="OwnerButton" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" Click="Button_Click" >
         <Button.Resources>
             <Style TargetType="Button">
                 <Setter Property="Template">
@@ -21,6 +21,16 @@
                                             <Storyboard>
                                                 <DoubleAnimation Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.4" />
                                                 <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="0.94" Duration="0:0:0.4" >
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut" />
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="0.94" Duration="0:0:0.4" >
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut" />
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{TemplateBinding Background}" />
                                                 </ObjectAnimationUsingKeyFrames>
@@ -34,6 +44,8 @@
                                             <Storyboard>
                                                 <DoubleAnimation Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.1" />
                                                 <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.1" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.2" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.2" />
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBackground}" />
                                                 </ObjectAnimationUsingKeyFrames>
@@ -71,7 +83,16 @@
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
                                 <Border x:Name="BackgroundRect" Background="{TemplateBinding Background}" BackgroundSizing="{TemplateBinding BackgroundSizing}" Opacity="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverBackground}" BackgroundSizing="{TemplateBinding BackgroundSizing}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverBackground}" CornerRadius="{TemplateBinding CornerRadius}" BackgroundSizing="{TemplateBinding BackgroundSizing}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RenderTransformOrigin="0.5,0.5" >
+                                    <Border.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleY="0.94" ScaleX="0.94"/>
+                                            <SkewTransform/>
+                                            <RotateTransform/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </Border.RenderTransform>
+                                </Border>
                                 <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" Background="{x:Null}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
                             </Grid>
                         </ControlTemplate>
@@ -81,8 +102,8 @@
         </Button.Resources>
         <StackPanel Orientation="{x:Bind Orientation}" >
             <Border x:Name="Top" ></Border>
-            <Grid CornerRadius="{x:Bind ImageCornerRadius}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" >
-                <Image Stretch="UniformToFill" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+            <Grid CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" >
+                <Image Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ImageUri}" />
                     </Image.Source>
@@ -92,8 +113,8 @@
             <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" BackgroundSizing="{x:Bind TextBackgroundSizing}" Padding="{x:Bind TextPadding}" Margin="{x:Bind TextMargin}" >
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Border x:Name="BeforeText" ></Border>
-                    <TextBlock Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" Visibility="{x:Bind NeedShowTitle}" Foreground="{x:Bind TitleForeground}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" />
-                    <TextBlock Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Visibility="{x:Bind NeedShowDescription}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind DescriptionWrapping}" TextTrimming="{x:Bind DescriptionTrimming}" />
+                    <TextBlock Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" Visibility="{x:Bind NeedShowTitle}" Foreground="{x:Bind TitleForeground}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" HorizontalTextAlignment="{x:Bind TextHorizontalTextAlignment}" />
+                    <TextBlock Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Visibility="{x:Bind NeedShowDescription}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind DescriptionWrapping}" TextTrimming="{x:Bind DescriptionTrimming}" HorizontalTextAlignment="{x:Bind TextHorizontalTextAlignment}" />
                     <Border x:Name="AfterText" ></Border>
                 </StackPanel>
                 <Border x:Name="TextCover" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>

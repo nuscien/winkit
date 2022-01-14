@@ -17,12 +17,12 @@ using Windows.Foundation.Collections;
 using Windows.UI.Text;
 
 namespace Trivial.UI;
-using DependencyObjectProxy = DependencyObjectProxy<TileCollection>;
+using DependencyObjectProxy = DependencyObjectProxy<TileListView>;
 
 /// <summary>
 /// The horizontal tile collection control.
 /// </summary>
-public sealed partial class TileCollection : UserControl
+public sealed partial class TileListView : UserControl
 {
     /// <summary>
     /// The dependency property of item style.
@@ -30,9 +30,9 @@ public sealed partial class TileCollection : UserControl
     public static readonly DependencyProperty ItemStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ItemStyle), OnItemStyleChanged);
 
     /// <summary>
-    /// The dependency property of scroll view style.
+    /// The dependency property of list view style.
     /// </summary>
-    public static readonly DependencyProperty ScrollViewStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ScrollViewStyle), (c, e, p) => c.ScrollViewStyle = e.NewValue);
+    public static readonly DependencyProperty ListViewStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ListViewStyle), (c, e, p) => c.ListViewStyle = e.NewValue);
 
     /// <summary>
     /// The dependency property of header height.
@@ -150,9 +150,9 @@ public sealed partial class TileCollection : UserControl
     public static readonly DependencyProperty ListItemSpacingProperty = DependencyObjectProxy.RegisterProperty(nameof(ListItemSpacing), 0d);
 
     /// <summary>
-    /// Initializes a new instance of the TileCollection class.
+    /// Initializes a new instance of the TileListView class.
     /// </summary>
-    public TileCollection()
+    public TileListView()
     {
         InitializeComponent();
     }
@@ -160,7 +160,7 @@ public sealed partial class TileCollection : UserControl
     /// <summary>
     /// Gets the children.
     /// </summary>
-    public UIElementCollection Children => ListPanel.Children;
+    public ItemCollection Items => ListPanel.Items;
 
     /// <summary>
     /// Gets or sets the style of tile item.
@@ -172,12 +172,21 @@ public sealed partial class TileCollection : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the style of internal scroll view.
+    /// Gets or sets the style of internal list view.
     /// </summary>
-    public Style ScrollViewStyle
+    public Style ListViewStyle
     {
-        get => ListScrollView.Style;
-        set => ListScrollView.Style = value;
+        get => ListPanel.Style;
+        set => ListPanel.Style = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the template of internal list view.
+    /// </summary>
+    public ControlTemplate ListViewDataTemplate
+    {
+        get => ListPanel.Template;
+        set => ListPanel.Template = value;
     }
 
     /// <summary>
@@ -442,22 +451,9 @@ public sealed partial class TileCollection : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the content of customized zone before paging buttons in header.
+    /// Gets or sets the children of customized zone in header right side.
     /// </summary>
-    public UIElement BeforePagingContent
-    {
-        get => BeforePaging.Child;
-        set => BeforePaging.Child = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the content of customized zone after paging buttons in header.
-    /// </summary>
-    public UIElement AfterPagingContent
-    {
-        get => AfterPaging.Child;
-        set => AfterPaging.Child = value;
-    }
+    public UIElementCollection TitleRightSideChildren => HeaderElement.RightChildren;
 
     /// <summary>
     /// Adds a new tile item.
@@ -474,7 +470,7 @@ public sealed partial class TileCollection : UserControl
         //    Source = this,
         //    Path = "ItemStyle"
         //});
-        ListPanel.Children.Add(item);
+        ListPanel.Items.Add(item);
         return item;
     }
 
@@ -490,7 +486,7 @@ public sealed partial class TileCollection : UserControl
             Style = ItemStyle
         };
         fillProperties?.Invoke(item);
-        ListPanel.Children.Add(item);
+        ListPanel.Items.Add(item);
         return item;
     }
 
@@ -512,7 +508,7 @@ public sealed partial class TileCollection : UserControl
         };
         if (click != null) item.Click += click;
         item.Style = ItemStyle;
-        ListPanel.Children.Add(item);
+        ListPanel.Items.Add(item);
         return item;
     }
 
@@ -535,23 +531,9 @@ public sealed partial class TileCollection : UserControl
         if (click != null) item.Click += click;
         item.Style = ItemStyle;
         item.SetImage(image, imagePrepareOnly);
-        ListPanel.Children.Add(item);
+        ListPanel.Items.Add(item);
         return item;
     }
-
-    /// <summary>
-    /// Scrolls by a specific horizontal offset of the collection.
-    /// </summary>
-    /// <param name="value">The value.</param>
-    public void ScrollByHorizontalOffset(double value)
-        => ScrollToHorizontalOffset(value + ListScrollView.HorizontalOffset);
-
-    /// <summary>
-    /// Scrolls to a specific horizontal offset of the collection.
-    /// </summary>
-    /// <param name="value">The value.</param>
-    public void ScrollToHorizontalOffset(double value)
-        => ListScrollView.ChangeView(value, 0, 1);
 
     /// <summary>
     /// Lists all tile items.
@@ -559,7 +541,7 @@ public sealed partial class TileCollection : UserControl
     /// <returns>A collection of tile items.</returns>
     public IEnumerable<TileItem> GetAllTiles()
     {
-        foreach (var item in ListPanel.Children)
+        foreach (var item in ListPanel.Items)
         {
             if (item is TileItem t) yield return t;
         }
@@ -570,32 +552,20 @@ public sealed partial class TileCollection : UserControl
     /// </summary>
     public void UsePrepareImageUri()
     {
-        foreach (var item in ListPanel.Children)
+        foreach (var item in ListPanel.Items)
         {
             if (item is TileItem t) t.UsePrepareImageUri();
         }
     }
 
-    private void ScrollViewer_PointerEntered(object sender, PointerRoutedEventArgs e)
-        => ListScrollView.HorizontalScrollMode = e.Pointer.PointerDeviceType != Microsoft.UI.Input.PointerDeviceType.Mouse ? ScrollMode.Auto : ScrollMode.Disabled;
-
-    private void ScrollViewer_PointerExited(object sender, PointerRoutedEventArgs e)
-    { }
-
-    private static void OnItemStyleChanged(TileCollection c, ChangeEventArgs<Style> e, DependencyProperty p)
+    private static void OnItemStyleChanged(TileListView c, ChangeEventArgs<Style> e, DependencyProperty p)
     {
-        foreach (var item in c.ListPanel.Children)
+        foreach (var item in c.ListPanel.Items)
         {
             if (item is not TileItem ti) continue;
             ti.Style = e.NewValue;
         }
     }
-
-    private void PreviousButton_Click(object sender, RoutedEventArgs e)
-        => ScrollByHorizontalOffset(-(int)(ListScrollView.ActualWidth * 3 / 4) - 1);
-
-    private void NextButton_Click(object sender, RoutedEventArgs e)
-        => ScrollByHorizontalOffset((int)(ListScrollView.ActualWidth * 3 / 4) + 1);
 
     /// <summary>
     /// Occurs on container content changing.
@@ -604,6 +574,6 @@ public sealed partial class TileCollection : UserControl
     /// <param name="args">The event arguments.</param>
     public static void OnContainerContentChanging(object sender, ContainerContentChangingEventArgs args)
     {
-        if (args?.Item is TileCollection c) c.UsePrepareImageUri();
+        if (args?.Item is TileListView c) c.UsePrepareImageUri();
     }
 }

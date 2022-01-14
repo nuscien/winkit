@@ -63,6 +63,11 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty TextHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TextHeight));
 
     /// <summary>
+    /// The dependency property of text horiontal text alignment.
+    /// </summary>
+    public static readonly DependencyProperty TextHorizontalTextAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(TextHorizontalTextAlignment), TextAlignment.Left);
+
+    /// <summary>
     /// The dependency property of text background.
     /// </summary>
     public static readonly DependencyProperty TextBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TextBackground));
@@ -190,7 +195,7 @@ public sealed partial class TileItem : UserControl
     /// <summary>
     /// The dependency property of image URI.
     /// </summary>
-    public static readonly DependencyProperty ImageUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(ImageUri));
+    public static readonly DependencyProperty ImageUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(ImageUri), OnImageUriChanged);
 
     /// <summary>
     /// The dependency property of iamge width.
@@ -226,6 +231,8 @@ public sealed partial class TileItem : UserControl
     /// The dependency property of image corner radius.
     /// </summary>
     public static readonly DependencyProperty ImageCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(ImageCornerRadius));
+
+    private Uri imageUri;
 
     /// <summary>
     /// Initializes a new instance of the TileItem class.
@@ -346,6 +353,15 @@ public sealed partial class TileItem : UserControl
     {
         get => (double)GetValue(TextHeightProperty);
         set => SetValue(TextHeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the text alignment of text zone.
+    /// </summary>
+    public TextAlignment TextHorizontalTextAlignment
+    {
+        get => (TextAlignment)GetValue(TextHorizontalTextAlignmentProperty);
+        set => SetValue(TextHorizontalTextAlignmentProperty, value);
     }
 
     /// <summary>
@@ -568,15 +584,6 @@ public sealed partial class TileItem : UserControl
         set => SetValue(ImageUriProperty, value);
     }
 
-    ///// <summary>
-    ///// Gets or sets the image source.
-    ///// </summary>
-    //public ImageSource ImageSource
-    //{
-    //    get => (ImageSource)GetValue(ImageSourceProperty);
-    //    set => SetValue(ImageSourceProperty, value);
-    //}
-
     /// <summary>
     /// Gets or sets the width of image.
     /// </summary>
@@ -694,14 +701,28 @@ public sealed partial class TileItem : UserControl
         set => AfterText.Child = value;
     }
 
+    /// <summary>
+    /// Sets image URI.
+    /// </summary>
+    /// <param name="uri">The image URI.</param>
+    /// <param name="prepareOnly">true if it is used to prepare to set, that means it will not take effect in fact; otherwise, false.</param>
+    public void SetImage(Uri uri, bool prepareOnly = false)
+    {
+        if (prepareOnly) imageUri = uri;
+        else ImageUri = uri;
+    }
+
+    /// <summary>
+    /// Uses prepare image URI if available.
+    /// </summary>
+    public void UsePrepareImageUri()
+        => ImageUri = imageUri;
+
     private void Button_Click(object sender, RoutedEventArgs e)
         => Click?.Invoke(this, e);
 
-    private void OwnerButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+    private static void OnImageUriChanged(TileItem c, ChangeEventArgs<Uri> e, DependencyProperty p)
     {
-    }
-
-    private void OwnerButton_PointerExited(object sender, PointerRoutedEventArgs e)
-    {
+        c.imageUri = null;
     }
 }

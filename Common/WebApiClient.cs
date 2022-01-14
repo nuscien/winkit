@@ -255,7 +255,6 @@ public class WebApiClientResultInfo<T>
 /// </summary>
 public class JsonWebCacheClient
 {
-    private readonly DataCacheCollection<JsonObjectNode> cache = new();
     private Func<Uri, CancellationToken, Task<JsonObjectNode>> handler;
 
     /// <summary>
@@ -315,9 +314,23 @@ public class JsonWebCacheClient
     }
 
     /// <summary>
+    /// Gets the data cache.
+    /// </summary>
+    public DataCacheCollection<JsonObjectNode> Cache { get; } = new();
+
+    /// <summary>
     /// Gets or sets the data container.
     /// </summary>
     public ApplicationDataContainer DataContainer { get; set; }
+
+    /// <summary>
+    /// Gets the optional expiration.
+    /// </summary>
+    public TimeSpan? Expiration
+    {
+        get => Cache.Expiration;
+        set => Cache.Expiration = value;
+    }
 
     /// <summary>
     /// Sets web API client.
@@ -348,7 +361,7 @@ public class JsonWebCacheClient
     /// <param name="cancellationToken">An optional cancellation token for the operation.</param>
     /// <returns>The information.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
-    public WebApiClientResultInfo<JsonObjectNode> Get(WebApiRequestOptions<JsonObjectNode> options, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken)
+    public WebApiClientResultInfo<JsonObjectNode> Get(WebApiRequestOptions<JsonObjectNode> options, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken = default)
     {
         if (options == null) throw new ArgumentNullException(nameof(options), "options should not be null.");
         var info = new WebApiClientResultInfo<JsonObjectNode>();
@@ -357,12 +370,12 @@ public class JsonWebCacheClient
         if (!string.IsNullOrWhiteSpace(cacheKey))
         {
             var container = DataContainer;
-            if (cache.TryGetInfo(cacheKey, out var data) && !data.IsExpired(options.CacheTimeout))
+            if (Cache.TryGetInfo(cacheKey, out var data) && !data.IsExpired(options.CacheTimeout))
             {
                 var result = data.Value;
                 info.SetCacheResult(result);
                 callback?.Invoke(result, WebApiResultSourceTypes.Cache);
-                if (handler == null || uri == null) return info;
+                if (uri == null) return info;
                 if (!data.IsExpired(options.LimitationDuration)) return info;
             }
             else if (container != null && container.Values.TryGetValue(cacheKey, out var settings) && settings is string s)
@@ -370,9 +383,9 @@ public class JsonWebCacheClient
                 var json = JsonObjectNode.TryParse(s);
                 if (json != null)
                 {
-                    cache[cacheKey] = json;
+                    Cache[cacheKey] = json;
                     callback?.Invoke(json, WebApiResultSourceTypes.Cache);
-                    if (handler == null || uri == null) return info;
+                    if (uri == null) return info;
                 }
             }
         }
@@ -388,7 +401,7 @@ public class JsonWebCacheClient
     /// <param name="cancellationToken">An optional cancellation token for the operation.</param>
     /// <returns>The information.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
-    public WebApiClientResultInfo<JsonObjectNode> Get(WebApiRequestOptions<JsonObjectNode> options, CancellationToken cancellationToken)
+    public WebApiClientResultInfo<JsonObjectNode> Get(WebApiRequestOptions<JsonObjectNode> options, CancellationToken cancellationToken = default)
         => Get(options, null, cancellationToken);
 
     /// <summary>
@@ -399,7 +412,7 @@ public class JsonWebCacheClient
     /// <param name="cancellationToken">An optional cancellation token for the operation.</param>
     /// <returns>The information.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
-    public Task<JsonObjectNode> GetAsync(WebApiRequestOptions<JsonObjectNode> options, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken)
+    public Task<JsonObjectNode> GetAsync(WebApiRequestOptions<JsonObjectNode> options, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken = default)
         => Get(options, callback, cancellationToken).GetResultAsync();
 
     /// <summary>
@@ -409,7 +422,7 @@ public class JsonWebCacheClient
     /// <param name="cancellationToken">An optional cancellation token for the operation.</param>
     /// <returns>The information.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
-    public Task<JsonObjectNode> GetAsync(WebApiRequestOptions<JsonObjectNode> options, CancellationToken cancellationToken)
+    public Task<JsonObjectNode> GetAsync(WebApiRequestOptions<JsonObjectNode> options, CancellationToken cancellationToken = default)
         => Get(options, null, cancellationToken).GetResultAsync();
 
     /// <summary>
@@ -418,10 +431,25 @@ public class JsonWebCacheClient
     /// <param name="uri">The request URI.</param>
     /// <param name="cancellationToken">An optional cancellation token for the operation.</param>
     /// <returns>The result.</returns>
-    public Task<JsonObjectNode> GetAsync(Uri uri, CancellationToken cancellationToken)
+    public Task<JsonObjectNode> GetAsync(Uri uri, CancellationToken cancellationToken = default)
     {
         var h = handler;
         return h != null ? handler(uri, cancellationToken) : new JsonHttpClient<JsonObjectNode>().GetAsync(uri, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets data online.
+    /// </summary>
+    /// <param name="uri">The request URI.</param>
+    /// <param name="callback">The callback.</param>
+    /// <param name="cancellationToken">An optional cancellation token for the operation.</param>
+    /// <returns>The result.</returns>
+    public async Task<JsonObjectNode> GetAsync(Uri uri, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken = default)
+    {
+        var h = handler;
+        var result = h != null ? await handler(uri, cancellationToken) : await new JsonHttpClient<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        callback?.Invoke(result, WebApiResultSourceTypes.Online);
+        return result;
     }
 
     private async Task FillWebResult(WebApiClientResultInfo<JsonObjectNode> info, WebApiRequestOptions<JsonObjectNode> options, Uri uri, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken)
@@ -432,7 +460,7 @@ public class JsonWebCacheClient
         try
         {
             result = info.GetWebResult();
-            cache[options.CacheKey] = result;
+            Cache[options.CacheKey] = result;
         }
         catch (InvalidOperationException)
         {

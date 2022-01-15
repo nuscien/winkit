@@ -1,0 +1,31 @@
+﻿<UserControl
+    x:Class="Trivial.UI.CommentView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
+        <Border Width="{x:Bind AvatarWidth}" Height="{x:Bind AvatarHeight}" CornerRadius="{x:Bind AvatarCornerRadius}" Margin="{x:Bind AvatarMargin}" Background="{x:Bind AvatarBackground}" BackgroundSizing="{x:Bind AvatarBackgroundSizing}" HorizontalAlignment="Left" VerticalAlignment="Top" >
+            <Image x:Name="AvatarImage" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Image.Source>
+                    <BitmapImage UriSource="{x:Bind AvatarUri}" />
+                </Image.Source>
+            </Image>
+        </Border>
+        <StackPanel Orientation="{x:Bind SenderOrientation}" Spacing="{x:Bind SenderSpacing}" Margin="{x:Bind SenderMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
+            <TextBlock x:Name="NicknameText" Text="{x:Bind Nickname}" Width="{x:Bind NicknameWidth}" Height="{x:Bind NicknameHeight}" Visibility="{x:Bind NeedShowNickname}" Foreground="{x:Bind NicknameForeground}" FontSize="{x:Bind NicknameFontSize}" FontWeight="{x:Bind NicknameFontWeight}" FontStyle="{x:Bind NicknameFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+            <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Visibility="{x:Bind NeedShowDescription}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+            <Border x:Name="SenderAdditionalInfo" ></Border>
+        </StackPanel>
+        <StackPanel Margin="{x:Bind ContentMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
+            <Border x:Name="BeforeContentPanel" ></Border>
+            <TextBlock x:Name="ContentText" Text="{x:Bind Text}" Height="{x:Bind ContentHeight}" Visibility="{x:Bind NeedShowContent}" Foreground="{x:Bind Foreground}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="WrapWholeWords" TextTrimming="WordEllipsis" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+            <Border x:Name="ContentPanel" ></Border>
+            <Border x:Name="AfterContentPanel" ></Border>
+            <StackPanel x:Name="ReplayPanel" Style="{x:Bind ReplyPanelStyle}" Visibility="{x:Bind ReplyVisibility}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

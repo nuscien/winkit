@@ -63,9 +63,9 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty TextHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TextHeight));
 
     /// <summary>
-    /// The dependency property of text horiontal text alignment.
+    /// The dependency property of horiontal text alignment.
     /// </summary>
-    public static readonly DependencyProperty TextHorizontalTextAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(TextHorizontalTextAlignment), TextAlignment.Left);
+    public static readonly DependencyProperty HorizontalTextAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(HorizontalTextAlignment), TextAlignment.Left);
 
     /// <summary>
     /// The dependency property of text background.
@@ -198,12 +198,12 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty ImageUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(ImageUri), OnImageUriChanged);
 
     /// <summary>
-    /// The dependency property of iamge width.
+    /// The dependency property of image width.
     /// </summary>
     public static readonly DependencyProperty ImageWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(ImageWidth));
 
     /// <summary>
-    /// The dependency property of iamge height.
+    /// The dependency property of image height.
     /// </summary>
     public static readonly DependencyProperty ImageHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(ImageHeight));
 
@@ -356,12 +356,12 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the text alignment of text zone.
+    /// Gets or sets the alignment of text zone.
     /// </summary>
-    public TextAlignment TextHorizontalTextAlignment
+    public TextAlignment HorizontalTextAlignment
     {
-        get => (TextAlignment)GetValue(TextHorizontalTextAlignmentProperty);
-        set => SetValue(TextHorizontalTextAlignmentProperty, value);
+        get => (TextAlignment)GetValue(HorizontalTextAlignmentProperty);
+        set => SetValue(HorizontalTextAlignmentProperty, value);
     }
 
     /// <summary>

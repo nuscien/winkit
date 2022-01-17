@@ -572,7 +572,7 @@ public sealed partial class TileCollection : UserControl
     {
         foreach (var item in ListPanel.Children)
         {
-            if (item is TileItem t) t.UsePrepareImageUri();
+            if (item is TileItem t) t.UseImageUriPrepared();
         }
     }
 

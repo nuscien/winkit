@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Trivial.Data;
+using Trivial.Tasks;
 using Windows.UI.Text;
 
 namespace Trivial.UI;
@@ -228,5 +229,50 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
         }
 
         callback(c, new ChangeEventArgs<TPropertyValue>(oldValue, newValue, changeMethod, name), p);
+    }
+}
+
+/// <summary>
+/// The utilities of visual element.
+/// </summary>
+public static class VisualUtilities
+{
+    /// <summary>
+    /// Gets the resource.
+    /// </summary>
+    /// <typeparam name="T">The type of the resource.</typeparam>
+    /// <param name="key">The resource key.</param>
+    /// <returns>The resource.</returns>
+    /// <exception cref="InvalidCastException">The type is not the expected one.</exception>
+    /// <exception cref="ArgumentException">key is invalid.</exception>
+    public static T GetResource<T>(string key)
+    {
+        return (T)Application.Current.Resources[key];
+    }
+
+    /// <summary>
+    /// Registers a click event handler.
+    /// </summary>
+    /// <param name="button">The button control.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="options">The interceptor policy.</param>
+    /// <returns>The handler registered.</returns>
+    public static RoutedEventHandler RegisterClick(Microsoft.UI.Xaml.Controls.Primitives.ButtonBase button, RoutedEventHandler click, InterceptorPolicy options = null)
+    {
+        if (click == null) return null;
+        if (options == null)
+        {
+            button.Click += click;
+            return click;
+        }
+
+        var action = Interceptor.Action<object, RoutedEventArgs>((sender, ev) => click(sender, ev), options);
+        void h(object sender, RoutedEventArgs ev)
+        {
+            action(sender, ev);
+        }
+
+        button.Click += h;
+        return h;
     }
 }

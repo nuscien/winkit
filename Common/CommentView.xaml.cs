@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Trivial.Text;
 using Windows.UI.Text;
+using Trivial.Data;
 
 namespace Trivial.UI;
 using DependencyObjectProxy = DependencyObjectProxy<CommentView>;
@@ -36,17 +37,17 @@ public sealed partial class CommentView : UserControl
     /// <summary>
     /// The dependency property of nickname.
     /// </summary>
-    public static readonly DependencyProperty NicknameProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Nickname));
+    public static readonly DependencyProperty NicknameProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Nickname), OnTextChanged);
 
     /// <summary>
     /// The dependency property of publish description.
     /// </summary>
-    public static readonly DependencyProperty DescriptionProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Description));
+    public static readonly DependencyProperty DescriptionProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Description), OnTextChanged);
 
     /// <summary>
     /// The dependency property of content text.
     /// </summary>
-    public static readonly DependencyProperty TextProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Text));
+    public static readonly DependencyProperty TextProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Text), OnTextChanged);
 
     /// <summary>
     /// The dependency property of content margin.
@@ -250,8 +251,6 @@ public sealed partial class CommentView : UserControl
         set => SetValue(ContentMarginProperty, value);
     }
 
-    private Visibility NeedShowContent => string.IsNullOrEmpty(Text) ? Visibility.Collapsed : Visibility.Visible;
-
     /// <summary>
     /// Gets or sets the margin of sender information.
     /// </summary>
@@ -296,8 +295,6 @@ public sealed partial class CommentView : UserControl
         get => (TextTrimming)GetValue(SenderTrimmingProperty);
         set => SetValue(SenderTrimmingProperty, value);
     }
-
-    private Visibility NeedShowNickname => string.IsNullOrEmpty(Nickname) ? Visibility.Collapsed : Visibility.Visible;
 
     /// <summary>
     /// Gets or sets the font size of nickname.
@@ -361,8 +358,6 @@ public sealed partial class CommentView : UserControl
         get => (double)GetValue(NicknameHeightProperty);
         set => SetValue(NicknameHeightProperty, value);
     }
-
-    private Visibility NeedShowDescription => string.IsNullOrEmpty(Description) ? Visibility.Collapsed : Visibility.Visible;
 
     /// <summary>
     /// Gets or sets the font size of description.
@@ -548,4 +543,11 @@ public sealed partial class CommentView : UserControl
     /// <returns>The result of description.</returns>
     public string SetPublishDate(DateTime date)
         => Description = date.Date == DateTime.Now.Date ? date.ToShortTimeString() : date.ToShortDateString();
+    
+    private static void OnTextChanged(CommentView c, ChangeEventArgs<string> e, DependencyProperty p)
+    {
+        c.NicknameText.Visibility = string.IsNullOrWhiteSpace(c.Nickname) ? Visibility.Collapsed : Visibility.Visible;
+        c.DescriptionText.Visibility = string.IsNullOrWhiteSpace(c.Description) ? Visibility.Collapsed : Visibility.Visible;
+        c.ContentText.Visibility = string.IsNullOrWhiteSpace(c.Text) ? Visibility.Collapsed : Visibility.Visible;
+    }
 }

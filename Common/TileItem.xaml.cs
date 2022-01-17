@@ -28,6 +28,11 @@ using DependencyObjectProxy = DependencyObjectProxy<TileItem>;
 public sealed partial class TileItem : UserControl
 {
     /// <summary>
+    /// The dependency property of click mode.
+    /// </summary>
+    public static readonly DependencyProperty ClickModeProperty = DependencyObjectProxy.RegisterProperty<ClickMode>(nameof(ClickMode), (c, e, p) => c.ClickMode = e.NewValue);
+
+    /// <summary>
     /// The dependency property of hover foreground.
     /// </summary>
     public static readonly DependencyProperty HoverForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverForeground));
@@ -95,7 +100,7 @@ public sealed partial class TileItem : UserControl
     /// <summary>
     /// The dependency property of title property.
     /// </summary>
-    public static readonly DependencyProperty TitleProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Title));
+    public static readonly DependencyProperty TitleProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Title), OnTextChanged);
 
     /// <summary>
     /// The dependency property of title font size.
@@ -145,7 +150,7 @@ public sealed partial class TileItem : UserControl
     /// <summary>
     /// The dependency property of description.
     /// </summary>
-    public static readonly DependencyProperty DescriptionProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Description));
+    public static readonly DependencyProperty DescriptionProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Description), OnTextChanged);
 
     /// <summary>
     /// The dependency property of description font size.
@@ -311,7 +316,7 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
-    /// Gets or sets a value that indicates when the Click event occurs, in terms of device behavior.
+    /// Gets or sets a value that indicates when the click event occurs, in terms of device behavior.
     /// </summary>
     public ClickMode ClickMode
     {
@@ -399,8 +404,6 @@ public sealed partial class TileItem : UserControl
         get => (string)GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
     }
-
-    private Visibility NeedShowTitle => string.IsNullOrEmpty(Title) ? Visibility.Collapsed : Visibility.Visible;
 
     /// <summary>
     /// Gets or sets the font size of title.
@@ -491,8 +494,6 @@ public sealed partial class TileItem : UserControl
         get => (string)GetValue(DescriptionProperty);
         set => SetValue(DescriptionProperty, value);
     }
-
-    private Visibility NeedShowDescription => string.IsNullOrEmpty(Description) ? Visibility.Collapsed : Visibility.Visible;
 
     /// <summary>
     /// Gets or sets the font size of description.
@@ -715,11 +716,17 @@ public sealed partial class TileItem : UserControl
     /// <summary>
     /// Uses prepare image URI if available.
     /// </summary>
-    public void UsePrepareImageUri()
+    public void UseImageUriPrepared()
         => ImageUri = imageUri;
 
     private void Button_Click(object sender, RoutedEventArgs e)
         => Click?.Invoke(this, e);
+
+    private static void OnTextChanged(TileItem c, ChangeEventArgs<string> e, DependencyProperty p)
+    {
+        c.TitleText.Visibility = string.IsNullOrWhiteSpace(c.Title) ? Visibility.Collapsed : Visibility.Visible;
+        c.DescriptionText.Visibility = string.IsNullOrWhiteSpace(c.Description) ? Visibility.Collapsed : Visibility.Visible;
+    }
 
     private static void OnImageUriChanged(TileItem c, ChangeEventArgs<Uri> e, DependencyProperty p)
     {

@@ -554,7 +554,7 @@ public sealed partial class TileListView : UserControl
     {
         foreach (var item in ListPanel.Items)
         {
-            if (item is TileItem t) t.UsePrepareImageUri();
+            if (item is TileItem t) t.UseImageUriPrepared();
         }
     }
 

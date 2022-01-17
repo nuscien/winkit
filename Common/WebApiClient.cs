@@ -333,6 +333,15 @@ public class JsonWebCacheClient
     }
 
     /// <summary>
+    /// Gets or sets the maxinum count of the elements contained in the cache item collection; or null, if no limitation.
+    /// </summary>
+    public int? MaxCount
+    {
+        get => Cache.MaxCount;
+        set => Cache.MaxCount = value;
+    }
+
+    /// <summary>
     /// Sets web API client.
     /// </summary>
     /// <param name="client">The web API client.</param>

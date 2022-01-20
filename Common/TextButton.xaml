@@ -19,10 +19,15 @@
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">
                                             <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.4" />
-                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.6" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.8" />
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=Background}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=BorderBrush}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderThickness">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=BorderThickness}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=Foreground}" />
@@ -32,64 +37,62 @@
                                         </VisualState>
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" />
                                                 <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.1" />
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBackground}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBackground, TargetNullValue={Binding ElementName=HostElement, Path=Background}}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBorderBrush}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBorderBrush, TargetNullValue={Binding ElementName=HostElement, Path=BorderBrush}}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="BorderThickness">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBorderThickness}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderThickness">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverBorderThickness, TargetNullValue={Binding ElementName=HostElement, Path=BorderThickness}}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverForeground}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverForeground, TargetNullValue={Binding ElementName=HostElement, Path=Foreground}}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" />
-                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.1" />
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedBackground}" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0.9" Duration="0:0:0.1" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedBackground, TargetNullValue={Binding ElementName=HostElement, Path=Background}}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedBorderBrush}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedBorderBrush, TargetNullValue={Binding ElementName=HostElement, Path=BorderBrush}}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="BorderThickness">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedBorderThickness}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderThickness">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedBorderThickness, TargetNullValue={Binding ElementName=HostElement, Path=PressedBorderThickness}}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedForeground}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=PressedForeground, TargetNullValue={Binding ElementName=HostElement, Path=Foreground}}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <PointerDownThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="Disabled">
                                             <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.4" />
-                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.6" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.8" />
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledBackground}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledBackground, TargetNullValue={Binding ElementName=HostElement, Path=Background}}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledBorderBrush}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledBorderBrush, TargetNullValue={Binding ElementName=HostElement, Path=BorderBrush}}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="BorderThickness">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledBorderThickness}" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundRect" Storyboard.TargetProperty="BorderThickness">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledBorderThickness, TargetNullValue={Binding ElementName=HostElement, Path=BorderThickness}}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledForeground}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledForeground, TargetNullValue={Binding ElementName=HostElement, Path=Foreground}}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                                <Border x:Name="BackgroundRect" Background="{Binding ElementName=HostElement, Path=Background}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=BorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=BorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" Opacity="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=HoverBorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=HoverBorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="BaseBackgroundRect" Background="{Binding ElementName=HostElement, Path=Background}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=BorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=BorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="BackgroundRect" Background="{Binding ElementName=HostElement, Path=Background}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=BorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=BorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverCoverBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                                 <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" Background="{x:Null}" HorizontalAlignment="{Binding ElementName=HostElement, Path=HorizontalContentAlignment}" VerticalAlignment="{Binding ElementName=HostElement, Path=VerticalContentAlignment}" Margin="{Binding ElementName=HostElement, Path=Padding}"/>
                             </Grid>
                         </ControlTemplate>
@@ -101,7 +104,7 @@
             <Border x:Name="ImagePanel" Visibility="Collapsed" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" CornerRadius="{x:Bind ImageCornerRadius}" >
                 <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" />
             </Border>
-            <TextBlock Text="{x:Bind Text}" Foreground="{x:Bind Foreground}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+            <TextBlock Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
         </StackPanel>
     </Button>
 </UserControl>

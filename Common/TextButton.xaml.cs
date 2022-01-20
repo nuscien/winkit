@@ -77,6 +77,11 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty DisabledForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DisabledForeground));
 
     /// <summary>
+    /// The dependency property of base background.
+    /// </summary>
+    public static readonly DependencyProperty BaseBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(BaseBackground));
+
+    /// <summary>
     /// The dependency property of hover background.
     /// </summary>
     public static readonly DependencyProperty HoverBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverBackground));
@@ -90,6 +95,11 @@ public sealed partial class TextButton : UserControl
     /// The dependency property of pressed background.
     /// </summary>
     public static readonly DependencyProperty DisabledBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DisabledBackground));
+
+    /// <summary>
+    /// The dependency property of hover cover background.
+    /// </summary>
+    public static readonly DependencyProperty HoverCoverBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverCoverBackground));
 
     /// <summary>
     /// The dependency property of hover border brush.
@@ -297,6 +307,15 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the hover cover background.
+    /// </summary>
+    public Brush BaseBackground
+    {
+        get => (Brush)GetValue(BaseBackgroundProperty);
+        set => SetValue(BaseBackgroundProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the hover background.
     /// </summary>
     public Brush HoverBackground
@@ -321,6 +340,15 @@ public sealed partial class TextButton : UserControl
     {
         get => (Brush)GetValue(DisabledBackgroundProperty);
         set => SetValue(DisabledBackgroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the hover cover background.
+    /// </summary>
+    public Brush HoverCoverBackground
+    {
+        get => (Brush)GetValue(HoverCoverBackgroundProperty);
+        set => SetValue(HoverCoverBackgroundProperty, value);
     }
 
     /// <summary>

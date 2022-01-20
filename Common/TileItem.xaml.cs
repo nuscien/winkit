@@ -138,6 +138,11 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty TitleHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TitleHeight));
 
     /// <summary>
+    /// The dependency property of title horizontal alignment property.
+    /// </summary>
+    public static readonly DependencyProperty TitleHorizontalAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleHorizontalAlignment), HorizontalAlignment.Stretch);
+
+    /// <summary>
     /// The dependency property of title wrapping.
     /// </summary>
     public static readonly DependencyProperty TitleWrappingProperty = DependencyObjectProxy.RegisterProperty<TextWrapping>(nameof(TitleWrapping));
@@ -188,6 +193,11 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty DescriptionHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(DescriptionHeight));
 
     /// <summary>
+    /// The dependency property of description horizontal alignment property.
+    /// </summary>
+    public static readonly DependencyProperty DescriptionHorizontalAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(DescriptionHorizontalAlignment), HorizontalAlignment.Stretch);
+
+    /// <summary>
     /// The dependency property of description wrapping.
     /// </summary>
     public static readonly DependencyProperty DescriptionWrappingProperty = DependencyObjectProxy.RegisterProperty<TextWrapping>(nameof(DescriptionWrapping));
@@ -236,6 +246,11 @@ public sealed partial class TileItem : UserControl
     /// The dependency property of image corner radius.
     /// </summary>
     public static readonly DependencyProperty ImageCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(ImageCornerRadius));
+
+    /// <summary>
+    /// The dependency property of image horizontal alignment property.
+    /// </summary>
+    public static readonly DependencyProperty ImageHorizontalAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(ImageHorizontalAlignment), HorizontalAlignment.Stretch);
 
     private Uri imageUri;
 
@@ -469,6 +484,15 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the horizontal alignment of title.
+    /// </summary>
+    public HorizontalAlignment TitleHorizontalAlignment
+    {
+        get => (HorizontalAlignment)GetValue(TitleHorizontalAlignmentProperty);
+        set => SetValue(TitleHorizontalAlignmentProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the wrapping mode of title.
     /// </summary>
     public TextWrapping TitleWrapping
@@ -559,6 +583,15 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the horizontal alignment of description.
+    /// </summary>
+    public HorizontalAlignment DescriptionHorizontalAlignment
+    {
+        get => (HorizontalAlignment)GetValue(DescriptionHorizontalAlignmentProperty);
+        set => SetValue(DescriptionHorizontalAlignmentProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the wrapping mode of description.
     /// </summary>
     public TextWrapping DescriptionWrapping
@@ -646,6 +679,15 @@ public sealed partial class TileItem : UserControl
     {
         get => (CornerRadius)GetValue(ImageCornerRadiusProperty);
         set => SetValue(ImageCornerRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the horizontal alignment of image.
+    /// </summary>
+    public HorizontalAlignment ImageHorizontalAlignment
+    {
+        get => (HorizontalAlignment)GetValue(ImageHorizontalAlignmentProperty);
+        set => SetValue(ImageHorizontalAlignmentProperty, value);
     }
 
     /// <summary>

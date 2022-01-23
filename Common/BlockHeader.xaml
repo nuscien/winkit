@@ -10,12 +10,14 @@
     <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
         <Border x:Name="BackgroundPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" >
-            <Border x:Name="BeforePanel" Visibility="Collapsed"></Border>
-            <Image Visibility="Collapsed" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Margin="{x:Bind IconMargin}" >
-                <Image.Source>
-                    <BitmapImage UriSource="{x:Bind IconUri}" />
-                </Image.Source>
-            </Image>
+            <Border x:Name="BeforePanel" ></Border>
+            <Border x:Name="IconPanel"  Visibility="Collapsed" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Margin="{x:Bind IconMargin}" CornerRadius="{x:Bind IconCornerRadius}" >
+                <Image Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Stretch="{x:Bind IconStretch}" >
+                    <Image.Source>
+                        <BitmapImage UriSource="{x:Bind IconUri}" />
+                    </Image.Source>
+                </Image>
+            </Border>
             <TextBlock Text="{x:Bind Title}" Foreground="{x:Bind TitleForeground}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind TitleLineHeight}" />
             <Border x:Name="AfterPanel" ></Border>
         </StackPanel>

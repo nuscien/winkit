@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Trivial.Data;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Text;
@@ -56,7 +57,12 @@ public sealed partial class BlockHeader : UserControl
     /// <summary>
     /// The dependency property of icon URI.
     /// </summary>
-    public static readonly DependencyProperty IconUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(IconUri));
+    public static readonly DependencyProperty IconUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(IconUri), OnIconChanged);
+
+    /// <summary>
+    /// The dependency property of icon stretch.
+    /// </summary>
+    public static readonly DependencyProperty IconStretchProperty = DependencyObjectProxy.RegisterProperty<Stretch>(nameof(IconStretch));
 
     /// <summary>
     /// The dependency property of icon width.
@@ -72,6 +78,11 @@ public sealed partial class BlockHeader : UserControl
     /// The dependency property of icon margin.
     /// </summary>
     public static readonly DependencyProperty IconMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(IconMargin));
+
+    /// <summary>
+    /// The dependency property of icon corner radius.
+    /// </summary>
+    public static readonly DependencyProperty IconCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(IconCornerRadius));
 
     /// <summary>
     /// Initializes a new instance of the BlockHeader class.
@@ -145,6 +156,15 @@ public sealed partial class BlockHeader : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the stretch of icon.
+    /// </summary>
+    public Stretch IconStretch
+    {
+        get => (Stretch)GetValue(IconStretchProperty);
+        set => SetValue(IconStretchProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the width of icon.
     /// </summary>
     public double IconWidth
@@ -169,6 +189,15 @@ public sealed partial class BlockHeader : UserControl
     {
         get => (Thickness)GetValue(IconMarginProperty);
         set => SetValue(IconMarginProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the corner radius of icon.
+    /// </summary>
+    public CornerRadius IconCornerRadius
+    {
+        get => (CornerRadius)GetValue(IconCornerRadiusProperty);
+        set => SetValue(IconCornerRadiusProperty, value);
     }
 
     /// <summary>
@@ -211,4 +240,9 @@ public sealed partial class BlockHeader : UserControl
     /// Gets the children of right panel.
     /// </summary>
     public UIElementCollection RightChildren => RightPanel.Children;
+
+    private static void OnIconChanged(BlockHeader c, ChangeEventArgs<Uri> e, DependencyProperty p)
+    {
+        c.IconPanel.Visibility = e.NewValue != null ? Visibility.Collapsed : Visibility.Visible;
+    }
 }

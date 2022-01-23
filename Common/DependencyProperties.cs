@@ -275,4 +275,46 @@ public static class VisualUtilities
         button.Click += h;
         return h;
     }
+
+    /// <summary>
+    /// Attempts to place the app in full-screen mode or takes the app out of full-screen mode.
+    /// </summary>
+    /// <returns>true if the app is placed in full-screen mode; otherwise, false.</returns>
+    public static bool SetFullScreenMode(bool fullScreen)
+    {
+        try
+        {
+            var view = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
+            if (view == null) return false;
+            if (fullScreen)
+                return view.TryEnterFullScreenMode();
+            view.ExitFullScreenMode();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (System.IO.IOException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+
+        return false;
+    }
 }

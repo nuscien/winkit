@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
@@ -138,6 +139,11 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty TitleHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(TitleHeight));
 
     /// <summary>
+    /// The dependency property of title max height.
+    /// </summary>
+    public static readonly DependencyProperty TitleMaxHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleMaxHeight), double.PositiveInfinity);
+
+    /// <summary>
     /// The dependency property of title horizontal alignment property.
     /// </summary>
     public static readonly DependencyProperty TitleHorizontalAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleHorizontalAlignment), HorizontalAlignment.Stretch);
@@ -151,6 +157,11 @@ public sealed partial class TileItem : UserControl
     /// The dependency property of title trimming.
     /// </summary>
     public static readonly DependencyProperty TitleTrimmingProperty = DependencyObjectProxy.RegisterProperty<TextTrimming>(nameof(TitleTrimming));
+
+    /// <summary>
+    /// The dependency property of title connected animation key property.
+    /// </summary>
+    public static readonly DependencyProperty TitleConnectedAnimationKeyProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(TitleConnectedAnimationKey));
 
     /// <summary>
     /// The dependency property of description.
@@ -251,6 +262,11 @@ public sealed partial class TileItem : UserControl
     /// The dependency property of image horizontal alignment property.
     /// </summary>
     public static readonly DependencyProperty ImageHorizontalAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(ImageHorizontalAlignment), HorizontalAlignment.Stretch);
+
+    /// <summary>
+    /// The dependency property of image connected animation key property.
+    /// </summary>
+    public static readonly DependencyProperty ImageConnectedAnimationKeyProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(ImageConnectedAnimationKey));
 
     private Uri imageUri;
 
@@ -484,6 +500,15 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the max height of title.
+    /// </summary>
+    public double TitleMaxHeight
+    {
+        get => (double)GetValue(TitleMaxHeightProperty);
+        set => SetValue(TitleMaxHeightProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the horizontal alignment of title.
     /// </summary>
     public HorizontalAlignment TitleHorizontalAlignment
@@ -508,6 +533,15 @@ public sealed partial class TileItem : UserControl
     {
         get => (TextTrimming)GetValue(TitleTrimmingProperty);
         set => SetValue(TitleTrimmingProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the title connected animation key.
+    /// </summary>
+    public string TitleConnectedAnimationKey
+    {
+        get => (string)GetValue(TitleConnectedAnimationKeyProperty);
+        set => SetValue(TitleConnectedAnimationKeyProperty, value);
     }
 
     /// <summary>
@@ -682,6 +716,15 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the image connected animation key.
+    /// </summary>
+    public string ImageConnectedAnimationKey
+    {
+        get => (string)GetValue(ImageConnectedAnimationKeyProperty);
+        set => SetValue(ImageConnectedAnimationKeyProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the horizontal alignment of image.
     /// </summary>
     public HorizontalAlignment ImageHorizontalAlignment
@@ -762,7 +805,11 @@ public sealed partial class TileItem : UserControl
         => ImageUri = imageUri;
 
     private void Button_Click(object sender, RoutedEventArgs e)
-        => Click?.Invoke(this, e);
+    {
+        Click?.Invoke(this, e);
+        if (!string.IsNullOrWhiteSpace(TitleConnectedAnimationKey)) ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(TitleConnectedAnimationKey, TitleText);
+        if (!string.IsNullOrWhiteSpace(ImageConnectedAnimationKey)) ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(ImageConnectedAnimationKey, ImageControl);
+    }
 
     private static void OnTextChanged(TileItem c, ChangeEventArgs<string> e, DependencyProperty p)
     {
@@ -774,4 +821,19 @@ public sealed partial class TileItem : UserControl
     {
         c.imageUri = null;
     }
+
+    /// <summary>
+    /// Creates a tile item.
+    /// </summary>
+    /// <param name="title">The title.</param>
+    /// <param name="image">The image URI.</param>
+    /// <param name="description">The description.</param>
+    /// <returns>A tile item.</returns>
+    public static TileItem Create(string title, Uri image, string description)
+        => new()
+        {
+            Title = title,
+            ImageUri = image,
+            Description = description
+        };
 }

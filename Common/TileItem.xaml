@@ -103,7 +103,7 @@
         <StackPanel Orientation="{x:Bind Orientation}" >
             <Border x:Name="Top" ></Border>
             <Grid CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" HorizontalAlignment="{x:Bind ImageHorizontalAlignment}" >
-                <Image Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Image x:Name="ImageControl" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ImageUri}" />
                     </Image.Source>
@@ -113,7 +113,7 @@
             <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" BackgroundSizing="{x:Bind TextBackgroundSizing}" Padding="{x:Bind TextPadding}" Margin="{x:Bind TextMargin}" >
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Border x:Name="BeforeText" HorizontalAlignment="Stretch" ></Border>
-                    <TextBlock x:Name="TitleText" Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" Foreground="{x:Bind TitleForeground}" HorizontalAlignment="{x:Bind TitleHorizontalAlignment}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+                    <TextBlock x:Name="TitleText" Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" MaxHeight="{x:Bind TitleMaxHeight}" Foreground="{x:Bind TitleForeground}" HorizontalAlignment="{x:Bind TitleHorizontalAlignment}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
                     <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Foreground="{x:Bind DescriptionForeground}" HorizontalAlignment="{x:Bind DescriptionHorizontalAlignment}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind DescriptionWrapping}" TextTrimming="{x:Bind DescriptionTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
                     <Border x:Name="AfterText" HorizontalAlignment="Stretch" ></Border>
                 </StackPanel>

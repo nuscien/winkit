@@ -67,11 +67,6 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty HoverForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverForeground));
 
     /// <summary>
-    /// The dependency property of pressed foreground.
-    /// </summary>
-    public static readonly DependencyProperty PressedForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(PressedForeground));
-
-    /// <summary>
     /// The dependency property of disabled foreground.
     /// </summary>
     public static readonly DependencyProperty DisabledForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DisabledForeground));
@@ -79,7 +74,7 @@ public sealed partial class TextButton : UserControl
     /// <summary>
     /// The dependency property of base background.
     /// </summary>
-    public static readonly DependencyProperty BaseBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(BaseBackground));
+    public static readonly DependencyProperty NormalBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(NormalBackground));
 
     /// <summary>
     /// The dependency property of hover background.
@@ -87,19 +82,14 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty HoverBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverBackground));
 
     /// <summary>
-    /// The dependency property of pressed background.
-    /// </summary>
-    public static readonly DependencyProperty PressedBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(PressedBackground));
-
-    /// <summary>
-    /// The dependency property of pressed background.
+    /// The dependency property of disabled background.
     /// </summary>
     public static readonly DependencyProperty DisabledBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DisabledBackground));
 
     /// <summary>
-    /// The dependency property of hover cover background.
+    /// The dependency property of normal border brush.
     /// </summary>
-    public static readonly DependencyProperty HoverCoverBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverCoverBackground));
+    public static readonly DependencyProperty NormalBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(NormalBorderBrush));
 
     /// <summary>
     /// The dependency property of hover border brush.
@@ -107,14 +97,14 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty HoverBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverBorderBrush));
 
     /// <summary>
-    /// The dependency property of pressed border brush.
-    /// </summary>
-    public static readonly DependencyProperty PressedBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(PressedBorderBrush));
-
-    /// <summary>
-    /// The dependency property of pressed border brush.
+    /// The dependency property of disabled border brush.
     /// </summary>
     public static readonly DependencyProperty DisabledBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DisabledBorderBrush));
+
+    /// <summary>
+    /// The dependency property of normal border thickness.
+    /// </summary>
+    public static readonly DependencyProperty NormalBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(NormalBorderThickness));
 
     /// <summary>
     /// The dependency property of hover border thickness.
@@ -122,12 +112,7 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty HoverBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HoverBorderThickness));
 
     /// <summary>
-    /// The dependency property of pressed border thickness.
-    /// </summary>
-    public static readonly DependencyProperty PressedBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(PressedBorderThickness));
-
-    /// <summary>
-    /// The dependency property of pressed border thickness.
+    /// The dependency property of disabled border thickness.
     /// </summary>
     public static readonly DependencyProperty DisabledBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(DisabledBorderThickness));
 
@@ -289,15 +274,6 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the pressed foreground.
-    /// </summary>
-    public Brush PressedForeground
-    {
-        get => (Brush)GetValue(PressedForegroundProperty);
-        set => SetValue(PressedForegroundProperty, value);
-    }
-
-    /// <summary>
     /// Gets or sets the disabled foreground.
     /// </summary>
     public Brush DisabledForeground
@@ -307,12 +283,12 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the hover cover background.
+    /// Gets or sets the normal background.
     /// </summary>
-    public Brush BaseBackground
+    public Brush NormalBackground
     {
-        get => (Brush)GetValue(BaseBackgroundProperty);
-        set => SetValue(BaseBackgroundProperty, value);
+        get => (Brush)GetValue(NormalBackgroundProperty);
+        set => SetValue(NormalBackgroundProperty, value);
     }
 
     /// <summary>
@@ -325,15 +301,6 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the pressed background.
-    /// </summary>
-    public Brush PressedBackground
-    {
-        get => (Brush)GetValue(PressedBackgroundProperty);
-        set => SetValue(PressedBackgroundProperty, value);
-    }
-
-    /// <summary>
     /// Gets or sets the disabled background.
     /// </summary>
     public Brush DisabledBackground
@@ -343,12 +310,12 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the hover cover background.
+    /// Gets or sets the normal border brush.
     /// </summary>
-    public Brush HoverCoverBackground
+    public Brush NormalBorderBrush
     {
-        get => (Brush)GetValue(HoverCoverBackgroundProperty);
-        set => SetValue(HoverCoverBackgroundProperty, value);
+        get => (Brush)GetValue(NormalBorderBrushProperty);
+        set => SetValue(NormalBorderBrushProperty, value);
     }
 
     /// <summary>
@@ -361,15 +328,6 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the pressed border brush.
-    /// </summary>
-    public Brush PressedBorderBrush
-    {
-        get => (Brush)GetValue(PressedBorderBrushProperty);
-        set => SetValue(PressedBorderBrushProperty, value);
-    }
-
-    /// <summary>
     /// Gets or sets the disabled border brush.
     /// </summary>
     public Brush DisabledBorderBrush
@@ -378,6 +336,14 @@ public sealed partial class TextButton : UserControl
         set => SetValue(DisabledBorderBrushProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the normal border thickness.
+    /// </summary>
+    public Thickness NormalBorderThickness
+    {
+        get => (Thickness)GetValue(NormalBorderThicknessProperty);
+        set => SetValue(NormalBorderThicknessProperty, value);
+    }
 
     /// <summary>
     /// Gets or sets the hover border thickness.
@@ -386,15 +352,6 @@ public sealed partial class TextButton : UserControl
     {
         get => (Thickness)GetValue(HoverBorderThicknessProperty);
         set => SetValue(HoverBorderThicknessProperty, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the pressed border thickness.
-    /// </summary>
-    public Thickness PressedBorderThickness
-    {
-        get => (Thickness)GetValue(PressedBorderThicknessProperty);
-        set => SetValue(PressedBorderThicknessProperty, value);
     }
 
     /// <summary>
@@ -452,6 +409,24 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the child in normal state.
+    /// </summary>
+    public UIElement NormalChild
+    {
+        get => NormalPanel.Child;
+        set => NormalPanel.Child = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the child in hover state.
+    /// </summary>
+    public UIElement HoverChild
+    {
+        get => HoverPanel.Child;
+        set => HoverPanel.Child = value;
+    }
+
+    /// <summary>
     /// Registers a click event handler.
     /// </summary>
     /// <param name="click">The click event handler.</param>
@@ -471,10 +446,18 @@ public sealed partial class TextButton : UserControl
         {
             action(sender, ev);
         }
-
+        
         Click += h;
         return h;
     }
+
+    /// <summary>
+    /// Transitions a control between two states, by requesting a new VisualState by name.
+    /// </summary>
+    /// <param name="name">The state to transition to.</param>
+    /// <returns>true if the control successfully transitions to the new state, or was already using that state; otherwise, false.</returns>
+    public bool GoToButtonState(string name)
+        => VisualStateManager.GoToState(OwnerButton, name, true);
 
     private void Button_Click(object sender, RoutedEventArgs e)
         => Click?.Invoke(this, e);
@@ -482,5 +465,17 @@ public sealed partial class TextButton : UserControl
     private static void OnImageUriChanged(TextButton c, ChangeEventArgs<ImageSource> e, DependencyProperty p)
     {
         c.ImagePanel.Visibility = e.NewValue == null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void OwnerButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        NormalPanel.Visibility = Visibility.Collapsed;
+        HoverPanel.Visibility = Visibility.Visible;
+    }
+
+    private void OwnerButton_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        NormalPanel.Visibility = Visibility.Visible;
+        HoverPanel.Visibility = Visibility.Collapsed;
     }
 }

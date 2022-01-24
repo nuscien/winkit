@@ -802,7 +802,9 @@ public sealed partial class TileItem : UserControl
     /// Uses prepare image URI if available.
     /// </summary>
     public void UseImageUriPrepared()
-        => ImageUri = imageUri;
+    {
+        if (imageUri != null) ImageUri = imageUri;
+    }
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {

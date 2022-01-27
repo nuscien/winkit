@@ -389,12 +389,28 @@ public class JsonWebCacheClient
             }
             else if (container != null && container.Values.TryGetValue(cacheKey, out var settings) && settings is string s)
             {
+                DateTime date = DateTime.Now;
+                if (s.StartsWith("//"))
+                {
+                    var end = s.IndexOfAny(new[] { '\n', '\r', '\t', ' ' });
+                    if (end > 0)
+                    {
+                        date = Web.WebFormat.ParseDate(s[2..end].Trim()) ?? DateTime.Now;
+                    }
+
+                    s = s[(s.IndexOf('\n') + 1)..];
+                }
+
                 var json = JsonObjectNode.TryParse(s);
                 if (json != null)
                 {
-                    Cache[cacheKey] = json;
-                    callback?.Invoke(json, WebApiResultSourceTypes.Cache);
-                    if (uri == null) return info;
+                    var expiration = Cache.Expiration; 
+                    if (!expiration.HasValue || DateTime.Now - date < expiration.Value)
+                    {
+                        Cache[cacheKey] = json;
+                        callback?.Invoke(json, WebApiResultSourceTypes.Cache);
+                        if (uri == null) return info;
+                    }
                 }
             }
         }
@@ -477,7 +493,45 @@ public class JsonWebCacheClient
         }
 
         var container = DataContainer;
-        if (container != null) container.Values[options.CacheKey] = result?.ToString() ?? JsonValues.Null.ToString();
+        if (container != null)
+        {
+            var s = result?.ToString() ?? JsonValues.Null.ToString();
+            try
+            {
+                container.Values[options.CacheKey] = string.Concat("//", Web.WebFormat.ParseDate(DateTime.Now).ToString("g"), "\r\n", s);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (AggregateException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (NotImplementedException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (SecurityException)
+            {
+            }
+            catch (System.IO.IOException)
+            {
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+            }
+        }
+
         callback?.Invoke(result, WebApiResultSourceTypes.Online);
     }
 }
@@ -562,5 +616,5 @@ public class WebApiRequestOptions<T>
     /// </summary>
     /// <param name="data">The result data.</param>
     /// <returns>true if the result data is valid; otherwise, false.</returns>
-    public virtual bool IsValid(T data) => validate == null ? true : validate(data);
+    public virtual bool IsValid(T data) => validate == null || validate(data);
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Text;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -277,18 +278,36 @@ public static class VisualUtilities
     }
 
     /// <summary>
-    /// Attempts to place the app in full-screen mode or takes the app out of full-screen mode.
+    /// Gets if the app in full-screen mode.
     /// </summary>
-    /// <returns>true if the app is placed in full-screen mode; otherwise, false.</returns>
-    public static bool SetFullScreenMode(bool fullScreen)
+    /// <param name="window">The window to get.</param>
+    /// <returns>The presenter kind applied to the window.</returns>
+    public static AppWindowPresenterKind GetFullScreenMode(Window window = null)
+        => GetAppWindow(window)?.Presenter?.Kind ?? AppWindowPresenterKind.Default;
+
+    /// <summary>
+    /// Attempts to place the app in full-screen mode or others.
+    /// </summary>
+    /// <param name="fullScreen">true if place the app in full-screen mode; otherwise, false.</param>
+    /// <param name="window">The window to set.</param>
+    /// <returns>The presenter kind applied to the window.</returns>
+    public static AppWindowPresenterKind SetFullScreenMode(bool fullScreen, Window window = null)
+        => SetFullScreenMode(fullScreen ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Default, window);
+
+    /// <summary>
+    /// Attempts to place the app in full-screen mode or others.
+    /// </summary>
+    /// <param name="kind">The specified presenter kind to apply to the window.</param>
+    /// <param name="window">The window to set.</param>
+    /// <returns>The presenter kind applied to the window.</returns>
+    public static AppWindowPresenterKind SetFullScreenMode(AppWindowPresenterKind kind, Window window = null)
     {
         try
         {
-            var view = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
-            if (view == null) return false;
-            if (fullScreen)
-                return view.TryEnterFullScreenMode();
-            view.ExitFullScreenMode();
+            var appWin = GetAppWindow(window);
+            if (appWin == null) return AppWindowPresenterKind.Default;
+            appWin.SetPresenter(kind);
+            return appWin.Presenter.Kind;
         }
         catch (InvalidOperationException)
         {
@@ -315,6 +334,48 @@ public static class VisualUtilities
         {
         }
 
-        return false;
+        return AppWindowPresenterKind.Default;
+    }
+
+    private static AppWindow GetAppWindow(Window window)
+    {
+        try
+        {
+            var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window ?? Window.Current);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
+            return AppWindow.GetFromWindowId(windowId);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (System.IO.IOException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+
+        return null;
     }
 }

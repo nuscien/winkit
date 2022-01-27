@@ -42,6 +42,11 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty CommandParameterProperty = DependencyObjectProxy.RegisterProperty<object>(nameof(CommandParameter), (c, e, p) => c.CommandParameter = e.NewValue);
 
     /// <summary>
+    /// The dependency property of additional state property.
+    /// </summary>
+    public static readonly DependencyProperty AdditionalStateProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(AdditionalState));
+
+    /// <summary>
     /// The dependency property of text property.
     /// </summary>
     public static readonly DependencyProperty TextProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Text));
@@ -208,6 +213,15 @@ public sealed partial class TextButton : UserControl
     {
         get => OwnerButton.Template;
         set => OwnerButton.Template = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the additional state.
+    /// </summary>
+    public string AdditionalState
+    {
+        get => (string)GetValue(AdditionalStateProperty);
+        set => SetValue(AdditionalStateProperty, value);
     }
 
     /// <summary>

@@ -102,8 +102,8 @@
         </Button.Resources>
         <StackPanel Orientation="{x:Bind Orientation}" >
             <Border x:Name="Top" ></Border>
-            <Grid CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" HorizontalAlignment="{x:Bind ImageHorizontalAlignment}" >
-                <Image x:Name="ImageControl" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+            <Grid x:Name="ImageContainer" CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" HorizontalAlignment="{x:Bind ImageHorizontalAlignment}" >
+                <Image x:Name="ImageControl" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="{x:Bind ImageContainer.ActualWidth}" MinHeight="{x:Bind ImageContainer.ActualHeight}" >
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ImageUri}" />
                     </Image.Source>

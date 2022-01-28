@@ -6,10 +6,14 @@ Includes some complex controls and utilities on WinUI 3.
 
 - `TileItem`
 - `TileCollection`
+- `CommentView`
 - `BlockHeader`
-- `BasicButton`
+- `TextButton`
+- `SettingsExpanderHeader`
 
 ## Utilities
 
 - `DependencyObjectProxy`
 - `VisualUtilities`
+- `BaseJsonPagingLoader`
+- `JsonWebCacheClient`

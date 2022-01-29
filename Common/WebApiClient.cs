@@ -276,10 +276,30 @@ public class JsonWebCacheClient
     /// <summary>
     /// Initializes a new instance of the JsonWebCacheClient class.
     /// </summary>
+    /// <param name="folder">The optional storage folder.</param>
+    public JsonWebCacheClient(StorageFolder folder)
+    {
+        Folder = folder;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the JsonWebCacheClient class.
+    /// </summary>
     /// <param name="client">The web API client.</param>
     public JsonWebCacheClient(OAuthBasedClient client)
     {
         handler = (uri, cancellationToken) => client.Create<JsonObjectNode>().GetAsync(uri, cancellationToken);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the JsonWebCacheClient class.
+    /// </summary>
+    /// <param name="client">The web API client.</param>
+    /// <param name="folder">The optional storage folder.</param>
+    public JsonWebCacheClient(OAuthBasedClient client, StorageFolder folder)
+         : this(client)
+    {
+        Folder = folder;
     }
 
     /// <summary>
@@ -314,6 +334,17 @@ public class JsonWebCacheClient
     }
 
     /// <summary>
+    /// Initializes a new instance of the JsonWebApiClient class.
+    /// </summary>
+    /// <param name="client">The web API client.</param>
+    /// <param name="folder">The optional storage folder.</param>
+    public JsonWebCacheClient(OAuthClient client, StorageFolder folder)
+         : this(client)
+    {
+        Folder = folder;
+    }
+
+    /// <summary>
     /// Gets the data cache.
     /// </summary>
     public DataCacheCollection<JsonObjectNode> Cache { get; } = new();
@@ -322,6 +353,11 @@ public class JsonWebCacheClient
     /// Gets or sets the data container.
     /// </summary>
     public ApplicationDataContainer DataContainer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the storage folder to cache data.
+    /// </summary>
+    public StorageFolder Folder { get; set; }
 
     /// <summary>
     /// Gets the optional expiration.

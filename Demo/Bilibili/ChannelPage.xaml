@@ -1,0 +1,16 @@
+﻿<Page
+    x:Class="Trivial.Demo.Bilibili.ChannelPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.Demo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" >
+
+    <Grid>
+        <WebView2 x:Name="WebViewElement" VerticalAlignment="Bottom" Height="1" Visibility="Collapsed" />
+        <ProgressRing x:Name="LoadingElement" IsActive="True" />
+        <ListView x:Name="MainPanel" SelectionMode="None" Padding="0,8" HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch" ContainerContentChanging="MainPanel_ContainerContentChanging" >
+        </ListView>
+    </Grid>
+</Page>

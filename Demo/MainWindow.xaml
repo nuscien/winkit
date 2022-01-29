@@ -1,0 +1,18 @@
+﻿<Window
+    x:Class="Trivial.Demo.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.Demo"
+    xmlns:controls="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" >
+    <NavigationView SelectionChanged="NavigationView_SelectionChanged" IsSettingsVisible="False" PaneDisplayMode="Top" Background="{StaticResource PageBackground}" >
+        <NavigationView.MenuItems>
+            <NavigationViewItem Tag="home" IsSelected="True" >Home</NavigationViewItem>
+            <NavigationViewItem Tag="nbc" >NBC</NavigationViewItem>
+            <NavigationViewItem Tag="bilibili" >Bilibili</NavigationViewItem>
+        </NavigationView.MenuItems>
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+</Window>

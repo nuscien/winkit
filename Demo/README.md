@@ -7,7 +7,7 @@ This is a WinUI app to show about usage of `Trivial.WindowsKit` library.
 This demo uses following data sources which are not hosted by `Trivial` libraries.
 
 - [NBC TV Network](https://www.nbc.com/)
-- [Bilibili (ßÙÁ¨ßÙÁ¨)](https://www.bilibili.com/)
+- [Bilibili (å“”å“©å“”å“©)](https://www.bilibili.com/)
 
 The trademarks and copyrights are owned or reserved by their owner.
 Their online data services may change without additional notification.

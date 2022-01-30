@@ -12,7 +12,7 @@
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>Trivial.WindowsControls.Demo</DisplayName>
+    <DisplayName>Trivial WindowsKit Demo</DisplayName>
     <PublisherDisplayName>Kingcean</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>

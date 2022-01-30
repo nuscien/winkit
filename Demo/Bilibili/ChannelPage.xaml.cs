@@ -117,7 +117,7 @@ public sealed partial class ChannelPage : Page
     {
         var stream = await streaming;
         LoadingElement.IsActive = false;
-        var reader = new CharsReader(stream.AsStream());
+        using var reader = new CharsReader(stream.AsStream());
         var s = reader.ReadToEnd();
         var json = JsonObjectNode.TryParse(s.Replace(",\"\":", ",\"_\":"));
         if (json == null) return;

@@ -4,11 +4,13 @@ This is a WinUI app to show about usage of `Trivial.WindowsKit` library.
 
 ### Data Source
 
-This demo uses following data sources which are not hosted by `Trivial` libraries.
+This demo uses following 3rd-party data sources.
 
-- [NBC TV Network](https://www.nbc.com/)
-- [Bilibili (哔哩哔哩)](https://www.bilibili.com/)
+| Source | Copyright |
+| -------------------- | -------------------- |
+| [NBC TV Network](https://www.nbc.com/) | ©2022 NBCUniversal Media, LLC |
+| [bilibili (哔哩哔哩)](https://www.bilibili.com/) | 上海宽娱数码科技有限公司 版权所有 |
 
-The trademarks and copyrights are owned or reserved by their owner.
-Their online data services may change without additional notification.
-Some of them are only available in the specific regions.
+Please note that the data sources are NOT parts of this library.
+Their owner reserve all right and may change the data service without notification.
+The demo here to reference these is to show how to develop with this library.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security;
@@ -8,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Trivial.Data;
+using Trivial.IO;
 using Trivial.Net;
 using Trivial.Security;
 using Trivial.Tasks;
@@ -267,15 +269,6 @@ public class JsonWebCacheClient
     /// <summary>
     /// Initializes a new instance of the JsonWebCacheClient class.
     /// </summary>
-    /// <param name="container">The optional application data container.</param>
-    public JsonWebCacheClient(ApplicationDataContainer container)
-    {
-        DataContainer = container;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the JsonWebCacheClient class.
-    /// </summary>
     /// <param name="folder">The optional storage folder.</param>
     public JsonWebCacheClient(StorageFolder folder)
     {
@@ -303,34 +296,12 @@ public class JsonWebCacheClient
     }
 
     /// <summary>
-    /// Initializes a new instance of the JsonWebCacheClient class.
-    /// </summary>
-    /// <param name="client">The web API client.</param>
-    /// <param name="container">The optional application data container.</param>
-    public JsonWebCacheClient(OAuthBasedClient client, ApplicationDataContainer container)
-         : this(client)
-    {
-        DataContainer = container;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the JsonWebApiClient class.
     /// </summary>
     /// <param name="client">The web API client.</param>
     public JsonWebCacheClient(OAuthClient client)
     {
         handler = (uri, cancellationToken) => client.Create<JsonObjectNode>().GetAsync(uri, cancellationToken);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the JsonWebApiClient class.
-    /// </summary>
-    /// <param name="client">The web API client.</param>
-    /// <param name="container">The optional application data container.</param>
-    public JsonWebCacheClient(OAuthClient client, ApplicationDataContainer container)
-         : this(client)
-    {
-        DataContainer = container;
     }
 
     /// <summary>
@@ -348,11 +319,6 @@ public class JsonWebCacheClient
     /// Gets the data cache.
     /// </summary>
     public DataCacheCollection<JsonObjectNode> Cache { get; } = new();
-
-    /// <summary>
-    /// Gets or sets the data container.
-    /// </summary>
-    public ApplicationDataContainer DataContainer { get; set; }
 
     /// <summary>
     /// Gets or sets the storage folder to cache data.
@@ -414,7 +380,7 @@ public class JsonWebCacheClient
         var uri = options.Uri;
         if (!string.IsNullOrWhiteSpace(cacheKey))
         {
-            var container = DataContainer;
+            var folder = Folder;
             if (Cache.TryGetInfo(cacheKey, out var data) && !data.IsExpired(options.CacheTimeout))
             {
                 var result = data.Value;
@@ -423,31 +389,9 @@ public class JsonWebCacheClient
                 if (uri == null) return info;
                 if (!data.IsExpired(options.LimitationDuration)) return info;
             }
-            else if (container != null && container.Values.TryGetValue(cacheKey, out var settings) && settings is string s)
+            else
             {
-                DateTime date = DateTime.Now;
-                if (s.StartsWith("//"))
-                {
-                    var end = s.IndexOfAny(new[] { '\n', '\r', '\t', ' ' });
-                    if (end > 0)
-                    {
-                        date = Web.WebFormat.ParseDate(s[2..end].Trim()) ?? DateTime.Now;
-                    }
-
-                    s = s[(s.IndexOf('\n') + 1)..];
-                }
-
-                var json = JsonObjectNode.TryParse(s);
-                if (json != null)
-                {
-                    var expiration = Cache.Expiration; 
-                    if (!expiration.HasValue || DateTime.Now - date < expiration.Value)
-                    {
-                        Cache[cacheKey] = json;
-                        callback?.Invoke(json, WebApiResultSourceTypes.Cache);
-                        if (uri == null) return info;
-                    }
-                }
+                _ = LoadCache(cacheKey, callback, cancellationToken);
             }
         }
 
@@ -528,13 +472,15 @@ public class JsonWebCacheClient
             return;
         }
 
-        var container = DataContainer;
-        if (container != null)
+        callback?.Invoke(result, WebApiResultSourceTypes.Online);
+        var folder = Folder;
+        if (folder != null)
         {
-            var s = result?.ToString() ?? JsonValues.Null.ToString();
+            var s = string.Concat("//", Web.WebFormat.ParseDate(DateTime.Now).ToString("g"), "\r\n", result?.ToString() ?? JsonValues.Null.ToString());
             try
             {
-                container.Values[options.CacheKey] = string.Concat("//", Web.WebFormat.ParseDate(DateTime.Now).ToString("g"), "\r\n", s);
+                var file = await folder.CreateFileAsync(GetFileName(options.CacheKey), CreationCollisionOption.ReplaceExisting);
+                await FileIO.WriteTextAsync(file, s);
             }
             catch (InvalidOperationException)
             {
@@ -560,16 +506,80 @@ public class JsonWebCacheClient
             catch (SecurityException)
             {
             }
-            catch (System.IO.IOException)
+            catch (IOException)
             {
             }
             catch (System.Runtime.InteropServices.ExternalException)
             {
             }
         }
-
-        callback?.Invoke(result, WebApiResultSourceTypes.Online);
     }
+
+    private async Task<JsonObjectNode> LoadCache(string cacheKey, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(cacheKey)) return null;
+        var fileName = GetFileName(cacheKey);
+        var folder = Folder;
+        if (folder == null) return null;
+        var file = await folder.GetFileAsync(fileName);
+        if (file == null) return null;
+        string s = null;
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            s = await FileIO.ReadTextAsync(file);
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+        }
+
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        cancellationToken.ThrowIfCancellationRequested();
+        DateTime date = DateTime.Now;
+        if (s.StartsWith("//"))
+        {
+            var end = s.IndexOfAny(new[] { '\n', '\r', '\t', ' ' });
+            if (end > 0)
+            {
+                date = Web.WebFormat.ParseDate(s[2..end].Trim()) ?? DateTime.Now;
+            }
+
+            s = s[(s.IndexOf('\n') + 1)..];
+        }
+
+        var json = JsonObjectNode.TryParse(s);
+        if (json == null) return null;
+        var expiration = Cache.Expiration;
+        if (expiration.HasValue && DateTime.Now - date > expiration.Value) return null;
+        if (Cache.Contains(cacheKey)) return json;
+        Cache.Add(new DataCacheItemInfo<JsonObjectNode>(cacheKey, json, date));
+        callback?.Invoke(json, WebApiResultSourceTypes.Cache);
+        return json;
+    }
+
+    private static string GetFileName(string cacheKey)
+        => string.Concat(cacheKey, ".cache.json");
 }
 
 /// <summary>

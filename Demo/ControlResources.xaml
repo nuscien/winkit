@@ -11,22 +11,22 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="TextHeight" Value="48" />
         <Setter Property="TextMargin" Value="4,2" />
-        <Setter Property="ImageWidth" Value="250" />
-        <Setter Property="ImageHeight" Value="140" />
+        <Setter Property="ImageWidth" Value="240" />
+        <Setter Property="ImageHeight" Value="135" />
         <Setter Property="ImageBackground" Value="{StaticResource ImageBackground}" />
         <Setter Property="ImageCornerRadius" Value="4" />
         <Setter Property="ImageMargin" Value="4,2" />
         <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="TitleFontSize" Value="14" />
+        <Setter Property="TitleFontSize" Value="{StaticResource TitleFontSize}" />
         <Setter Property="TitleForeground" Value="{StaticResource TitleForeground}" />
-        <Setter Property="TitleWidth" Value="250" />
+        <Setter Property="TitleWidth" Value="240" />
         <Setter Property="TitleMaxHeight" Value="48" />
         <Setter Property="TitleLineHeight" Value="24" />
         <Setter Property="TitleTrimming" Value="CharacterEllipsis" />
         <Setter Property="TitleWrapping" Value="Wrap" />
         <Setter Property="DescriptionFontSize" Value="{StaticResource CommonFontSize}" />
         <Setter Property="DescriptionForeground" Value="{StaticResource DescriptionForeground}" />
-        <Setter Property="DescriptionWidth" Value="250" />
+        <Setter Property="DescriptionWidth" Value="240" />
         <Setter Property="DescriptionLineHeight" Value="24" />
         <Setter Property="DescriptionTrimming" Value="CharacterEllipsis" />
         <Setter Property="DescriptionWrapping" Value="NoWrap" />

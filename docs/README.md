@@ -36,7 +36,7 @@ The GitHub repository includes a [demo project](https://github.com/nuscien/winki
 | [bilibili (哔哩哔哩)](https://www.bilibili.com/) | 上海宽娱数码科技有限公司 版权所有 |
 
 Please note that the data sources are NOT parts of this library.
-Their owner reserve all right and may change the data service without notification.
+Their owners reserve all rights and may change the data services without notification.
 The demo here to reference these is to show how to develop with this library.
 
 You can also check the screenshots of iQIYI Windows app (爱奇艺·悦享品质) in the [demo images folder](https://github.com/nuscien/winkit/tree/main/docs/demo/images).

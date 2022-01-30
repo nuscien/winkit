@@ -12,5 +12,5 @@ This demo uses following 3rd-party data sources.
 | [bilibili (哔哩哔哩)](https://www.bilibili.com/) | 上海宽娱数码科技有限公司 版权所有 |
 
 Please note that the data sources are NOT parts of this library.
-Their owner reserve all right and may change the data service without notification.
+Their owners reserve all rights and may change the data services without notification.
 The demo here to reference these is to show how to develop with this library.

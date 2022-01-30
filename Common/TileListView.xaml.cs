@@ -493,6 +493,27 @@ public sealed partial class TileListView : UserControl
     /// <summary>
     /// Adds a new tile item.
     /// </summary>
+    /// <param name="model">The model.</param>
+    /// <param name="click">The event handler on item click.</param>
+    /// <returns>The tile item created to add.</returns>
+    public TileItem AddItem(BaseItemModel model, RoutedEventHandler click = null)
+    {
+        var item = model == null ? new TileItem() : new TileItem
+        {
+            Title = model.Name,
+            ImageUri = model.ImageUri,
+            Description = model.Description,
+            DataContext = model
+        };
+        if (click != null) item.Click += click;
+        item.Style = ItemStyle;
+        ListPanel.Items.Add(item);
+        return item;
+    }
+
+    /// <summary>
+    /// Adds a new tile item.
+    /// </summary>
     /// <param name="title">The title.</param>
     /// <param name="image">The image URI.</param>
     /// <param name="description">The description</param>
@@ -504,7 +525,13 @@ public sealed partial class TileListView : UserControl
         {
             Title = title,
             ImageUri = image,
-            Description = description
+            Description = description,
+            DataContext = new BaseItemModel
+            {
+                Name = title,
+                ImageUri = image,
+                Description = description
+            }
         };
         if (click != null) item.Click += click;
         item.Style = ItemStyle;
@@ -526,7 +553,13 @@ public sealed partial class TileListView : UserControl
         var item = new TileItem
         {
             Title = title,
-            Description = description
+            Description = description,
+            DataContext = new BaseItemModel
+            {
+                Name = title,
+                ImageUri = image,
+                Description = description
+            }
         };
         if (click != null) item.Click += click;
         item.Style = ItemStyle;

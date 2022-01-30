@@ -3,6 +3,7 @@
 [![NuGet package](https://img.shields.io/nuget/dt/Trivial.WindowsKit?label=nuget+downloads)](https://www.nuget.org/packages/Trivial.WindowsKit)
 [![GitHub Repository](./assets/badge_GitHub-Repo.svg)](https://github.com/nuscien/winkit)
 [![MIT licensed](./assets/badge_lisence_MIT.svg)](https://github.com/nuscien/winkit/blob/master/LICENSE)
+![.NET 6 - Windows 10](./assets/badge_NET_6_Win10.svg)
 
 Includes some complex controls and utilities on WinUI 3.
 It is useful to create the client with collection pages of news, videos and products.

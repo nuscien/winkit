@@ -18,6 +18,7 @@ using Trivial.Data;
 using Trivial.Text;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Text;
 
 namespace Trivial.UI;
@@ -126,7 +127,7 @@ public sealed partial class TileItem : UserControl
     /// <summary>
     /// The dependency property of title foreground.
     /// </summary>
-    public static readonly DependencyProperty TitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TitleForeground));
+    public static readonly DependencyProperty TitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TitleForeground), new SolidColorBrush(Microsoft.UI.Colors.Gray));
 
     /// <summary>
     /// The dependency property of title width.
@@ -191,7 +192,7 @@ public sealed partial class TileItem : UserControl
     /// <summary>
     /// The dependency property of description foreground.
     /// </summary>
-    public static readonly DependencyProperty DescriptionForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DescriptionForeground));
+    public static readonly DependencyProperty DescriptionForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DescriptionForeground), new SolidColorBrush(Microsoft.UI.Colors.Gray));
 
     /// <summary>
     /// The dependency property of description width.

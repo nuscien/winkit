@@ -45,7 +45,7 @@ public abstract class BaseJsonPagingLoader
 {
     private readonly SemaphoreSlim slim = new(1, 1);
     private readonly Dictionary<int, JsonObjectNode> cache = new();
-    private bool disableAutoRaise = false;
+    private readonly bool disableAutoRaise = false;
 
     /// <summary>
     /// Initializes a new instance of the BasePagingJsonLoader class.
@@ -157,16 +157,27 @@ public abstract class BaseJsonPagingLoader
         if (cache.TryGetValue(page, out var result) && result != null) return result;
         try
         {
-            result = await GetPageDataAsync(page, cancellationToken);
+            try
+            {
+                result = await GetPageDataAsync(page, cancellationToken);
+            }
+            catch (FailedHttpException ex)
+            {
+                NetworkAccessFailed?.Invoke(this, new(ex));
+            }
+            catch (Exception ex)
+            {
+                if (ex?.InnerException != null && ex.InnerException is FailedHttpException httpEx)
+                    NetworkAccessFailed?.Invoke(this, new(httpEx));
+                else
+                    throw;
+            }
+
             if (result == null) return null;
             if (!disableAutoRaise) DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online));
             cache[page] = result;
             PageIndex = page;
             return result;
-        }
-        catch (FailedHttpException ex)
-        {
-            NetworkAccessFailed?.Invoke(this, new(ex));
         }
         finally
         {
@@ -181,7 +192,5 @@ public abstract class BaseJsonPagingLoader
             {
             }
         }
-
-        return null;
     }
 }

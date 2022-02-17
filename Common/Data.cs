@@ -179,5 +179,10 @@ namespace Trivial.Data
             get => GetCurrentProperty<BasicMenuItemInfo<T>>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Gets or sets the additional tag.
+        /// </summary>
+        public object Tag { get; set; }
     }
 }

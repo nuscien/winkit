@@ -98,4 +98,86 @@ namespace Trivial.Data
         public Uri SetImage(JsonObjectNode json, string propertyKey)
             => SetImage(json?.TryGetStringValue(propertyKey));
     }
+
+    /// <summary>
+    /// The menu item header information.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    public class BasicMenuItemInfo<T> : NameValueObservableProperties<T>
+    {
+        /// <summary>
+        /// Initializes a new instance of the BasicMenuItemInfo class.
+        /// </summary>
+        public BasicMenuItemInfo()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the BasicMenuItemInfo class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BasicMenuItemInfo(string name)
+        {
+            Name = name;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the BasicMenuItemInfo class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        public BasicMenuItemInfo(string name, T value) : this(name)
+        {
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the BasicMenuItemInfo class.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="icon">The icon URI.</param>
+        public BasicMenuItemInfo(string id, string name, T value, Uri icon = null) : this(name, value)
+        {
+            Id = id;
+            Icon = icon;
+        }
+
+        /// <summary>
+        /// Gets or sets the additional identifier.
+        /// </summary>
+        public string Id
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        public string Description
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the icon URI.
+        /// </summary>
+        public Uri Icon
+        {
+            get => GetCurrentProperty<Uri>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the header.
+        /// </summary>
+        public BasicMenuItemInfo<T> Group
+        {
+            get => GetCurrentProperty<BasicMenuItemInfo<T>>();
+            set => SetCurrentProperty(value);
+        }
+    }
 }

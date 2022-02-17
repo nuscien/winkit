@@ -123,6 +123,12 @@ public abstract class BaseJsonPagingLoader
         => LoadPageAsync(PageIndex + 1, cancellationToken);
 
     /// <summary>
+    /// Resets page index.
+    /// </summary>
+    public void ResetPageIndex()
+        => PageIndex = 1;
+
+    /// <summary>
     /// Clears cache.
     /// </summary>
     public void ClearCache()
@@ -143,20 +149,20 @@ public abstract class BaseJsonPagingLoader
         if (slim.CurrentCount < 0) return null;
         try
         {
-            await slim.WaitAsync(cancellationToken);
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-        catch (NullReferenceException)
-        {
-            return null;
-        }
+            try
+            {
+                await slim.WaitAsync(cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+            catch (NullReferenceException)
+            {
+                return null;
+            }
 
-        if (cache.TryGetValue(page, out var result) && result != null) return result;
-        try
-        {
+            if (cache.TryGetValue(page, out var result) && result != null) return result;
             try
             {
                 result = await GetPageDataAsync(page, cancellationToken);

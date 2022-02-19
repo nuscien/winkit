@@ -125,6 +125,11 @@ public sealed partial class TileListView : UserControl
     public static readonly DependencyProperty TitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TitleForeground), (c, e, p) => c.TitleForeground = e.NewValue);
 
     /// <summary>
+    /// The dependency property of icon stretch.
+    /// </summary>
+    public static readonly DependencyProperty IconStretchProperty = DependencyObjectProxy.RegisterProperty<Stretch>(nameof(IconStretch), (c, e, p) => c.IconStretch = e.NewValue);
+
+    /// <summary>
     /// The dependency property of icon URI.
     /// </summary>
     public static readonly DependencyProperty IconUriProperty = DependencyObjectProxy.RegisterProperty<Uri>(nameof(IconUri), (c, e, p) => c.IconUri = e.NewValue);
@@ -143,6 +148,11 @@ public sealed partial class TileListView : UserControl
     /// The dependency property of icon margin.
     /// </summary>
     public static readonly DependencyProperty IconMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(IconMargin), (c, e, p) => c.IconMargin = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of icon corner radius.
+    /// </summary>
+    public static readonly DependencyProperty IconCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(IconCornerRadius), (c, e, p) => c.IconCornerRadius = e.NewValue);
 
     /// <summary>
     /// The dependency property of the item space in list.
@@ -361,6 +371,15 @@ public sealed partial class TileListView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the stretch of icon.
+    /// </summary>
+    public Stretch IconStretch
+    {
+        get => HeaderElement.IconStretch;
+        set => HeaderElement.IconStretch = value;
+    }
+
+    /// <summary>
     /// Gets or sets the width of icon.
     /// </summary>
     public double IconWidth
@@ -394,6 +413,15 @@ public sealed partial class TileListView : UserControl
     {
         get => HeaderElement.IconMargin;
         set => HeaderElement.IconMargin = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the corner radius of icon.
+    /// </summary>
+    public CornerRadius IconCornerRadius
+    {
+        get => HeaderElement.IconCornerRadius;
+        set => HeaderElement.IconCornerRadius = value;
     }
 
     /// <summary>

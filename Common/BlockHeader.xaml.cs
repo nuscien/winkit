@@ -23,7 +23,6 @@ using DependencyObjectProxy = DependencyObjectProxy<BlockHeader>;
 /// </summary>
 public sealed partial class BlockHeader : UserControl
 {
-
     /// <summary>
     /// The dependency property of title.
     /// </summary>
@@ -243,6 +242,6 @@ public sealed partial class BlockHeader : UserControl
 
     private static void OnIconChanged(BlockHeader c, ChangeEventArgs<Uri> e, DependencyProperty p)
     {
-        c.IconPanel.Visibility = e.NewValue != null ? Visibility.Collapsed : Visibility.Visible;
+        c.IconPanel.Visibility = e.NewValue == null ? Visibility.Collapsed : Visibility.Visible;
     }
 }

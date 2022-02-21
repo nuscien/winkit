@@ -153,28 +153,6 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
         => RegisterProperty(name, callback, defaultValue ?? FontWeights.Normal);
 
     /// <summary>
-    /// Occurs on animated button pointer entered.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The event arguments.</param>
-    public static void AnimatedButtonPointerEntered(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
-        AnimatedIcon.SetState(icon, "PointerOver");
-    }
-
-    /// <summary>
-    /// Occurs on animated button pointer exitesd.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The event arguments.</param>
-    public static void AnimatedButtonPointerExited(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
-        AnimatedIcon.SetState(icon, "PointerOver");
-    }
-
-    /// <summary>
     /// Finds a visual child of the control type.
     /// </summary>
     /// <param name="obj">The parent control.</param>

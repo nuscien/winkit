@@ -170,6 +170,21 @@ public sealed partial class TextButton : UserControl
     public event RoutedEventHandler Click;
 
     /// <summary>
+    /// Occurs when the text trimmed property value has changed.
+    /// </summary>
+    public event TypedEventHandler<TextButton, IsTextTrimmedChangedEventArgs> IsTextTrimmedChanged;
+
+    /// <summary>
+    /// Occurs when there is an error associated with image retrieval or format.
+    /// </summary>
+    public event ExceptionRoutedEventHandler ImageFailed;
+
+    /// <summary>
+    /// Occurs when the image source is downloaded and decoded with no failure.
+    /// </summary>
+    public event RoutedEventHandler ImageOpened;
+
+    /// <summary>
     /// Gets or sets a value that indicates when the click event occurs, in terms of device behavior.
     /// </summary>
     public ClickMode ClickMode
@@ -492,4 +507,13 @@ public sealed partial class TextButton : UserControl
         NormalPanel.Visibility = Visibility.Visible;
         HoverPanel.Visibility = Visibility.Collapsed;
     }
+
+    private void ImageControl_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        => ImageFailed?.Invoke(this, e);
+
+    private void ImageControl_ImageOpened(object sender, RoutedEventArgs e)
+        => ImageOpened?.Invoke(this, e);
+
+    private void TextBlock_IsTextTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)
+        => IsTextTrimmedChanged?.Invoke(this, args);
 }

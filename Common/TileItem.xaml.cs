@@ -884,6 +884,12 @@ public sealed partial class TileItem : UserControl
     private void DescriptionText_IsTextTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)
         => IsDescriptionTrimmedChanged?.Invoke(this, args);
 
+    private void ImageControl_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        => ImageFailed?.Invoke(this, e);
+
+    private void ImageControl_ImageOpened(object sender, RoutedEventArgs e)
+        => ImageOpened?.Invoke(this, e);
+
     private void Button_Click(object sender, RoutedEventArgs e)
     {
         Click?.Invoke(this, e);
@@ -935,10 +941,4 @@ public sealed partial class TileItem : UserControl
         if (model is BaseActiveItemModel active) item.Click += active.ProcessRouted;
         return item;
     }
-
-    private void ImageControl_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        => ImageFailed?.Invoke(this, e);
-
-    private void ImageControl_ImageOpened(object sender, RoutedEventArgs e)
-        => ImageOpened?.Invoke(this, e);
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Text;
@@ -84,10 +86,22 @@ public static class VisualUtilities
         catch (NotSupportedException)
         {
         }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (IOException)
+        {
+        }
         catch (NullReferenceException)
         {
         }
         catch (AggregateException)
+        {
+        }
+        catch (ApplicationException)
         {
         }
 
@@ -127,7 +141,7 @@ public static class VisualUtilities
     /// <param name="window">The window to get.</param>
     /// <returns>The presenter kind applied to the window.</returns>
     public static AppWindowPresenterKind GetFullScreenMode(Window window = null)
-        => GetAppWindow(window)?.Presenter?.Kind ?? AppWindowPresenterKind.Default;
+        => TryGetAppWindow(window)?.Presenter?.Kind ?? AppWindowPresenterKind.Default;
 
     /// <summary>
     /// Attempts to place the app in full-screen mode or others.
@@ -146,12 +160,32 @@ public static class VisualUtilities
     /// <returns>The presenter kind applied to the window.</returns>
     public static AppWindowPresenterKind SetFullScreenMode(AppWindowPresenterKind kind, Window window = null)
     {
+        var appWin = TryGetAppWindow(window);
+        return SetFullScreenMode(kind, appWin);
+    }
+
+    /// <summary>
+    /// Attempts to place the app in full-screen mode or others.
+    /// </summary>
+    /// <param name="fullScreen">true if place the app in full-screen mode; otherwise, false.</param>
+    /// <param name="window">The window to set.</param>
+    /// <returns>The presenter kind applied to the window.</returns>
+    public static AppWindowPresenterKind SetFullScreenMode(bool fullScreen, AppWindow window = null)
+        => SetFullScreenMode(fullScreen ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Default, window);
+
+    /// <summary>
+    /// Attempts to place the app in full-screen mode or others.
+    /// </summary>
+    /// <param name="kind">The specified presenter kind to apply to the window.</param>
+    /// <param name="window">The window to set.</param>
+    /// <returns>The presenter kind applied to the window.</returns>
+    public static AppWindowPresenterKind SetFullScreenMode(AppWindowPresenterKind kind, AppWindow window = null)
+    {
         try
         {
-            var appWin = GetAppWindow(window);
-            if (appWin == null) return AppWindowPresenterKind.Default;
-            appWin.SetPresenter(kind);
-            return appWin.Presenter.Kind;
+            if (window == null) return AppWindowPresenterKind.Default;
+            window.SetPresenter(kind);
+            return window.Presenter.Kind;
         }
         catch (InvalidOperationException)
         {
@@ -159,7 +193,7 @@ public static class VisualUtilities
         catch (NullReferenceException)
         {
         }
-        catch (System.Runtime.InteropServices.ExternalException)
+        catch (ExternalException)
         {
         }
         catch (NotSupportedException)
@@ -168,20 +202,53 @@ public static class VisualUtilities
         catch (NotImplementedException)
         {
         }
-        catch (System.IO.IOException)
+        catch (IOException)
         {
         }
-        catch (System.Security.SecurityException)
+        catch (SecurityException)
         {
         }
         catch (UnauthorizedAccessException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+        catch (ApplicationException)
         {
         }
 
         return AppWindowPresenterKind.Default;
     }
 
-    private static AppWindow GetAppWindow(Window window)
+    /// <summary>
+    /// Occurs on animated button pointer entered.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments.</param>
+    public static void AnimatedButtonPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
+        AnimatedIcon.SetState(icon, "PointerOver");
+    }
+
+    /// <summary>
+    /// Occurs on animated button pointer exitesd.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments.</param>
+    public static void AnimatedButtonPointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
+        AnimatedIcon.SetState(icon, "PointerOver");
+    }
+
+    /// <summary>
+    /// Gets app window instance of given window.
+    /// </summary>
+    /// <param name="window">The window object.</param>
+    /// <returns>The app window.</returns>
+    public static AppWindow TryGetAppWindow(Window window)
     {
         try
         {
@@ -195,7 +262,7 @@ public static class VisualUtilities
         catch (NullReferenceException)
         {
         }
-        catch (System.Runtime.InteropServices.ExternalException)
+        catch (ExternalException)
         {
         }
         catch (NotSupportedException)
@@ -204,10 +271,10 @@ public static class VisualUtilities
         catch (NotImplementedException)
         {
         }
-        catch (System.IO.IOException)
+        catch (IOException)
         {
         }
-        catch (System.Security.SecurityException)
+        catch (SecurityException)
         {
         }
         catch (UnauthorizedAccessException)
@@ -217,6 +284,12 @@ public static class VisualUtilities
         {
         }
         catch (ArgumentException)
+        {
+        }
+        catch (ApplicationException)
+        {
+        }
+        catch (InvalidCastException)
         {
         }
 

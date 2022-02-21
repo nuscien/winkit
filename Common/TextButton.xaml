@@ -87,9 +87,9 @@
         <Grid>
             <StackPanel Orientation="{x:Bind Orientation}" Spacing="{x:Bind Spacing}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <Border x:Name="ImagePanel" Visibility="Collapsed" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" CornerRadius="{x:Bind ImageCornerRadius}" >
-                    <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" />
+                    <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" />
                 </Border>
-                <TextBlock Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+                <TextBlock Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TextBlock_IsTextTrimmedChanged" />
             </StackPanel>
             <Border x:Name="NormalPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="1" ></Border>
             <Border x:Name="HoverPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="0" ></Border>

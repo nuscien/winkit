@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
-    <StackPanel x:Name="OwnerPanel" Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+    <StackPanel x:DefaultBindMode="OneWay" x:Name="OwnerPanel" Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
         <Border x:Name="Top" ></Border>
         <local:BlockHeader
             x:Name="HeaderElement"

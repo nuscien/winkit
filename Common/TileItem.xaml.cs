@@ -285,6 +285,26 @@ public sealed partial class TileItem : UserControl
     public event RoutedEventHandler Click;
 
     /// <summary>
+    /// Occurs when the title trimmed property value has changed.
+    /// </summary>
+    public event TypedEventHandler<TileItem, IsTextTrimmedChangedEventArgs> IsTitleTrimmedChanged;
+
+    /// <summary>
+    /// Occurs when the description trimmed property value has changed.
+    /// </summary>
+    public event TypedEventHandler<TileItem, IsTextTrimmedChangedEventArgs> IsDescriptionTrimmedChanged;
+
+    /// <summary>
+    /// Occurs when there is an error associated with image retrieval or format.
+    /// </summary>
+    public event ExceptionRoutedEventHandler ImageFailed;
+
+    /// <summary>
+    /// Occurs when the image source is downloaded and decoded with no failure.
+    /// </summary>
+    public event RoutedEventHandler ImageOpened;
+
+    /// <summary>
     /// Gets or sets the button style.
     /// </summary>
     public Style ButtonStyle
@@ -789,6 +809,36 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets the collection of title highlights.
+    /// </summary>
+    public IList<Microsoft.UI.Xaml.Documents.TextHighlighter> TitleHighlighters => TitleText.TextHighlighters;
+
+    /// <summary>
+    /// Gets the collection of description highlights.
+    /// </summary>
+    public IList<Microsoft.UI.Xaml.Documents.TextHighlighter> DescriptionHighlighters => DescriptionText.TextHighlighters;
+
+    /// <summary>
+    /// Gets a value by which each line of title text content is offset from a baseline.
+    /// </summary>
+    public double TitleBaselineOffset => TitleText.BaselineOffset;
+
+    /// <summary>
+    /// Gets a value by which each line of description text content is offset from a baseline.
+    /// </summary>
+    public double DescriptionBaselineOffset => DescriptionText.BaselineOffset;
+
+    /// <summary>
+    /// Gets a value that indicates whether a device pointer is located over this.
+    /// </summary>
+    public bool IsPointerOver => OwnerButton.IsPointerOver;
+
+    /// <summary>
+    /// Gets a value that indicates whether this is currently in a pressed state.
+    /// </summary>
+    public bool IsPressed => OwnerButton.IsPressed;
+
+    /// <summary>
     /// Sets image URI.
     /// </summary>
     /// <param name="uri">The image URI.</param>
@@ -806,6 +856,33 @@ public sealed partial class TileItem : UserControl
     {
         if (imageUri != null) ImageUri = imageUri;
     }
+
+    /// <summary>
+    /// Sets the value of the ToolTipService.ToolTip XAML attached property.
+    /// </summary>
+    /// <param name="value">The value to set for tooltip content.</param>
+    public void SetTitleToolTip(object value)
+        => ToolTipService.SetToolTip(TitleText, value);
+
+    /// <summary>
+    /// Sets the value of the ToolTipService.ToolTip XAML attached property.
+    /// </summary>
+    /// <param name="value">The value to set for tooltip content.</param>
+    public void SetDescriptionToolTip(object value)
+        => ToolTipService.SetToolTip(DescriptionText, value);
+
+    /// <summary>
+    /// Sets the value of the ToolTipService.ToolTip XAML attached property.
+    /// </summary>
+    /// <param name="value">The value to set for tooltip content.</param>
+    public void SetImageToolTip(object value)
+        => ToolTipService.SetToolTip(ImageControl, value);
+
+    private void TitleText_IsTextTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)
+    => IsTitleTrimmedChanged?.Invoke(this, args);
+
+    private void DescriptionText_IsTextTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)
+        => IsDescriptionTrimmedChanged?.Invoke(this, args);
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {
@@ -839,4 +916,29 @@ public sealed partial class TileItem : UserControl
             ImageUri = image,
             Description = description
         };
+
+    /// <summary>
+    /// Creates a tile item.
+    /// </summary>
+    /// <param name="model">The model.</param>
+    /// <returns>A tile item.</returns>
+    public static TileItem Create(BaseItemModel model)
+    {
+        if (model == null) return null;
+        var item = new TileItem
+        {
+            Title = model.Name,
+            ImageUri = model.ImageUri,
+            Description = model.Description,
+            DataContext = model
+        };
+        if (model is BaseActiveItemModel active) item.Click += active.ProcessRouted;
+        return item;
+    }
+
+    private void ImageControl_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        => ImageFailed?.Invoke(this, e);
+
+    private void ImageControl_ImageOpened(object sender, RoutedEventArgs e)
+        => ImageOpened?.Invoke(this, e);
 }

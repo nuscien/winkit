@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Button x:Name="OwnerButton" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Click="Button_Click" PointerEntered="OwnerButton_PointerEntered" PointerExited="OwnerButton_PointerExited" HorizontalContentAlignment="{x:Bind HorizontalContentAlignment}" VerticalContentAlignment="{x:Bind VerticalContentAlignment}" >
+    <Button x:DefaultBindMode="OneWay" x:Name="OwnerButton" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Click="Button_Click" PointerEntered="OwnerButton_PointerEntered" PointerExited="OwnerButton_PointerExited" HorizontalContentAlignment="{x:Bind HorizontalContentAlignment}" VerticalContentAlignment="{x:Bind VerticalContentAlignment}" >
         <Button.Resources>
             <Style TargetType="Button">
                 <Setter Property="Template">

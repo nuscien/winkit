@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
+    <Grid x:DefaultBindMode="OneWay" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
         <Border Width="{x:Bind AvatarWidth}" Height="{x:Bind AvatarHeight}" CornerRadius="{x:Bind AvatarCornerRadius}" Margin="{x:Bind AvatarMargin}" Background="{x:Bind AvatarBackground}" BackgroundSizing="{x:Bind AvatarBackgroundSizing}" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Image x:Name="AvatarImage" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <Image.Source>

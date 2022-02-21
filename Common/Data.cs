@@ -19,13 +19,68 @@ namespace Trivial.Data
     public class BaseItemModel : ObservableProperties
     {
         /// <summary>
+        /// Initializes a new instance of the BaseItemModel class.
+        /// </summary>
+        public BaseItemModel()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the BaseItemModel class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="image">The image URI.</param>
+        /// <param name="source">The source.</param>
+        public BaseItemModel(string name, Uri image, JsonObjectNode source = null)
+        {
+            Name = name;
+            ImageUri = image;
+            Source = source;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the BaseItemModel class.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="image">The image URI.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="source">The source.</param>
+        public BaseItemModel(string id, string name, Uri image, string description, JsonObjectNode source = null)
+            : this(name, image, source)
+        {
+            Id = id;
+            Description = description;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the BaseItemModel class.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="image">The image URI.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="publish">The publish time.</param>
+        /// <param name="source">The source.</param>
+        public BaseItemModel(string id, string name, Uri image, string description, DateTime publish, JsonObjectNode source = null)
+            : this(id, name, image, description, source)
+        {
+            PublishTime = publish;
+        }
+
+        /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
         public string Id
         {
             get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
+            protected set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Tests if the name is not null, empty nor consists only of white-space characters.
+        /// </summary>
+        public bool HasId => !string.IsNullOrWhiteSpace(Id);
 
         /// <summary>
         /// Gets or sets the name.
@@ -35,6 +90,11 @@ namespace Trivial.Data
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Tests if the name is not null, empty nor consists only of white-space characters.
+        /// </summary>
+        public bool HasName => !string.IsNullOrWhiteSpace(Name);
 
         /// <summary>
         /// Gets or sets the description.
@@ -66,7 +126,19 @@ namespace Trivial.Data
         /// <summary>
         /// Gets the JSON data source.
         /// </summary>
-        public JsonObjectNode Source { get; protected set; }
+        public JsonObjectNode Source
+        {
+            get
+            {
+                return GetCurrentProperty<JsonObjectNode>();
+            }
+
+            protected set
+            {
+                SetCurrentProperty(value);
+                OnSourceChanged();
+            }
+        }
 
         /// <summary>
         /// Sets image.
@@ -97,6 +169,32 @@ namespace Trivial.Data
         /// <returns>The image URI.</returns>
         public Uri SetImage(JsonObjectNode json, string propertyKey)
             => SetImage(json?.TryGetStringValue(propertyKey));
+
+        /// <summary>
+        /// Occurs on source has changed.
+        /// </summary>
+        protected virtual void OnSourceChanged()
+        {
+        }
+    }
+
+    /// <summary>
+    /// The base active item model.
+    /// </summary>
+    public abstract class BaseActiveItemModel : BaseItemModel
+    {
+        /// <summary>
+        /// Occurs on action request.
+        /// </summary>
+        public abstract void Process();
+
+        /// <summary>
+        /// Occurs on action request.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event arguments.</param>
+        internal void ProcessRouted(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+            => Process();
     }
 
     /// <summary>

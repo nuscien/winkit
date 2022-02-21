@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <ListView x:Name="ListPanel" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+    <ListView x:DefaultBindMode="OneWay" x:Name="ListPanel" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
         <ListView.Header>
             <StackPanel Orientation="Vertical">
                 <Border x:Name="Top" ></Border>

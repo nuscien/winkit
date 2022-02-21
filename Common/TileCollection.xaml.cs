@@ -530,13 +530,7 @@ public sealed partial class TileCollection : UserControl
     /// <returns>The tile item created to add.</returns>
     public TileItem AddItem(BaseItemModel model, RoutedEventHandler click = null)
     {
-        var item = model == null ? new TileItem() : new TileItem
-        {
-            Title = model.Name,
-            ImageUri = model.ImageUri,
-            Description = model.Description,
-            DataContext = model
-        };
+        var item = model == null ? new TileItem() : TileItem.Create(model);
         if (click != null) item.Click += click;
         item.Style = ItemStyle;
         ListPanel.Children.Add(item);

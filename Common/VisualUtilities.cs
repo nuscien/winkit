@@ -316,12 +316,33 @@ public static class VisualUtilities
         => new(Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B));
 
     /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="a">The value of alpha channel (0-255).</param>
+    /// <param name="r">The value of red channel (0-255).</param>
+    /// <param name="g">The value of green channel (0-255).</param>
+    /// <param name="b">The value of blue channel (0-255).</param>
+    /// <returns>The solid brush.</returns>
+    public static SolidColorBrush ToBrush(byte a, byte r, byte g, byte b)
+        => new(Windows.UI.Color.FromArgb(a, r, g, b));
+
+    /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="r">The value of red channel (0-255).</param>
+    /// <param name="g">The value of green channel (0-255).</param>
+    /// <param name="b">The value of blue channel (0-255).</param>
+    /// <returns>The solid brush.</returns>
+    public static SolidColorBrush ToBrush(byte r, byte g, byte b)
+        => new(Windows.UI.Color.FromArgb(255, r, g, b));
+
+    /// <summary>
     /// Create text inlines.
     /// </summary>
     /// <param name="json">The data source.</param>
     /// <param name="style">The style.</param>
     /// <returns>The inline collection</returns>
-    public static IEnumerable<Inline> CreateTextInlines(JsonObjectNode json, JsonTextStyle style)
+    public static IList<Inline> CreateTextInlines(JsonObjectNode json, JsonTextStyle style = null)
     {
         var arr = new List<Inline>();
         if (json == null) return arr;
@@ -335,13 +356,25 @@ public static class VisualUtilities
     /// <param name="inlines">The inline collection.</param>
     /// <param name="json">The data source.</param>
     /// <param name="style">The style.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
     /// <returns>The inline collection</returns>
-    public static IEnumerable<Inline> CreateTextInlines(InlineCollection inlines, JsonObjectNode json, JsonTextStyle style)
+    public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonObjectNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
     {
         var col = CreateTextInlines(json, style);
-        foreach (var l in col)
+        if (watcher == null)
         {
-            inlines.Add(l);
+            foreach (var l in col)
+            {
+                inlines.Add(l);
+            }
+        }
+        else
+        {
+            foreach (var l in col)
+            {
+                watcher(l);
+                inlines.Add(l);
+            }
         }
 
         return col;
@@ -353,7 +386,7 @@ public static class VisualUtilities
     /// <param name="json">The data source.</param>
     /// <param name="style">The style.</param>
     /// <returns>The inline collection</returns>
-    public static IEnumerable<Inline> CreateTextInlines(JsonArrayNode json, JsonTextStyle style)
+    public static IList<Inline> CreateTextInlines(JsonArrayNode json, JsonTextStyle style = null)
     {
         var arr = new List<Inline>();
         if (json == null) return arr;
@@ -367,13 +400,25 @@ public static class VisualUtilities
     /// <param name="inlines">The inline collection.</param>
     /// <param name="json">The data source.</param>
     /// <param name="style">The style.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
     /// <returns>The inline collection</returns>
-    public static IEnumerable<Inline> CreateTextInlines(InlineCollection inlines, JsonArrayNode json, JsonTextStyle style)
+    public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
     {
         var col = CreateTextInlines(json, style);
-        foreach (var l in col)
+        if (watcher == null)
         {
-            inlines.Add(l);
+            foreach (var l in col)
+            {
+                inlines.Add(l);
+            }
+        }
+        else
+        {
+            foreach (var l in col)
+            {
+                watcher(l);
+                inlines.Add(l);
+            }
         }
 
         return col;

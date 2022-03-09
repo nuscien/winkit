@@ -5,15 +5,18 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Trivial.Data;
 using Trivial.Tasks;
+using Trivial.Text;
 using Windows.UI.Text;
 
 namespace Trivial.UI;
@@ -295,4 +298,175 @@ public static class VisualUtilities
 
         return null;
     }
+
+    /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="color">The color.</param>
+    /// <returns>The solid brush.</returns>
+    public static SolidColorBrush ToBrush(Windows.UI.Color color)
+        => new(color);
+
+    /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="color">The color.</param>
+    /// <returns>The solid brush.</returns>
+    public static SolidColorBrush ToBrush(System.Drawing.Color color)
+        => new(Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B));
+
+    /// <summary>
+    /// Create text inlines.
+    /// </summary>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The style.</param>
+    /// <returns>The inline collection</returns>
+    public static IEnumerable<Inline> CreateTextInlines(JsonObjectNode json, JsonTextStyle style)
+    {
+        var arr = new List<Inline>();
+        if (json == null) return arr;
+        CreateTextInlines(arr, json, style ?? new(), 0);
+        return arr;
+    }
+
+    /// <summary>
+    /// Create text inlines.
+    /// </summary>
+    /// <param name="inlines">The inline collection.</param>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The style.</param>
+    /// <returns>The inline collection</returns>
+    public static IEnumerable<Inline> CreateTextInlines(InlineCollection inlines, JsonObjectNode json, JsonTextStyle style)
+    {
+        var col = CreateTextInlines(json, style);
+        foreach (var l in col)
+        {
+            inlines.Add(l);
+        }
+
+        return col;
+    }
+
+    /// <summary>
+    /// Create text inlines.
+    /// </summary>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The style.</param>
+    /// <returns>The inline collection</returns>
+    public static IEnumerable<Inline> CreateTextInlines(JsonArrayNode json, JsonTextStyle style)
+    {
+        var arr = new List<Inline>();
+        if (json == null) return arr;
+        CreateTextInlines(arr, json, style ?? new(), 0);
+        return arr;
+    }
+
+    /// <summary>
+    /// Create text inlines.
+    /// </summary>
+    /// <param name="inlines">The inline collection.</param>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The style.</param>
+    /// <returns>The inline collection</returns>
+    public static IEnumerable<Inline> CreateTextInlines(InlineCollection inlines, JsonArrayNode json, JsonTextStyle style)
+    {
+        var col = CreateTextInlines(json, style);
+        foreach (var l in col)
+        {
+            inlines.Add(l);
+        }
+
+        return col;
+    }
+
+    private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
+    {
+        if (json == null) return;
+        var blank = new string(' ', intend * 4);
+        arr.Add(CreateRun('{', style.PunctuationForeground));
+        var i = 0;
+        var blank2 = string.Concat(blank, "    ");
+        foreach (var prop in json)
+        {
+            if (prop.Value is null) continue;
+            if (i > 0) arr.Add(CreateRun(',', style.PunctuationForeground));
+            arr.Add(new LineBreak());
+            arr.Add(CreateRun(blank2, null));
+            arr.Add(CreateRun(JsonStringNode.ToJson(prop.Key), style.PropertyForeground));
+            arr.Add(CreateRun(": ", style.PunctuationForeground));
+            CreateTextInlines(arr, prop.Value, style, intend + 1);
+            i++;
+        }
+
+        arr.Add(new LineBreak());
+        arr.Add(CreateRun(blank, null));
+        arr.Add(CreateRun('}', style.PunctuationForeground));
+    }
+
+    private static void CreateTextInlines(List<Inline> arr, JsonArrayNode json, JsonTextStyle style, int intend)
+    {
+        if (json == null) return;
+        var blank = new string(' ', intend * 4);
+        arr.Add(CreateRun('[', style.PunctuationForeground));
+        var i = 0;
+        var blank2 = string.Concat(blank, "    ");
+        foreach (var item in json)
+        {
+            if (item is null) continue;
+            if (i > 0) arr.Add(CreateRun(',', style.PunctuationForeground));
+            arr.Add(new LineBreak());
+            arr.Add(CreateRun(blank2, null));
+            CreateTextInlines(arr, item, style, intend + 1);
+            i++;
+        }
+
+        arr.Add(new LineBreak());
+        arr.Add(CreateRun(blank, null));
+        arr.Add(CreateRun(']', style.PunctuationForeground));
+    }
+
+    private static void CreateTextInlines(List<Inline> arr, IJsonDataNode json, JsonTextStyle style, int intend)
+    {
+        switch (json.ValueKind)
+        {
+            case JsonValueKind.Undefined:
+            case JsonValueKind.Null:
+                arr.Add(CreateRun("null", style.KeywordForeground));
+                break;
+            case JsonValueKind.String:
+                arr.Add(CreateRun(json.ToString(), style.StringForeground));
+                break;
+            case JsonValueKind.Number:
+                arr.Add(CreateRun(json.ToString(), style.NumberForeground));
+                break;
+            case JsonValueKind.True:
+                arr.Add(CreateRun("true", style.KeywordForeground));
+                break;
+            case JsonValueKind.False:
+                arr.Add(CreateRun("false", style.KeywordForeground));
+                break;
+            case JsonValueKind.Object:
+                CreateTextInlines(arr, json as JsonObjectNode, style, intend);
+                break;
+            case JsonValueKind.Array:
+                CreateTextInlines(arr, json as JsonArrayNode, style, intend);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static Run CreateRun(string text, Brush foreground)
+        => new()
+        {
+            Foreground = foreground,
+            Text = text
+        };
+
+    private static Run CreateRun(char text, Brush foreground)
+        => new()
+        {
+            Foreground = foreground,
+            Text = text.ToString()
+        };
 }

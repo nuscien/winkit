@@ -68,6 +68,40 @@ public class JsonTextStyle : ICloneable
     public Brush PunctuationForeground { get; set; } = punctuationForeground;
 
     /// <summary>
+    /// Gets or sets a value indicating whether compact the whitespaces.
+    /// </summary>
+    public bool IsCompact { get; set; }
+
+    /// <summary>
+    /// Converts a number to angle model.
+    /// </summary>
+    /// <param name="value">The raw value.</param>
+    public static implicit operator JsonTextStyle(JsonObjectNode value)
+    {
+        if (value == null) return null;
+        var style = new JsonTextStyle();
+        var b = TryParse(value, "property") ?? TryParse(value, "prop");
+        if (b != null) style.PropertyForeground = b;
+        b = TryParse(value, "string") ?? TryParse(value, "str");
+        if (b != null) style.StringForeground = b;
+        b = TryParse(value, "keyword");
+        if (b != null) style.KeywordForeground = b;
+        b = TryParse(value, "number") ?? TryParse(value, "num");
+        if (b != null) style.NumberForeground = b;
+        b = TryParse(value, "punctuation") ?? TryParse(value, "punc");
+        if (b != null) style.PunctuationForeground = b;
+        if (value.TryGetBooleanValue("compact") == true) style.IsCompact = true;
+        return style;
+    }
+
+    private static Brush TryParse(JsonObjectNode value, string key)
+    {
+        var s = value.TryGetStringValue(key)?.Trim();
+        if (string.IsNullOrEmpty(s) || !Drawing.ColorCalculator.TryParse(s, out var color)) return null;
+        return VisualUtilities.ToBrush(color);
+    }
+
+    /// <summary>
     /// Clones an object.
     /// </summary>
     /// <returns>The object copied from this instance.</returns>

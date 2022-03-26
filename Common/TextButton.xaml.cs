@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
@@ -438,6 +439,24 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the child before content.
+    /// </summary>
+    public UIElement BeforeContentChild
+    {
+        get => BeforeElement.Child;
+        set => BeforeElement.Child = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the child after content.
+    /// </summary>
+    public UIElement AfterContentChild
+    {
+        get => AfterElement.Child;
+        set => AfterElement.Child = value;
+    }
+
+    /// <summary>
     /// Gets or sets the child in normal state.
     /// </summary>
     public UIElement NormalChild
@@ -487,6 +506,17 @@ public sealed partial class TextButton : UserControl
     /// <returns>true if the control successfully transitions to the new state, or was already using that state; otherwise, false.</returns>
     public bool GoToButtonState(string name)
         => VisualStateManager.GoToState(OwnerButton, name, true);
+
+    /// <summary>
+    /// Sets image.
+    /// </summary>
+    /// <param name="uri">The image URI.</param>
+    /// <returns>The image source.</returns>
+    public ImageSource SetImage(Uri uri)
+        => ImageSource = new BitmapImage
+        {
+            UriSource = uri
+        };
 
     private void Button_Click(object sender, RoutedEventArgs e)
         => Click?.Invoke(this, e);

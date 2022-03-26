@@ -24,7 +24,7 @@ namespace Trivial.UI;
 /// <summary>
 /// The utilities of visual element.
 /// </summary>
-public static class VisualUtilities
+public static partial class VisualUtilities
 {
     /// <summary>
     /// Gets the resource.
@@ -361,6 +361,7 @@ public static class VisualUtilities
     public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonObjectNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
     {
         var col = CreateTextInlines(json, style);
+        if (inlines == null) return col;
         if (watcher == null)
         {
             foreach (var l in col)
@@ -405,6 +406,7 @@ public static class VisualUtilities
     public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
     {
         var col = CreateTextInlines(json, style);
+        if (inlines == null) return col;
         if (watcher == null)
         {
             foreach (var l in col)
@@ -424,13 +426,241 @@ public static class VisualUtilities
         return col;
     }
 
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="text">The content text.</param>
+    /// <returns>The paragraph.</returns>
+    public static Paragraph CreateTextParagraph(string text)
+    {
+        var inline = new Run
+        {
+            Text = text
+        };
+        var block = new Paragraph();
+        block.Inlines.Add(inline);
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="text">The content text.</param>
+    /// <param name="inlines">The additional inline collection.</param>
+    /// <returns>The paragraph.</returns>
+    public static Paragraph CreateTextParagraph(Inline text, params Inline[] inlines)
+    {
+        var block = new Paragraph();
+        block.Inlines.Add(text);
+        foreach (var inline in inlines)
+        {
+            block.Inlines.Add(inline);
+        }
+
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="inlines">The inline collection.</param>
+    /// <returns>The paragraph.</returns>
+    public static Paragraph CreateTextParagraph(IEnumerable<Inline> inlines)
+    {
+        if (inlines == null) return null;
+        var block = new Paragraph();
+        foreach (var inline in inlines)
+        {
+            block.Inlines.Add(inline);
+        }
+
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="blocks">The block collection to insert the paragraph at bottom.</param>
+    /// <param name="text">The content text.</param>
+    /// <returns>The paragraph.</returns>
+    public static Paragraph CreateTextParagraph(BlockCollection blocks, string text)
+    {
+        var c = CreateTextParagraph(text);
+        if (blocks != null) blocks.Add(c);
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="blocks">The block collection to insert the paragraph at bottom.</param>
+    /// <param name="text">The content text.</param>
+    /// <param name="inlines">The additional inline collection.</param>
+    /// <returns>The paragraph.</returns>
+    public static Paragraph CreateTextParagraph(BlockCollection blocks, Inline text, params Inline[] inlines)
+    {
+        var c = CreateTextParagraph(text, inlines);
+        if (blocks != null) blocks.Add(c);
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="blocks">The block collection to insert the paragraph at bottom.</param>
+    /// <param name="inlines">The inline collection.</param>
+    /// <returns>The paragraph.</returns>
+    public static Paragraph CreateTextParagraph(BlockCollection blocks, IEnumerable<Inline> inlines)
+    {
+        var c = CreateTextParagraph(inlines);
+        if (blocks != null) blocks.Add(c);
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The style.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
+    /// <returns>The inline collection</returns>
+    public static Paragraph CreateTextParagraph(JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
+    {
+        var block = new Paragraph();
+        CreateTextInlines(block.Inlines, json, style, watcher);
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="blocks">The block collection to insert the paragraph at bottom.</param>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The style.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
+    /// <returns>The inline collection</returns>
+    public static Paragraph CreateTextParagraph(BlockCollection blocks, JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
+    {
+        var block = new Paragraph();
+        CreateTextInlines(block.Inlines, json, style, watcher);
+        if (blocks != null) blocks.Add(block);
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a button.
+    /// </summary>
+    /// <param name="content">The button content.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static Button CreateButton(object content, RoutedEventHandler click, Style style = null)
+    {
+        var c = new Button
+        {
+            Content = content
+        };
+        if (style != null) c.Style = style;
+        c.Click += click;
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a menu flyout item.
+    /// </summary>
+    /// <param name="text">The text content.</param>
+    /// <param name="icon">The graphic content.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static MenuFlyoutItem CreateMenuFlyoutItem(string text, IconElement icon, RoutedEventHandler click, Style style = null)
+    {
+        var c = new MenuFlyoutItem
+        {
+            Text = text
+        };
+        if (icon != null) c.Icon = icon;
+        if (style != null) c.Style = style;
+        c.Click += click;
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a menu flyout item.
+    /// </summary>
+    /// <param name="text">The text content.</param>
+    /// <param name="glyph">The character code of the icon content.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static MenuFlyoutItem CreateMenuFlyoutItem(string text, char glyph, RoutedEventHandler click, Style style = null)
+    {
+        var c = new FontIcon
+        {
+            Glyph = glyph.ToString()
+        };
+        return CreateMenuFlyoutItem(text, c, click, style);
+    }
+
+    /// <summary>
+    /// Creates a menu flyout item.
+    /// </summary>
+    /// <param name="text">The text content.</param>
+    /// <param name="symbol">The symbol.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static MenuFlyoutItem CreateMenuFlyoutItem(string text, Symbol symbol, RoutedEventHandler click, Style style = null)
+    {
+        var c = new SymbolIcon
+        {
+            Symbol = symbol
+        };
+        return CreateMenuFlyoutItem(text, c, click, style);
+    }
+
+    /// <summary>
+    /// Creates a menu flyout item.
+    /// </summary>
+    /// <param name="text">The text content.</param>
+    /// <param name="icon">The URI of the icon content.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="showAsMonochrome">true if need to show the bitmap in a single color; otherwise, show the bitmap in full color.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static MenuFlyoutItem CreateMenuFlyoutItem(string text, Uri icon, RoutedEventHandler click, bool showAsMonochrome = true, Style style = null)
+    {
+        var c = new BitmapIcon
+        {
+            UriSource = icon,
+            ShowAsMonochrome = showAsMonochrome
+        };
+        return CreateMenuFlyoutItem(text, c, click, style);
+    }
+
+    /// <summary>
+    /// Creates a menu flyout item.
+    /// </summary>
+    /// <param name="menu">The menu to insert the button at bottom.</param>
+    /// <param name="text">The text content.</param>
+    /// <param name="icon">The graphic content.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static MenuFlyoutItem CreateMenuFlyoutItem(MenuFlyout menu, string text, IconElement icon, RoutedEventHandler click, Style style = null)
+    {
+        var c = CreateMenuFlyoutItem(text, icon, click, style);
+        if (menu != null) menu.Items.Add(c);
+        return c;
+    }
+
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
     {
         if (json == null) return;
-        var blank = new string(' ', intend * 4);
+        var blank = new string(' ', intend * (style.IsCompact ? 2 : 4));
         arr.Add(CreateRun('{', style.PunctuationForeground));
         var i = 0;
-        var blank2 = string.Concat(blank, "    ");
+        var blank2 = string.Concat(blank, style.IsCompact ? "  " : "    ");
         foreach (var prop in json)
         {
             if (prop.Value is null) continue;
@@ -451,10 +681,10 @@ public static class VisualUtilities
     private static void CreateTextInlines(List<Inline> arr, JsonArrayNode json, JsonTextStyle style, int intend)
     {
         if (json == null) return;
-        var blank = new string(' ', intend * 4);
+        var blank = new string(' ', intend * (style.IsCompact ? 2 : 4));
         arr.Add(CreateRun('[', style.PunctuationForeground));
         var i = 0;
-        var blank2 = string.Concat(blank, "    ");
+        var blank2 = string.Concat(blank, style.IsCompact ? "  " : "    ");
         foreach (var item in json)
         {
             if (item is null) continue;

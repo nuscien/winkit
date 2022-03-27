@@ -1,0 +1,33 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI" >
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1">
+                <GradientStopCollection>
+                    <GradientStop Offset="0" Color="#444444" />
+                    <GradientStop Offset="1" Color="#222222" />
+                </GradientStopCollection>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#666666" />
+            <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#CCCCCC" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1">
+                <GradientStopCollection>
+                    <GradientStop Offset="0" Color="#E9E9E9" />
+                    <GradientStop Offset="1" Color="#C3C3C3" />
+                </GradientStopCollection>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#AAAAAA" />
+            <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#333333" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="WinKit.TitleForeground" Color="White" />
+            <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#CCCCCC" />
+            <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#444444" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

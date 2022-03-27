@@ -562,10 +562,10 @@ public class JsonWebCacheClient
             var end = s.IndexOfAny(new[] { '\n', '\r', '\t', ' ' });
             if (end > 0)
             {
-                date = Web.WebFormat.ParseDate(s[2..end].Trim()) ?? DateTime.Now;
+                date = Web.WebFormat.ParseDate(s.Substring(2, end).Trim()) ?? DateTime.Now;
             }
 
-            s = s[(s.IndexOf('\n') + 1)..];
+            s = s.Substring(s.IndexOf('\n') + 1);
         }
 
         var json = JsonObjectNode.TryParse(s);

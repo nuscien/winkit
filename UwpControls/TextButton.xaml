@@ -1,0 +1,102 @@
+﻿<UserControl
+    x:Name="HostElement"
+    x:Class="Trivial.UI.TextButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Button x:DefaultBindMode="OneWay" x:Name="OwnerButton" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Click="Button_Click" PointerEntered="OwnerButton_PointerEntered" PointerExited="OwnerButton_PointerExited" HorizontalContentAlignment="{x:Bind HorizontalContentAlignment}" VerticalContentAlignment="{x:Bind VerticalContentAlignment}" >
+        <Button.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="RootGrid" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" >
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="ForceBack">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="NormalBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.5" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <DoubleAnimation Storyboard.TargetName="DisabledBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=Foreground}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Normal">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="NormalBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.5" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <DoubleAnimation Storyboard.TargetName="DisabledBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=Foreground}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="NormalBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.1" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.1" />
+                                                <DoubleAnimation Storyboard.TargetName="DisabledBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverForeground, TargetNullValue={Binding ElementName=HostElement, Path=Foreground}}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="NormalBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.1" />
+                                                <DoubleAnimation Storyboard.TargetName="DisabledBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=HoverForeground, TargetNullValue={Binding ElementName=HostElement, Path=Foreground}}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="NormalBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <DoubleAnimation Storyboard.TargetName="HoverBackgroundRect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.4" />
+                                                <DoubleAnimation Storyboard.TargetName="DisabledBackgroundRect" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.5" />
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=HostElement, Path=DisabledForeground, TargetNullValue={Binding ElementName=HostElement, Path=Foreground}}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <Border x:Name="BackgroundRect" Background="{Binding ElementName=HostElement, Path=Background}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=BorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=BorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="NormalBackgroundRect" Background="{Binding ElementName=HostElement, Path=NormalBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=NormalBorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=NormalBorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" Opacity="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=HoverBorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=HoverBorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <Border x:Name="DisabledBackgroundRect" Background="{Binding ElementName=HostElement, Path=DisabledBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=DisabledBorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=DisabledBorderThickness}" CornerRadius="{Binding ElementName=HostElement, Path=CornerRadius}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" Background="{x:Null}" HorizontalAlignment="{Binding ElementName=HostElement, Path=HorizontalContentAlignment}" VerticalAlignment="{Binding ElementName=HostElement, Path=VerticalContentAlignment}" Margin="{Binding ElementName=HostElement, Path=Padding}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Button.Resources>
+        <Grid>
+            <StackPanel Orientation="{x:Bind Orientation}" Spacing="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Border x:Name="BeforeElement" />
+                <StackPanel Orientation="{x:Bind Orientation}" Spacing="{x:Bind Spacing}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <Border x:Name="ImagePanel" Visibility="Collapsed" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" CornerRadius="{x:Bind ImageCornerRadius}" >
+                        <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" />
+                    </Border>
+                    <TextBlock Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TextBlock_IsTextTrimmedChanged" />
+                    <Border x:Name="AfterElement" />
+                </StackPanel>
+            </StackPanel>
+            <Border x:Name="NormalPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="1" ></Border>
+            <Border x:Name="HoverPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="0" ></Border>
+        </Grid>
+    </Button>
+</UserControl>

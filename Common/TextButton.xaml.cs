@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -65,7 +66,7 @@ public sealed partial class TextButton : UserControl
     /// <summary>
     /// The dependency property of spacing.
     /// </summary>
-    public static readonly DependencyProperty SpacingProperty = DependencyObjectProxy.RegisterProperty(nameof(Spacing), 0d);
+    public static readonly DependencyProperty SpacingProperty = DependencyObjectProxy.RegisterProperty(nameof(Spacing), OnSpacingChanged, 0d);
 
     /// <summary>
     /// The dependency property of hover foreground.
@@ -155,7 +156,22 @@ public sealed partial class TextButton : UserControl
     /// <summary>
     /// The dependency property of image stretch.
     /// </summary>
-    public static readonly DependencyProperty ImageStretchProperty = DependencyObjectProxy.RegisterProperty<Stretch>(nameof(Stretch));
+    public static readonly DependencyProperty StretchProperty = DependencyObjectProxy.RegisterProperty<Stretch>(nameof(Stretch));
+
+    /// <summary>
+    /// The dependency property of icon URI.
+    /// </summary>
+    public static readonly DependencyProperty IconSourceProperty = DependencyObjectProxy.RegisterProperty<IconSource>(nameof(IconSource), OnIconUriChanged);
+
+    /// <summary>
+    /// The dependency property of icon width.
+    /// </summary>
+    public static readonly DependencyProperty IconWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconWidth));
+
+    /// <summary>
+    /// The dependency property of icon height.
+    /// </summary>
+    public static readonly DependencyProperty IconHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconHeight));
 
     /// <summary>
     /// Initializes a new instance of the TextButton class.
@@ -248,6 +264,11 @@ public sealed partial class TextButton : UserControl
         get => (string)GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
+
+    /// <summary>
+    /// Gets the collection of inline text elements.
+    /// </summary>
+    public InlineCollection Inlines => TextControl.Inlines;
 
     /// <summary>
     /// Gets or sets the alignment of text zone.
@@ -434,8 +455,35 @@ public sealed partial class TextButton : UserControl
     /// </summary>
     public Stretch Stretch
     {
-        get => (Stretch)GetValue(ImageStretchProperty);
-        set => SetValue(ImageStretchProperty, value);
+        get => (Stretch)GetValue(StretchProperty);
+        set => SetValue(StretchProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the width of icon.
+    /// </summary>
+    public double IconWidth
+    {
+        get => (double)GetValue(IconWidthProperty);
+        set => SetValue(IconWidthProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the height of icon.
+    /// </summary>
+    public double IconHeight
+    {
+        get => (double)GetValue(IconHeightProperty);
+        set => SetValue(IconHeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the icon source.
+    /// </summary>
+    public IconSource IconSource
+    {
+        get => (IconSource)GetValue(IconSourceProperty);
+        set => SetValue(IconSourceProperty, value);
     }
 
     /// <summary>
@@ -521,10 +569,17 @@ public sealed partial class TextButton : UserControl
     private void Button_Click(object sender, RoutedEventArgs e)
         => Click?.Invoke(this, e);
 
-    private static void OnImageUriChanged(TextButton c, ChangeEventArgs<ImageSource> e, DependencyProperty p)
+    private static void OnSpacingChanged(TextButton c, ChangeEventArgs<double> e, DependencyProperty p)
     {
-        c.ImagePanel.Visibility = e.NewValue == null ? Visibility.Collapsed : Visibility.Visible;
+        var i = double.IsNaN(e.NewValue) ? 0 : e.NewValue;
+        c.ImagePanel.Margin = c.IconControl.Margin = new Thickness(0, 0, i, 0);
     }
+
+    private static void OnImageUriChanged(TextButton c, ChangeEventArgs<ImageSource> e, DependencyProperty p)
+        => c.ImagePanel.Visibility = e.NewValue == null ? Visibility.Collapsed : Visibility.Visible;
+
+    private static void OnIconUriChanged(TextButton c, ChangeEventArgs<IconSource> e, DependencyProperty p)
+        => c.IconControl.Visibility = e.NewValue == null ? Visibility.Collapsed : Visibility.Visible;
 
     private void OwnerButton_PointerEntered(object sender, PointerRoutedEventArgs e)
     {

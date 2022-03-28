@@ -13,5 +13,11 @@
         <TextBlock Text="This demo shows basic visual samples based on some 3rd-party data sources. Copyrights of these data sources are reserved by their owner." TextWrapping="WrapWholeWords" Foreground="{StaticResource CommonForeground}" />
         <HyperlinkButton Content="Read more…" NavigateUri="https://github.com/nuscien/winkit/tree/main/Demo" />
         <controls:TextView x:Name="TextViewElement" Height="200" />
+        <controls:TextButton Text="Hey" Spacing="8" />
+        <controls:TextButton Text="File" Spacing="8" IconWidth="20" IconHeight="20" >
+            <controls:TextButton.IconSource>
+                <FontIconSource Glyph="&#xE130;" />
+            </controls:TextButton.IconSource>
+        </controls:TextButton>
     </StackPanel>
 </Page>

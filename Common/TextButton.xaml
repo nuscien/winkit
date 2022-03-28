@@ -87,11 +87,12 @@
         <Grid>
             <StackPanel Orientation="{x:Bind Orientation}" Spacing="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <Border x:Name="BeforeElement" />
-                <StackPanel Orientation="{x:Bind Orientation}" Spacing="{x:Bind Spacing}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <StackPanel Orientation="{x:Bind Orientation}" Spacing="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Border x:Name="ImagePanel" Visibility="Collapsed" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" CornerRadius="{x:Bind ImageCornerRadius}" >
                         <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" />
                     </Border>
-                    <TextBlock Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TextBlock_IsTextTrimmedChanged" />
+                    <IconSourceElement x:Name="IconControl" Visibility="Collapsed" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" IconSource="{x:Bind IconSource}" />
+                    <TextBlock x:Name="TextControl" Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TextBlock_IsTextTrimmedChanged" />
                     <Border x:Name="AfterElement" />
                 </StackPanel>
             </StackPanel>

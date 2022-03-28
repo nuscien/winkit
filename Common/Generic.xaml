@@ -5,35 +5,57 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <SolidColorBrush x:Key="WinKit.Foreground" Color="#222222" />
+            <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1" >
                 <GradientStopCollection>
-                    <GradientStop Offset="0" Color="#444444" />
-                    <GradientStop Offset="1" Color="#222222" />
+                    <GradientStop Offset="0" Color="#333333" />
+                    <GradientStop Offset="1" Color="#111111" />
                 </GradientStopCollection>
             </LinearGradientBrush>
             <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#666666" />
+            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#CC222222" />
             <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#CCCCCC" />
+            <SolidColorBrush x:Key="WinKit.HoverBackground" Color="#20808080" />
+            <LinearGradientBrush x:Key="WinKit.HoverBorderBrush" StartPoint="0.5,0" EndPoint="0.5,1" >
+                <GradientStopCollection>
+                    <GradientStop Offset="0" Color="#20444444" />
+                    <GradientStop Offset="1" Color="#20808080" />
+                </GradientStopCollection>
+            </LinearGradientBrush>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-            <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <SolidColorBrush x:Key="WinKit.Foreground" Color="#F0F0F0" />
+            <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1" >
                 <GradientStopCollection>
-                    <GradientStop Offset="0" Color="#E9E9E9" />
-                    <GradientStop Offset="1" Color="#C3C3C3" />
+                    <GradientStop Offset="0" Color="#F9F9F9" />
+                    <GradientStop Offset="1" Color="#C9C9C9" />
                 </GradientStopCollection>
             </LinearGradientBrush>
             <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#AAAAAA" />
+            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#CCF0F0F0" />
             <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#333333" />
+            <SolidColorBrush x:Key="WinKit.HoverBackground" Color="#20808080" />
+            <LinearGradientBrush x:Key="WinKit.HoverBorderBrush" StartPoint="0.5,0" EndPoint="0.5,1" >
+                <GradientStopCollection>
+                    <GradientStop Offset="0" Color="#20CCCCCC" />
+                    <GradientStop Offset="1" Color="#20808080" />
+                </GradientStopCollection>
+            </LinearGradientBrush>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="WinKit.Foreground" Color="White" />
             <SolidColorBrush x:Key="WinKit.TitleForeground" Color="White" />
             <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#CCCCCC" />
+            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#808080" />
             <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#444444" />
+            <SolidColorBrush x:Key="WinKit.HoverBackground" Color="#2222CC" />
+            <SolidColorBrush x:Key="WinKit.HoverBorderBrush" Color="#2222CC" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    <Style TargetType="local:TileItem" >
+    <Style TargetType="local:TileItem" x:Key="WinKit.TileItemStyle" >
         <Setter Property="Padding" Value="4,6" />
-        <Setter Property="HoverBackground" Value="#40808080" />
-        <Setter Property="PressedBackground" Value="#30808080" />
+        <Setter Property="HoverBackground" Value="#30808080" />
+        <Setter Property="PressedBackground" Value="#20808080" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="TextHeight" Value="40" />
         <Setter Property="TextMargin" Value="4,2" />
@@ -57,12 +79,16 @@
         <Setter Property="DescriptionTrimming" Value="CharacterEllipsis" />
         <Setter Property="DescriptionWrapping" Value="NoWrap" />
     </Style>
-    <Style TargetType="local:TextButton" >
-        <Setter Property="Foreground" Value="{StaticResource ButtonForegroundThemeBrush}" />
-        <Setter Property="HoverForeground" Value="{StaticResource ButtonPointerOverForegroundThemeBrush}" />
-        <Setter Property="DisabledForeground" Value="{StaticResource ButtonDisabledForegroundThemeBrush}" />
-        <Setter Property="Background" Value="{StaticResource ButtonBackgroundThemeBrush}" />
-        <Setter Property="HoverBackground" Value="#30808080" />
-        <Setter Property="DisabledBackground" Value="{StaticResource ButtonDisabledBackgroundThemeBrush}" />
+    <Style TargetType="local:TextButton" x:Key="WinKit.TextButtonStyle" >
+        <Setter Property="Foreground" Value="{StaticResource WinKit.Foreground}" />
+        <Setter Property="HoverForeground" Value="{ThemeResource WinKit.TitleForeground}" />
+        <Setter Property="DisabledForeground" Value="{ThemeResource WinKit.DisabledForeground}" />
+        <Setter Property="Background" Value="{ThemeResource WinKit.HoverBackground}" />
+        <Setter Property="HoverBackground" Value="{ThemeResource WinKit.HoverBackground}" />
+        <Setter Property="DisabledBackground" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{ThemeResource WinKit.HoverBorderBrush}" />
+        <Setter Property="Padding" Value="11,5" />
+        <Setter Property="CornerRadius" Value="4" />
     </Style>
 </ResourceDictionary>

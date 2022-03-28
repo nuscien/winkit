@@ -7,6 +7,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:TextView" >
+                <Setter Property="LineNumberStyle" >
+                    <Setter.Value>
+                        <Style TargetType="TextBlock" >
+                            <Setter Property="Foreground" Value="#2B91AF" />
+                            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New, monospace, Segoe UI, Microsoft Yahei, Microsoft Jhenghei, MS Gothic, Malgun Gothic, Microsoft Himalaya" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <ListView x:Name="TextElement" SelectionMode="{x:Bind SelectionMode}" x:DefaultBindMode="OneWay" Foreground="{x:Bind Foreground}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" ItemClick="TextElement_ItemClick" SelectionChanged="TextElement_SelectionChanged" >
         <ListView.ItemContainerStyle>
             <Style TargetType="ListViewItem" >

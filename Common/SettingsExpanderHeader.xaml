@@ -7,6 +7,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:SettingsExpanderHeader" >
+                <Setter Property="Padding" Value="0,12" />
+                <Setter Property="Foreground" Value="{ThemeResource WinKit.TitleForeground}" />
+                <Setter Property="DescriptionForeground" Value="{ThemeResource WinKit.DescriptionForeground}" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid x:DefaultBindMode="OneWay" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
         <StackPanel Orientation="Horizontal" Spacing="{x:Bind IconSpacing}" HorizontalAlignment="Left" VerticalAlignment="Center" >
             <FontIcon x:Name="IconElement" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind IconGlyph}" Margin="0" Visibility="Collapsed" />

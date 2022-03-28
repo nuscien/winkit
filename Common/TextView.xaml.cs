@@ -332,8 +332,10 @@ public sealed partial class TextView : UserControl
             var item = new TextViewModel
             {
                 Text = line,
+                TextStyle = TextStyle,
                 LineNumber = Count,
-                LineNumberWidth = indexWidth
+                LineNumberWidth = indexWidth,
+                LineNumberStyle = LineNumberStyle
             };
             collection.Add(item);
         }
@@ -354,8 +356,10 @@ public sealed partial class TextView : UserControl
             var item = new TextViewModel
             {
                 Text = s,
+                TextStyle = TextStyle,
                 LineNumber = Count,
-                LineNumberWidth = indexWidth
+                LineNumberWidth = indexWidth,
+                LineNumberStyle = LineNumberStyle
             };
             var background = line?.Background;
             if (background != null) item.Background = background;
@@ -382,8 +386,10 @@ public sealed partial class TextView : UserControl
     //            Count++;
     //            item = new TextViewModel
     //            {
-    //                Index = Count,
-    //                IndexWidth = indexWidth
+    //                TextStyle = TextStyle,
+    //                LineNumber = Count,
+    //                LineNumberWidth = indexWidth,
+    //                LineNumberStyle = LineNumberStyle
     //            };
     //            col.Add(item);
     //        }

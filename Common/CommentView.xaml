@@ -7,6 +7,42 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:CommentView" >
+                <Setter Property="Foreground" Value="{ThemeResource WinKit.Foreground}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="AvatarWidth" Value="40" />
+                <Setter Property="AvatarHeight" Value="40" />
+                <Setter Property="AvatarCornerRadius" Value="20" />
+                <Setter Property="AvatarBackground" Value="{ThemeResource WinKit.ImageBackground}" />
+                <Setter Property="AvatarMargin" Value="0" />
+                <Setter Property="SenderMargin" Value="50,0,0,0" />
+                <Setter Property="SenderOrientation" Value="Vertical" />
+                <Setter Property="NicknameForeground" Value="{ThemeResource WinKit.TitleForeground}" />
+                <Setter Property="NicknameFontSize" Value="14" />
+                <Setter Property="DescriptionForeground" Value="{ThemeResource WinKit.DescriptionForeground}" />
+                <Setter Property="DescriptionFontSize" Value="12" />
+                <Setter Property="ContentMargin" Value="0,45,0,0" />
+                <Setter Property="ReplyPanelStyle">
+                    <Setter.Value>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Background" Value="#20808080" />
+                            <Setter Property="Padding" Value="15" />
+                            <Setter Property="Margin" Value="0,8,0,0" />
+                            <Setter Property="BorderBrush" Value="#30808080" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="CornerRadius" Value="4" />
+                            <Setter Property="Spacing" Value="20" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid x:DefaultBindMode="OneWay" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
         <Border Width="{x:Bind AvatarWidth}" Height="{x:Bind AvatarHeight}" CornerRadius="{x:Bind AvatarCornerRadius}" Margin="{x:Bind AvatarMargin}" Background="{x:Bind AvatarBackground}" BackgroundSizing="{x:Bind AvatarBackgroundSizing}" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Image x:Name="AvatarImage" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >

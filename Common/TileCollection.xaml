@@ -7,6 +7,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:TileCollection" >
+                <Setter Property="IconWidth" Value="24" />
+                <Setter Property="IconHeight" Value="24" />
+                <Setter Property="IconMargin" Value="0,0,8,0" />
+                <Setter Property="TitleFontSize" Value="20" />
+                <Setter Property="TitleForeground" Value="{StaticResource TitleForeground}" />
+                <Setter Property="HeaderPadding" Value="8" />
+                <Setter Property="ItemStyle" >
+                    <Setter.Value>
+                        <Style TargetType="local:TileItem" BasedOn="{StaticResource WinKit.TileItemStyle}" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <StackPanel x:DefaultBindMode="OneWay" x:Name="OwnerPanel" Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
         <Border x:Name="Top" ></Border>
         <local:BlockHeader

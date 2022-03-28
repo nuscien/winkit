@@ -7,6 +7,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:BlockHeader" >
+                <Setter Property="IconWidth" Value="24" />
+                <Setter Property="IconHeight" Value="24" />
+                <Setter Property="IconMargin" Value="0,0,8,0" />
+                <Setter Property="TitleFontSize" Value="20" />
+                <Setter Property="TitleForeground" Value="{StaticResource TitleForeground}" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid x:DefaultBindMode="OneWay" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
         <Border x:Name="BackgroundPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" >

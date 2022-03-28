@@ -26,7 +26,7 @@ namespace Trivial.UI;
 /// <summary>
 /// The utilities of visual element.
 /// </summary>
-public static partial class VisualUtilities
+public static partial class VisualUtility
 {
     /// <summary>
     /// The icon set.

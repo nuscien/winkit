@@ -10,9 +10,9 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>2.2.0</Version>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
-    <FileVersion>2.2.0.0</FileVersion>
+    <Version>3.0.0</Version>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -44,6 +44,7 @@
     <None Remove="CommentView.xaml" />
     <None Remove="SettingsExpanderHeader.xaml" />
     <None Remove="TextButton.xaml" />
+    <None Remove="TextView.xaml" />
     <None Remove="TileCollection.xaml" />
     <None Remove="TileItem.xaml" />
     <None Remove="TileListView.xaml" />
@@ -77,6 +78,12 @@
     <None Include="README.md" Pack="true" PackagePath="README.md" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="TextView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

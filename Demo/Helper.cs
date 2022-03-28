@@ -22,8 +22,8 @@ internal static class Helper
         var c = new TileCollection
         {
             Title = title,
-            Style = VisualUtilities.GetResource<Style>("CommonTilesList"),
-            ItemStyle = VisualUtilities.GetResource<Style>("DefaultTileItem")
+            Style = VisualUtility.GetResource<Style>("CommonTilesList"),
+            ItemStyle = VisualUtility.GetResource<Style>("DefaultTileItem")
         };
         foreach (var item in col)
         {

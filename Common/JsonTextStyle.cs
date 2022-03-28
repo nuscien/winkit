@@ -98,7 +98,7 @@ public class JsonTextStyle : ICloneable
     {
         var s = value.TryGetStringValue(key)?.Trim();
         if (string.IsNullOrEmpty(s) || !Drawing.ColorCalculator.TryParse(s, out var color)) return null;
-        return VisualUtilities.ToBrush(color);
+        return VisualUtility.ToBrush(color);
     }
 
     /// <summary>

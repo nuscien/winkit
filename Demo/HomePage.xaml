@@ -5,11 +5,13 @@
     xmlns:local="using:Trivial.Demo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Trivial.UI"
     mc:Ignorable="d" >
 
     <StackPanel Orientation="Vertical" Spacing="8" Padding="20" >
         <TextBlock Text="Welcome! This is a demo for Trivial.WindowsKit library. It can be used for pages of news, video and product." TextWrapping="WrapWholeWords" Foreground="{StaticResource CommonForeground}" />
         <TextBlock Text="This demo shows basic visual samples based on some 3rd-party data sources. Copyrights of these data sources are reserved by their owner." TextWrapping="WrapWholeWords" Foreground="{StaticResource CommonForeground}" />
         <HyperlinkButton Content="Read more…" NavigateUri="https://github.com/nuscien/winkit/tree/main/Demo" />
+        <controls:TextView x:Name="TextViewElement" Height="200" />
     </StackPanel>
 </Page>

@@ -1,0 +1,35 @@
+﻿<UserControl
+    x:Class="Trivial.UI.TextView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ListView x:Name="TextElement" SelectionMode="{x:Bind SelectionMode}" x:DefaultBindMode="OneWay" Foreground="{x:Bind Foreground}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" ItemClick="TextElement_ItemClick" SelectionChanged="TextElement_SelectionChanged" >
+        <ListView.ItemContainerStyle>
+            <Style TargetType="ListViewItem" >
+                <Setter Property="MinHeight" Value="10" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0" />
+            </Style>
+        </ListView.ItemContainerStyle>
+        <ListView.ItemTemplate>
+            <DataTemplate x:DataType="local:TextViewModel" >
+                <Grid Tag="{x:Bind LineNumber}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{x:Bind LineNumberWidth}" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border>
+                        <TextBlock Text="{x:Bind LineNumber}" Style="{x:Bind LineNumberStyle}" />
+                    </Border>
+                    <Border Background="{x:Bind Background}" Grid.Column="1" >
+                        <TextBlock Text="{x:Bind Text}" Style="{x:Bind TextStyle}" />
+                    </Border>
+                </Grid>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</UserControl>

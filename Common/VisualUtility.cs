@@ -24,7 +24,7 @@ namespace Trivial.UI;
 /// <summary>
 /// The utilities of visual element.
 /// </summary>
-public static partial class VisualUtilities
+public static partial class VisualUtility
 {
     /// <summary>
     /// Gets the resource.
@@ -340,7 +340,7 @@ public static partial class VisualUtilities
     /// Create text inlines.
     /// </summary>
     /// <param name="json">The data source.</param>
-    /// <param name="style">The style.</param>
+    /// <param name="style">The optional style for JSON.</param>
     /// <returns>The inline collection</returns>
     public static IList<Inline> CreateTextInlines(JsonObjectNode json, JsonTextStyle style = null)
     {
@@ -355,7 +355,7 @@ public static partial class VisualUtilities
     /// </summary>
     /// <param name="inlines">The inline collection.</param>
     /// <param name="json">The data source.</param>
-    /// <param name="style">The style.</param>
+    /// <param name="style">The optional style for JSON.</param>
     /// <param name="watcher">The optional watcher for each inline.</param>
     /// <returns>The inline collection</returns>
     public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonObjectNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
@@ -385,7 +385,7 @@ public static partial class VisualUtilities
     /// Create text inlines.
     /// </summary>
     /// <param name="json">The data source.</param>
-    /// <param name="style">The style.</param>
+    /// <param name="style">The optional style for JSON.</param>
     /// <returns>The inline collection</returns>
     public static IList<Inline> CreateTextInlines(JsonArrayNode json, JsonTextStyle style = null)
     {
@@ -400,7 +400,7 @@ public static partial class VisualUtilities
     /// </summary>
     /// <param name="inlines">The inline collection.</param>
     /// <param name="json">The data source.</param>
-    /// <param name="style">The style.</param>
+    /// <param name="style">The optional style for JSON.</param>
     /// <param name="watcher">The optional watcher for each inline.</param>
     /// <returns>The inline collection</returns>
     public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
@@ -521,7 +521,37 @@ public static partial class VisualUtilities
     /// Creates a paragraph.
     /// </summary>
     /// <param name="json">The data source.</param>
-    /// <param name="style">The style.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
+    /// <returns>The inline collection</returns>
+    public static Paragraph CreateTextParagraph(JsonObjectNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
+    {
+        var block = new Paragraph();
+        CreateTextInlines(block.Inlines, json, style, watcher);
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="blocks">The block collection to insert the paragraph at bottom.</param>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
+    /// <returns>The inline collection</returns>
+    public static Paragraph CreateTextParagraph(BlockCollection blocks, JsonObjectNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
+    {
+        var block = new Paragraph();
+        CreateTextInlines(block.Inlines, json, style, watcher);
+        if (blocks != null) blocks.Add(block);
+        return block;
+    }
+
+    /// <summary>
+    /// Creates a paragraph.
+    /// </summary>
+    /// <param name="json">The data source.</param>
+    /// <param name="style">The optional style for JSON.</param>
     /// <param name="watcher">The optional watcher for each inline.</param>
     /// <returns>The inline collection</returns>
     public static Paragraph CreateTextParagraph(JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
@@ -536,7 +566,7 @@ public static partial class VisualUtilities
     /// </summary>
     /// <param name="blocks">The block collection to insert the paragraph at bottom.</param>
     /// <param name="json">The data source.</param>
-    /// <param name="style">The style.</param>
+    /// <param name="style">The optional style for JSON.</param>
     /// <param name="watcher">The optional watcher for each inline.</param>
     /// <returns>The inline collection</returns>
     public static Paragraph CreateTextParagraph(BlockCollection blocks, JsonArrayNode json, JsonTextStyle style = null, Action<Inline> watcher = null)
@@ -564,6 +594,16 @@ public static partial class VisualUtilities
         c.Click += click;
         return c;
     }
+
+    /// <summary>
+    /// Creates a button.
+    /// </summary>
+    /// <param name="content">The button content.</param>
+    /// <param name="click">The click event.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>A button created.</returns>
+    public static Button CreateButton(object content, Action click, Style style = null)
+        => CreateButton(content, click != null ? (sender, ev) => click() : null, style);
 
     /// <summary>
     /// Creates a menu flyout item.
@@ -653,6 +693,92 @@ public static partial class VisualUtilities
         if (menu != null) menu.Items.Add(c);
         return c;
     }
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, IconElement icon, RoutedEventHandler click, Style style = null)
+    {
+        var button = new AppBarButton
+        {
+            Label = name,
+            Icon = icon
+        };
+        if (style != null) button.Style = style;
+        if (click != null) button.Click += click;
+        return button;
+    }
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="glyph">The icon glyph.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, char glyph, RoutedEventHandler click, Style style = null)
+        => CreateAppBarButton(name, new FontIcon
+        {
+            Glyph = glyph.ToString()
+        }, click, style);
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="symbol">The icon symbol.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, Symbol symbol, RoutedEventHandler click, Style style = null)
+        => CreateAppBarButton(name, new SymbolIcon
+        {
+            Symbol = symbol
+        }, click, style);
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon URI.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="showAsMonochrome">true if need to show the bitmap in a single color; otherwise, show the bitmap in full color.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, Uri icon, RoutedEventHandler click, bool showAsMonochrome = false, Style style = null)
+        => CreateAppBarButton(name, new BitmapIcon
+        {
+            UriSource = icon,
+            ShowAsMonochrome = showAsMonochrome
+        }, click, style);
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, IconElement icon, Action click, Style style = null)
+        => CreateAppBarButton(name, icon, click != null ? (sender, args) => click() : null, style);
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="glyph">The icon glyph.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, char glyph, Action click, Style style = null)
+        => CreateAppBarButton(name, glyph, click != null ? (sender, args) => click() : null, style);
 
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
     {

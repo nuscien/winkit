@@ -112,6 +112,11 @@ public sealed partial class TextView : UserControl
     }
 
     /// <summary>
+    /// The dependency property of item container style.
+    /// </summary>
+    public static readonly DependencyProperty ItemContainerStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ItemContainerStyle));
+
+    /// <summary>
     /// The dependency property of text style.
     /// </summary>
     public static readonly DependencyProperty TextStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(TextStyle), (c, e, d) =>
@@ -178,6 +183,15 @@ public sealed partial class TextView : UserControl
     /// Gets the count of line.
     /// </summary>
     public int Count { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the item container style.
+    /// </summary>
+    public Style ItemContainerStyle
+    {
+        get => (Style)GetValue(ItemContainerStyleProperty);
+        set => SetValue(ItemContainerStyleProperty, value);
+    }
 
     /// <summary>
     /// Gets or sets the text style.

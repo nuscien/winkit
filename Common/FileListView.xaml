@@ -54,7 +54,7 @@
             <RowDefinition Height="{x:Bind PathHeight}" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <BreadcrumbBar x:Name="PathBar" Grid.Row="0" ItemClicked="PathBar_ItemClicked" >
+        <BreadcrumbBar x:Name="PathBar" Grid.Row="0" ItemClicked="PathBar_ItemClicked" Style="{x:Bind PathStyle}" >
             <BreadcrumbBar.ItemTemplate>
                 <DataTemplate x:DataType="io:BaseFileSystemReferenceInfo">
                     <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
@@ -66,7 +66,7 @@
                 <DataTemplate x:DataType="io:BaseFileSystemReferenceInfo" >
                     <StackPanel Orientation="Horizontal" >
                         <Border Style="{Binding Path=TitleStyle, ElementName=CurrentControl}" >
-                            <HyperlinkButton Style="{Binding Path=HyperlinkStyle, ElementName=CurrentControl}" DataContext="{x:Bind}" Click="HyperlinkButton_Click" >
+                            <HyperlinkButton Style="{Binding Path=HyperlinkStyle, ElementName=CurrentControl}" DataContext="{x:Bind Mode=OneTime}" Click="HyperlinkButton_Click" >
                                 <StackPanel Orientation="Horizontal" Spacing="{Binding Path=TitleSpacing, ElementName=CurrentControl}"  >
                                     <FontIcon Glyph="{x:Bind local:FileListView.GetGlyph((io:BaseFileSystemReferenceInfo)), Mode=OneTime}" Style="{Binding Path=IconStyle, ElementName=CurrentControl}" />
                                     <TextBlock Text="{x:Bind Name, Mode=OneTime}" Style="{Binding Path=FileNameStyle, ElementName=CurrentControl}" />

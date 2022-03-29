@@ -36,6 +36,11 @@ public sealed partial class FileListView : UserControl
     public static readonly DependencyProperty PathHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(PathHeight), new GridLength(40));
 
     /// <summary>
+    /// The dependency property of path style.
+    /// </summary>
+    public static readonly DependencyProperty PathStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(PathStyle));
+
+    /// <summary>
     /// The dependency property of item container style.
     /// </summary>
     public static readonly DependencyProperty ItemContainerStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ItemContainerStyle));
@@ -80,6 +85,9 @@ public sealed partial class FileListView : UserControl
     /// </summary>
     public static readonly DependencyProperty DirectoryNavigationProperty = DependencyObjectProxy.RegisterProperty(nameof(DirectoryNavigation), true);
 
+    private const int DefaultDepth = 24;
+    private Guid tracing = Guid.Empty;
+
     /// <summary>
     /// The text.
     /// </summary>
@@ -108,6 +116,16 @@ public sealed partial class FileListView : UserControl
     /// <summary>
     /// Adds or removes the click event on file item.
     /// </summary>
+    public event DataEventHandler<IFileContainerReferenceInfo> Navigating;
+
+    /// <summary>
+    /// Adds or removes the click event on file item.
+    /// </summary>
+    public event DataEventHandler<IFileContainerReferenceInfo> Navigated;
+
+    /// <summary>
+    /// Adds or removes the click event on file item.
+    /// </summary>
     public event DataEventHandler<IFileReferenceInfo> FileOpened;
 
     /// <summary>
@@ -123,7 +141,21 @@ public sealed partial class FileListView : UserControl
     /// <summary>
     /// Gets the count of line.
     /// </summary>
-    public int Count { get; private set; }
+    public int Count => FileBrowser.Items.Count;
+
+    /// <summary>
+    /// Gets the selected items.
+    /// </summary>
+    public IFileSystemReferenceInfo SelectedItem
+    {
+        get => FileBrowser.SelectedItem as IFileSystemReferenceInfo;
+        set => FileBrowser.SelectedItem = value;
+    }
+
+    /// <summary>
+    /// Gets the selected items.
+    /// </summary>
+    public IEnumerable<IFileSystemReferenceInfo> SelectedItems => FileBrowser.SelectedItems?.OfType<IFileSystemReferenceInfo>();
 
     /// <summary>
     /// Gets or sets the width of line number.
@@ -132,6 +164,15 @@ public sealed partial class FileListView : UserControl
     {
         get => (GridLength)GetValue(PathHeightProperty);
         set => SetValue(PathHeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the path style.
+    /// </summary>
+    public Style PathStyle
+    {
+        get => (Style)GetValue(PathStyleProperty);
+        set => SetValue(PathStyleProperty, value);
     }
 
     /// <summary>
@@ -226,10 +267,12 @@ public sealed partial class FileListView : UserControl
     /// <param name="client">The file reference client.</param>
     /// <param name="directory">The start directory.</param>
     /// <param name="depth">The depth to load parent initialized.</param>
-    public async Task NavigateAsync(IFileReferenceClient client, IFileContainerReferenceInfo directory, int depth = 16)
+    public async Task NavigateAsync(IFileReferenceClient client, IFileContainerReferenceInfo directory, int depth = DefaultDepth)
     {
         FileReferenceClient = client;
         if (directory == null) return;
+        var id = tracing = Guid.NewGuid();
+        Navigating?.Invoke(this, new DataEventArgs<IFileContainerReferenceInfo>(directory));
         collection.Clear();
         if (client == null) client = FileReferenceClientFactory.Instance;
         var path = new List<IFileContainerReferenceInfo>
@@ -241,11 +284,13 @@ public sealed partial class FileListView : UserControl
             var item = path.LastOrDefault();
             if (item == null || !client.Test(item)) break;
             item = await client.GetParentAsync(item);
-            if (item == null) break;
+            if (item == null || path.Contains(item)) break;
+            if (id != tracing) return;
             path.Add(item);
         }
 
         path.Reverse();
+        if (id != tracing) return;
         this.path.Clear();
         foreach (var item in path)
         {
@@ -259,12 +304,16 @@ public sealed partial class FileListView : UserControl
             collection.Add(item);
         }
 
+        if (id != tracing) return;
         var files = await client.GetFilesAsync(directory);
         foreach (var item in files)
         {
             if (string.IsNullOrWhiteSpace(item.Name)) continue;
             collection.Add(item);
         }
+
+        if (id != tracing) return;
+        Navigated?.Invoke(this, new DataEventArgs<IFileContainerReferenceInfo>(directory));
     }
 
     /// <summary>
@@ -272,7 +321,7 @@ public sealed partial class FileListView : UserControl
     /// </summary>
     /// <param name="directory">The start directory.</param>
     /// <param name="depth">The depth to load parent initialized.</param>
-    public Task NavigateAsync(DirectoryInfo directory, int depth = 16)
+    public Task NavigateAsync(DirectoryInfo directory, int depth = DefaultDepth)
         => NavigateAsync(null, directory == null ? null : new LocalDirectoryReferenceInfo(directory), depth);
 
     private void FileBrowser_ItemClick(object sender, ItemClickEventArgs e)

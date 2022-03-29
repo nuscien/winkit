@@ -119,36 +119,17 @@ public sealed partial class TextView : UserControl
     /// <summary>
     /// The dependency property of text style.
     /// </summary>
-    public static readonly DependencyProperty TextStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(TextStyle), (c, e, d) =>
-    {
-        foreach (var l in c.collection)
-        {
-            l.TextStyle = e.NewValue;
-        }
-    });
+    public static readonly DependencyProperty TextStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(TextStyle));
 
     /// <summary>
     /// The dependency property of line number style.
     /// </summary>
-    public static readonly DependencyProperty LineNumberStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(LineNumberStyle), (c, e, d) =>
-    {
-        foreach (var l in c.collection)
-        {
-            l.LineNumberStyle = e.NewValue;
-        }
-    });
+    public static readonly DependencyProperty LineNumberStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(LineNumberStyle));
 
     /// <summary>
     /// The dependency property of line number width.
     /// </summary>
-    public static readonly DependencyProperty LineNumberWidthProperty = DependencyObjectProxy.RegisterProperty<double>(nameof(LineNumberWidth), (c, e, d) =>
-    {
-        var indexWidth = new GridLength(double.IsNaN(e.NewValue) || e.NewValue < 0 ? 0 : e.NewValue);
-        foreach (var l in c.collection)
-        {
-            l.LineNumberWidth = indexWidth;
-        }
-    }, 50);
+    public static readonly DependencyProperty LineNumberWidthProperty = DependencyObjectProxy.RegisterProperty(nameof(LineNumberWidth), new GridLength(50));
 
     /// <summary>
     /// The dependency property of selection mode.
@@ -214,9 +195,9 @@ public sealed partial class TextView : UserControl
     /// <summary>
     /// Gets or sets the width of line number.
     /// </summary>
-    public double LineNumberWidth
+    public GridLength LineNumberWidth
     {
-        get => (double)GetValue(LineNumberWidthProperty);
+        get => (GridLength)GetValue(LineNumberWidthProperty);
         set => SetValue(LineNumberWidthProperty, value);
     }
 
@@ -383,17 +364,13 @@ public sealed partial class TextView : UserControl
     public void Append(IEnumerable<string> text)
     {
         if (text == null) return;
-        var indexWidth = new GridLength(double.IsNaN(LineNumberWidth) || LineNumberWidth < 0 ? 0 : LineNumberWidth);
         foreach (var line in text)
         {
             Count++;
             var item = new TextViewModel
             {
                 Text = line,
-                TextStyle = TextStyle,
-                LineNumber = Count,
-                LineNumberWidth = indexWidth,
-                LineNumberStyle = LineNumberStyle
+                LineNumber = Count
             };
             collection.Add(item);
         }
@@ -406,7 +383,6 @@ public sealed partial class TextView : UserControl
     public void Append(IEnumerable<Line> text)
     {
         if (text == null) return;
-        var indexWidth = new GridLength(double.IsNaN(LineNumberWidth) || LineNumberWidth < 0 ? 0 : LineNumberWidth);
         foreach (var line in text)
         {
             Count++;
@@ -414,10 +390,7 @@ public sealed partial class TextView : UserControl
             var item = new TextViewModel
             {
                 Text = s,
-                TextStyle = TextStyle,
-                LineNumber = Count,
-                LineNumberWidth = indexWidth,
-                LineNumberStyle = LineNumberStyle
+                LineNumber = Count
             };
             var background = line?.Background;
             if (background != null) item.Background = background;
@@ -541,24 +514,6 @@ internal class TextViewModel : ObservableProperties
     public Brush Background
     {
         get => GetCurrentProperty<Brush>();
-        internal set => SetCurrentProperty(value);
-    }
-
-    public Style LineNumberStyle
-    {
-        get => GetCurrentProperty<Style>();
-        internal set => SetCurrentProperty(value);
-    }
-
-    public Style TextStyle
-    {
-        get => GetCurrentProperty<Style>();
-        internal set => SetCurrentProperty(value);
-    }
-
-    public GridLength LineNumberWidth
-    {
-        get => GetCurrentProperty<GridLength>();
         internal set => SetCurrentProperty(value);
     }
 }

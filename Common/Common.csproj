@@ -42,6 +42,7 @@
   <ItemGroup>
     <None Remove="BlockHeader.xaml" />
     <None Remove="CommentView.xaml" />
+    <None Remove="FileListView.xaml" />
     <None Remove="SettingsExpanderHeader.xaml" />
     <None Remove="TextButton.xaml" />
     <None Remove="TextView.xaml" />
@@ -78,6 +79,12 @@
     <None Include="README.md" Pack="true" PackagePath="README.md" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="FileListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

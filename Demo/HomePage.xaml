@@ -17,5 +17,6 @@
         <TextBlock Text="This demo shows basic visual samples based on some 3rd-party data sources. Copyrights of these data sources are reserved by their owner." TextWrapping="WrapWholeWords" Foreground="{StaticResource CommonForeground}" />
         <HyperlinkButton Content="Read more…" NavigateUri="https://github.com/nuscien/winkit/tree/main/Demo" />
         <controls:TextView x:Name="TextViewElement" Height="200" />
+        <controls:FileListView x:Name="FileBrowserElement" Height="200" />
     </StackPanel>
 </Page>

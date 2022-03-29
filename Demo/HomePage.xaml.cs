@@ -42,6 +42,7 @@ public sealed partial class HomePage : Page
         }
 
         _ = ThenAsync();
+        FileBrowserElement.SetData(new DirectoryInfo("C:\\"));
     }
 
     private async Task ThenAsync()

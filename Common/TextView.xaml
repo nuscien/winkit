@@ -1,4 +1,5 @@
 ﻿<UserControl
+    x:Name="CurrentControl"
     x:Class="Trivial.UI.TextView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -49,16 +50,16 @@
     <ListView x:Name="TextElement" SelectionMode="{x:Bind SelectionMode}" x:DefaultBindMode="OneWay" Foreground="{x:Bind Foreground}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" ItemContainerStyle="{x:Bind ItemContainerStyle}" ItemClick="TextElement_ItemClick" SelectionChanged="TextElement_SelectionChanged" >
         <ListView.ItemTemplate>
             <DataTemplate x:DataType="local:TextViewModel" >
-                <Grid Tag="{x:Bind LineNumber}">
+                <Grid Tag="{x:Bind LineNumber}" >
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="{x:Bind LineNumberWidth}" />
+                        <ColumnDefinition Width="{Binding Path=LineNumberWidth, ElementName=CurrentControl}" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Border>
-                        <TextBlock Text="{x:Bind LineNumber}" Style="{x:Bind LineNumberStyle}" />
+                        <TextBlock Text="{x:Bind LineNumber}" Style="{Binding Path=LineNumberStyle, ElementName=CurrentControl}" />
                     </Border>
                     <Border Background="{x:Bind Background}" Grid.Column="1" >
-                        <TextBlock Text="{x:Bind Text}" Style="{x:Bind TextStyle}" />
+                        <TextBlock Text="{x:Bind Text}" Style="{Binding Path=TextStyle, ElementName=CurrentControl}" />
                     </Border>
                 </Grid>
             </DataTemplate>

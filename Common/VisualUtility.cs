@@ -780,6 +780,218 @@ public static partial class VisualUtility
     public static AppBarButton CreateAppBarButton(string name, char glyph, Action click, Style style = null)
         => CreateAppBarButton(name, glyph, click != null ? (sender, args) => click() : null, style);
 
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="symbol">The icon symbol.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, Symbol symbol, Action click, Style style = null)
+        => CreateAppBarButton(name, symbol, click != null ? (sender, args) => click() : null, style);
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon URI.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="showAsMonochrome">true if need to show the bitmap in a single color; otherwise, show the bitmap in full color.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(string name, Uri icon, Action click, bool showAsMonochrome = false, Style style = null)
+        => CreateAppBarButton(name, icon, click != null ? (sender, args) => click() : null, showAsMonochrome, style);
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="bar">The command bar.</param>
+    /// <param name="secondary">true if add to the secondary commands; otherwise, false.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(CommandBar bar, bool secondary, string name, IconElement icon, RoutedEventHandler click, Style style = null)
+    {
+        var c = CreateAppBarButton(name, icon, click, style);
+        if (bar != null)
+        {
+            if (secondary) bar.SecondaryCommands.Add(c);
+            else bar.PrimaryCommands.Add(c);
+        }
+
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="bar">The command bar.</param>
+    /// <param name="secondary">true if add to the secondary commands; otherwise, false.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="glyph">The icon glyph.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(CommandBar bar, bool secondary, string name, char glyph, RoutedEventHandler click, Style style = null)
+    {
+        var c = CreateAppBarButton(name, glyph, click, style);
+        if (bar != null)
+        {
+            if (secondary) bar.SecondaryCommands.Add(c);
+            else bar.PrimaryCommands.Add(c);
+        }
+
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="bar">The command bar.</param>
+    /// <param name="secondary">true if add to the secondary commands; otherwise, false.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="symbol">The icon symbol.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(CommandBar bar, bool secondary, string name, Symbol symbol, RoutedEventHandler click, Style style = null)
+    {
+        var c = CreateAppBarButton(name, symbol, click, style);
+        if (bar != null)
+        {
+            if (secondary) bar.SecondaryCommands.Add(c);
+            else bar.PrimaryCommands.Add(c);
+        }
+
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="bar">The command bar.</param>
+    /// <param name="secondary">true if add to the secondary commands; otherwise, false.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon URI.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="showAsMonochrome">true if need to show the bitmap in a single color; otherwise, show the bitmap in full color.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(CommandBar bar, bool secondary, string name, Uri icon, RoutedEventHandler click, bool showAsMonochrome = false, Style style = null)
+    {
+        var c = CreateAppBarButton(name, icon, click, showAsMonochrome, style);
+        if (bar != null)
+        {
+            if (secondary) bar.SecondaryCommands.Add(c);
+            else bar.PrimaryCommands.Add(c);
+        }
+
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a button for command bar.
+    /// </summary>
+    /// <param name="bar">The command bar.</param>
+    /// <param name="secondary">true if add to the secondary commands; otherwise, false.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="icon">The icon.</param>
+    /// <param name="click">The click event handler.</param>
+    /// <param name="style">The optional style of the button.</param>
+    /// <returns>The button.</returns>
+    public static AppBarButton CreateAppBarButton(CommandBar bar, bool secondary, string name, IconElement icon, Action click, Style style = null)
+    {
+        var c = CreateAppBarButton(name, icon, click != null ? (sender, args) => click() : null, style);
+        if (bar != null)
+        {
+            if (secondary) bar.SecondaryCommands.Add(c);
+            else bar.PrimaryCommands.Add(c);
+        }
+
+        return c;
+    }
+
+    /// <summary>
+    /// Tries to get tag of the element.
+    /// </summary>
+    /// <typeparam name="T">The type of tag.</typeparam>
+    /// <param name="target">The target element.</param>
+    /// <param name="result">The result.</param>
+    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    public static bool TryGetTag<T>(object target, out T result)
+    {
+        if (target is FrameworkElement element && element.Tag is T tag)
+        {
+            result = tag;
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Tries to get tag of the element.
+    /// </summary>
+    /// <typeparam name="TTag">The type of tag.</typeparam>
+    /// <typeparam name="TElement">The type of element.</typeparam>
+    /// <param name="target">The target element.</param>
+    /// <param name="result">The result.</param>
+    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    public static bool TryGetTag<TTag, TElement>(object target, out TTag result) where TElement : FrameworkElement
+    {
+        if (target is TElement element && element.Tag is TTag tag)
+        {
+            result = tag;
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Tries to get tag of the element.
+    /// </summary>
+    /// <typeparam name="T">The type of tag.</typeparam>
+    /// <param name="target">The target element.</param>
+    /// <param name="result">The result.</param>
+    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    public static bool TryGetDataContext<T>(object target, out T result)
+    {
+        if (target is FrameworkElement element && element.DataContext is T tag)
+        {
+            result = tag;
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Tries to get tag of the element.
+    /// </summary>
+    /// <typeparam name="TTag">The type of tag.</typeparam>
+    /// <typeparam name="TElement">The type of element.</typeparam>
+    /// <param name="target">The target element.</param>
+    /// <param name="result">The result.</param>
+    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    public static bool TryGetDataContext<TTag, TElement>(object target, out TTag result) where TElement : FrameworkElement
+    {
+        if (target is TElement element && element.DataContext is TTag tag)
+        {
+            result = tag;
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
+
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
     {
         if (json == null) return;

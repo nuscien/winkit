@@ -304,7 +304,7 @@ public sealed partial class TextView : UserControl
     public int GetLineNumber(string q, bool exactly = false, int start = 0, StringComparison? comparison = null)
     {
         if (string.IsNullOrEmpty(q)) return -1;
-        return SearchInternal(q, exactly, start, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+        return SearchInternal(q, exactly, start, comparison).FirstOrDefault()?.LineNumber ?? -1;
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public sealed partial class TextView : UserControl
     {
         if (string.IsNullOrEmpty(q)) return -1;
         var i = afterSelection && TextElement.SelectedItem is TextViewModel m ? (m.LineNumber + 1) : 0;
-        return SearchInternal(q, exactly, i, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+        return SearchInternal(q, exactly, i, comparison).FirstOrDefault()?.LineNumber ?? -1;
     }
 
     /// <summary>
@@ -333,7 +333,7 @@ public sealed partial class TextView : UserControl
     public int GetLastLineNumber(string q, bool exactly = false, int start = 0, StringComparison? comparison = null)
     {
         if (string.IsNullOrEmpty(q)) return -1;
-        return SearchLastInternal(q, exactly, start, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+        return SearchLastInternal(q, exactly, start, comparison).FirstOrDefault()?.LineNumber ?? -1;
     }
 
     /// <summary>
@@ -348,7 +348,7 @@ public sealed partial class TextView : UserControl
     {
         if (string.IsNullOrEmpty(q)) return -1;
         var i = beforeSelection && TextElement.SelectedItem is TextViewModel m ? (m.LineNumber - 1) : -1;
-        return SearchLastInternal(q, exactly, i, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+        return SearchLastInternal(q, exactly, i, comparison).FirstOrDefault()?.LineNumber ?? -1;
     }
 
     /// <summary>

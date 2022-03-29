@@ -26,21 +26,21 @@ public interface IFileReferenceClient
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The file collection.</returns>
-    IEnumerable<IFileReferenceInfo> GetFiles(IFileContainerReferenceInfo directory);
+    Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(IFileContainerReferenceInfo directory);
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The directory collection.</returns>
-    IEnumerable<IDirectoryReferenceInfo> GetDirectories(IFileContainerReferenceInfo directory);
+    Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(IFileContainerReferenceInfo directory);
 
     /// <summary>
     /// Gets the parent.
     /// </summary>
     /// <param name="directory">The directory to get parent.</param>
     /// <return>The parent information; or null, if no parent.</return>
-    IFileContainerReferenceInfo GetParent(IFileContainerReferenceInfo directory);
+    Task<IFileContainerReferenceInfo> GetParentAsync(IFileContainerReferenceInfo directory);
 }
 
 /// <summary>
@@ -109,18 +109,18 @@ public interface IDirectoryHostReferenceInfo : IDirectoryReferenceInfo
     /// Lists all files.
     /// </summary>
     /// <returns>The file collection.</returns>
-    IEnumerable<IFileReferenceInfo> GetFiles();
+    Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync();
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
     /// <returns>The directory collection.</returns>
-    IEnumerable<IDirectoryReferenceInfo> GetDirectories();
+    Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync();
 
     /// <summary>
     /// Gets the parent.
     /// </summary>
-    IFileContainerReferenceInfo GetParent();
+    Task<IFileContainerReferenceInfo> GetParentAsync();
 }
 
 /// <summary>
@@ -140,28 +140,21 @@ public abstract class BaseFileReferenceClient<T> : IFileReferenceClient where T 
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The file collection.</returns>
-    public abstract IEnumerable<IFileReferenceInfo> GetFiles(T directory);
+    public abstract Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(T directory);
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The directory collection.</returns>
-    public abstract IEnumerable<T> GetDirectories(T directory);
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <param name="file">The directory to get parent.</param>
-    /// <return>The parent information; or null, if no parent.</return>
-    public abstract T GetParent(IFileReferenceInfo file);
+    public abstract Task<IReadOnlyList<T>> GetDirectoriesAsync(T directory);
 
     /// <summary>
     /// Gets the parent.
     /// </summary>
     /// <param name="directory">The directory to get parent.</param>
     /// <return>The parent information; or null, if no parent.</return>
-    public abstract T GetParent(T directory);
+    public abstract Task<T> GetParentAsync(T directory);
 
     /// <summary>
     /// Tests if supports the directory reference.
@@ -179,10 +172,10 @@ public abstract class BaseFileReferenceClient<T> : IFileReferenceClient where T 
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The file collection.</returns>
-    IEnumerable<IFileReferenceInfo> IFileReferenceClient.GetFiles(IFileContainerReferenceInfo directory)
+    async Task<IReadOnlyList<IFileReferenceInfo>> IFileReferenceClient.GetFilesAsync(IFileContainerReferenceInfo directory)
     {
         if (directory is not T info) return new List<IFileReferenceInfo>();
-        return GetFiles(info) ?? new List<IFileReferenceInfo>();
+        return await GetFilesAsync(info) ?? new List<IFileReferenceInfo>();
     }
 
     /// <summary>
@@ -190,15 +183,18 @@ public abstract class BaseFileReferenceClient<T> : IFileReferenceClient where T 
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The directory collection.</returns>
-    IEnumerable<IDirectoryReferenceInfo> IFileReferenceClient.GetDirectories(IFileContainerReferenceInfo directory)
+    async Task<IReadOnlyList<IDirectoryReferenceInfo>> IFileReferenceClient.GetDirectoriesAsync(IFileContainerReferenceInfo directory)
     {
-        if (directory is not T info) yield break;
-        var list = GetDirectories(info);
-        if (list == null) yield break;
+        var col = new List<IDirectoryReferenceInfo>();
+        if (directory is not T info) return col;
+        var list = await GetDirectoriesAsync(info);
+        if (list == null) return col;
         foreach (var item in list)
         {
-            yield return item;
+            col.Add(item);
         }
+
+        return col;
     }
 
     /// <summary>
@@ -206,10 +202,10 @@ public abstract class BaseFileReferenceClient<T> : IFileReferenceClient where T 
     /// </summary>
     /// <param name="directory">The directory to get parent.</param>
     /// <return>The parent information; or null, if no parent.</return>
-    IFileContainerReferenceInfo IFileReferenceClient.GetParent(IFileContainerReferenceInfo directory)
+    async Task<IFileContainerReferenceInfo> IFileReferenceClient.GetParentAsync(IFileContainerReferenceInfo directory)
     {
         if (directory is not T info) return null;
-        return GetParent(info);
+        return await GetParentAsync(info);
     }
 }
 
@@ -284,15 +280,14 @@ public class FileReferenceClientFactory : IFileReferenceClient
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The file collection.</returns>
-    public IEnumerable<IFileReferenceInfo> GetFiles(IFileContainerReferenceInfo directory)
+    public async Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(IFileContainerReferenceInfo directory)
     {
         if (directory == null) return new List<IFileReferenceInfo>();
         var type = directory.GetType();
         if (handlers.TryGetValue(type, out var h) && h.Test(directory))
-            return h.GetFiles(directory) ?? new List<IFileReferenceInfo>();
-        if (directory is IDirectoryHostReferenceInfo dir) return dir.GetFiles() ?? new List<IFileReferenceInfo>();
-        if (directory.Source is not DirectoryInfo info) return new List<IFileReferenceInfo>();
-        return info.EnumerateFiles().Select(ele => new LocalFileReferenceInfo(ele, new LocalDirectoryReferenceInfo(info)));
+            return await h.GetFilesAsync(directory) ?? new List<IFileReferenceInfo>();
+        if (directory is IDirectoryHostReferenceInfo dir) return await dir.GetFilesAsync() ?? new List<IFileReferenceInfo>();
+        return await LocalDirectoryReferenceInfo.GetFilesAsync(directory.Source as DirectoryInfo, null);
     }
 
     /// <summary>
@@ -300,15 +295,14 @@ public class FileReferenceClientFactory : IFileReferenceClient
     /// </summary>
     /// <param name="directory">The directory to load sub-directories or files.</param>
     /// <returns>The directory collection.</returns>
-    public IEnumerable<IDirectoryReferenceInfo> GetDirectories(IFileContainerReferenceInfo directory)
+    public async Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(IFileContainerReferenceInfo directory)
     {
         if (directory == null) return new List<IDirectoryReferenceInfo>();
         var type = directory.GetType();
         if (handlers.TryGetValue(type, out var h) && h.Test(directory))
-            return h.GetDirectories(directory) ?? new List<IDirectoryReferenceInfo>();
-        if (directory is IDirectoryHostReferenceInfo dir) return dir.GetDirectories() ?? new List<IDirectoryReferenceInfo>();
-        if (directory.Source is not DirectoryInfo info) return new List<IDirectoryReferenceInfo>();
-        return info.EnumerateDirectories().Select(ele => new LocalDirectoryReferenceInfo(ele, new LocalDirectoryReferenceInfo(info)));
+            return await h.GetDirectoriesAsync(directory) ?? new List<IDirectoryReferenceInfo>();
+        if (directory is IDirectoryHostReferenceInfo dir) return await dir.GetDirectoriesAsync() ?? new List<IDirectoryReferenceInfo>();
+        return await LocalDirectoryReferenceInfo.GetDirectoriesAsync(directory.Source as DirectoryInfo, null);
     }
 
     /// <summary>
@@ -316,13 +310,13 @@ public class FileReferenceClientFactory : IFileReferenceClient
     /// </summary>
     /// <param name="directory">The directory to get parent.</param>
     /// <return>The parent information; or null, if no parent.</return>
-    public IFileContainerReferenceInfo GetParent(IFileContainerReferenceInfo directory)
+    public async Task<IFileContainerReferenceInfo> GetParentAsync(IFileContainerReferenceInfo directory)
     {
         if (directory == null) return null;
         var type = directory.GetType();
         if (handlers.TryGetValue(type, out var h) && h.Test(directory))
-            return h.GetParent(directory);
-        if (directory is IDirectoryHostReferenceInfo dir) return dir.GetParent();
+            return await h.GetParentAsync(directory);
+        if (directory is IDirectoryHostReferenceInfo dir) return await dir.GetParentAsync();
         if (directory.Source is not DirectoryInfo info) return null;
         return new LocalDirectoryReferenceInfo(info);
     }
@@ -819,29 +813,29 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
     /// Lists all files.
     /// </summary>
     /// <returns>The file collection.</returns>
-    public IEnumerable<LocalFileReferenceInfo> GetFiles()
-        => Source?.EnumerateFiles()?.Select(ele => new LocalFileReferenceInfo(ele, this)) ?? new List<LocalFileReferenceInfo>();
+    public Task<IReadOnlyList<LocalFileReferenceInfo>> GetFilesAsync()
+        => GetLocalFilesAsync(Source, this);
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
     /// <returns>The directory collection.</returns>
-    public IEnumerable<LocalDirectoryReferenceInfo> GetDirectories()
-        => Source?.EnumerateDirectories()?.Select(ele => new LocalDirectoryReferenceInfo(ele, this)) ?? new List<LocalDirectoryReferenceInfo>();
+    public Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetDirectoriesAsync()
+        => GetLocalDirectoriesAsync(Source, this);
 
     /// <summary>
     /// Lists all files.
     /// </summary>
     /// <returns>The file collection.</returns>
-    IEnumerable<IFileReferenceInfo> IDirectoryHostReferenceInfo.GetFiles()
-        => GetFiles();
+    Task<IReadOnlyList<IFileReferenceInfo>> IDirectoryHostReferenceInfo.GetFilesAsync()
+        => GetFilesAsync(Source, this);
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
     /// <returns>The directory collection.</returns>
-    IEnumerable<IDirectoryReferenceInfo> IDirectoryHostReferenceInfo.GetDirectories()
-        => GetDirectories();
+    Task<IReadOnlyList<IDirectoryReferenceInfo>> IDirectoryHostReferenceInfo.GetDirectoriesAsync()
+        => GetDirectoriesAsync(Source, this);
 
     /// <summary>
     /// Refreshes the state of the object.
@@ -890,8 +884,14 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
     /// <summary>
     /// Gets the parent.
     /// </summary>
-    IFileContainerReferenceInfo IDirectoryHostReferenceInfo.GetParent()
-        => GetParentInternal();
+    public Task<LocalDirectoryReferenceInfo> GetParentAsync()
+        => Task.FromResult(GetParentInternal() as LocalDirectoryReferenceInfo);
+
+    /// <summary>
+    /// Gets the parent.
+    /// </summary>
+    Task<IFileContainerReferenceInfo> IDirectoryHostReferenceInfo.GetParentAsync()
+        => Task.FromResult(GetParentInternal());
 
     /// <summary>
     /// Gets the parent.
@@ -925,6 +925,42 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
         }
 
         return parent;
+    }
+
+    internal static Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetLocalDirectoriesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
+    {
+        if (dir == null)
+            return Task.FromResult<IReadOnlyList<LocalDirectoryReferenceInfo>>(new List<LocalDirectoryReferenceInfo>());
+        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
+        var col = dir.EnumerateDirectories()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalDirectoryReferenceInfo(ele, parent))?.ToList() ?? new List<LocalDirectoryReferenceInfo>();
+        return Task.FromResult<IReadOnlyList<LocalDirectoryReferenceInfo>>(col);
+    }
+
+    internal static Task<IReadOnlyList<LocalFileReferenceInfo>> GetLocalFilesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
+    {
+        if (dir == null)
+            return Task.FromResult<IReadOnlyList<LocalFileReferenceInfo>>(new List<LocalFileReferenceInfo>());
+        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
+        var col = dir.EnumerateFiles()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalFileReferenceInfo(ele, parent))?.ToList() ?? new List<LocalFileReferenceInfo>();
+        return Task.FromResult<IReadOnlyList<LocalFileReferenceInfo>>(col);
+    }
+
+    internal static Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
+    {
+        if (dir == null)
+            return Task.FromResult<IReadOnlyList<IDirectoryReferenceInfo>>(new List<IDirectoryReferenceInfo>());
+        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
+        var col = dir.EnumerateDirectories()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalDirectoryReferenceInfo(ele, parent) as IDirectoryReferenceInfo)?.ToList() ?? new List<IDirectoryReferenceInfo>();
+        return Task.FromResult<IReadOnlyList<IDirectoryReferenceInfo>>(col);
+    }
+
+    internal static Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
+    {
+        if (dir == null)
+            return Task.FromResult<IReadOnlyList<IFileReferenceInfo>>(new List<IFileReferenceInfo>());
+        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
+        var col = dir.EnumerateFiles()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalFileReferenceInfo(ele, parent) as IFileReferenceInfo)?.ToList() ?? new List<IFileReferenceInfo>();
+        return Task.FromResult<IReadOnlyList<IFileReferenceInfo>>(col);
     }
 }
 

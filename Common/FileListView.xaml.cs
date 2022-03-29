@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Trivial.Data;
 using Trivial.IO;
@@ -225,7 +226,7 @@ public sealed partial class FileListView : UserControl
     /// <param name="client">The file reference client.</param>
     /// <param name="directory">The start directory.</param>
     /// <param name="depth">The depth to load parent initialized.</param>
-    public void SetData(IFileReferenceClient client, IFileContainerReferenceInfo directory, int depth = 16)
+    public async Task NavigateAsync(IFileReferenceClient client, IFileContainerReferenceInfo directory, int depth = 16)
     {
         FileReferenceClient = client;
         if (directory == null) return;
@@ -239,7 +240,7 @@ public sealed partial class FileListView : UserControl
         {
             var item = path.LastOrDefault();
             if (item == null || !client.Test(item)) break;
-            item = client.GetParent(item);
+            item = await client.GetParentAsync(item);
             if (item == null) break;
             path.Add(item);
         }
@@ -251,14 +252,14 @@ public sealed partial class FileListView : UserControl
             this.path.Add(item);
         }
 
-        var directories = client.GetDirectories(directory);
+        var directories = await client.GetDirectoriesAsync(directory);
         foreach (var item in directories)
         {
             if (string.IsNullOrWhiteSpace(item.Name)) continue;
             collection.Add(item);
         }
 
-        var files = client.GetFiles(directory);
+        var files = await client.GetFilesAsync(directory);
         foreach (var item in files)
         {
             if (string.IsNullOrWhiteSpace(item.Name)) continue;
@@ -271,8 +272,8 @@ public sealed partial class FileListView : UserControl
     /// </summary>
     /// <param name="directory">The start directory.</param>
     /// <param name="depth">The depth to load parent initialized.</param>
-    public void SetData(DirectoryInfo directory, int depth = 16)
-        => SetData(null, directory == null ? null : new LocalDirectoryReferenceInfo(directory), depth);
+    public Task NavigateAsync(DirectoryInfo directory, int depth = 16)
+        => NavigateAsync(null, directory == null ? null : new LocalDirectoryReferenceInfo(directory), depth);
 
     private void FileBrowser_ItemClick(object sender, ItemClickEventArgs e)
         => ItemClick?.Invoke(this, e);
@@ -307,12 +308,12 @@ public sealed partial class FileListView : UserControl
         if (button.DataContext is IFileReferenceInfo file)
         {
             FileOpened?.Invoke(this, new DataEventArgs<IFileReferenceInfo>(file));
-            if (DirectoryNavigation && file is IFileContainerReferenceInfo container) SetData(FileReferenceClient, container);
+            if (DirectoryNavigation && file is IFileContainerReferenceInfo container) _ = NavigateAsync(FileReferenceClient, container);
         }
         else if (button.DataContext is IDirectoryHostReferenceInfo dir)
         {
             DirectoryOpened?.Invoke(this, new DataEventArgs<IDirectoryReferenceInfo>(dir));
-            if (DirectoryNavigation) SetData(FileReferenceClient, dir);
+            if (DirectoryNavigation) _ = NavigateAsync(FileReferenceClient, dir);
         }
     }
 
@@ -320,6 +321,6 @@ public sealed partial class FileListView : UserControl
     {
         if (args?.Item is not IFileContainerReferenceInfo info) return;
         if (info is IDirectoryReferenceInfo dir) DirectoryOpened?.Invoke(this, new DataEventArgs<IDirectoryReferenceInfo>(dir));
-        if (DirectoryNavigation) SetData(FileReferenceClient, info);
+        if (DirectoryNavigation) _ = NavigateAsync(FileReferenceClient, info);
     }
 }

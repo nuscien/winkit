@@ -308,6 +308,50 @@ public sealed partial class TextView : UserControl
     }
 
     /// <summary>
+    /// Gets line number by searching a keyword.
+    /// </summary>
+    /// <param name="q">The keyword to search.</param>
+    /// <param name="exactly">true if equaling; otherwise, false.</param>
+    /// <param name="afterSelection">true if find next; otherwise, false.</param>
+    /// <param name="comparison">One of the enumeration values that specifies the rules to use in the comparison.</param>
+    /// <returns>The line number.</returns>
+    public int GetLineNumber(string q, bool exactly, bool afterSelection, StringComparison? comparison = null)
+    {
+        if (string.IsNullOrEmpty(q)) return -1;
+        var i = afterSelection && TextElement.SelectedItem is TextViewModel m ? (m.LineNumber + 1) : 0;
+        return SearchInternal(q, exactly, i, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+    }
+
+    /// <summary>
+    /// Gets line number by searching a keyword.
+    /// </summary>
+    /// <param name="q">The keyword to search.</param>
+    /// <param name="exactly">true if equaling; otherwise, false.</param>
+    /// <param name="start">The start position.</param>
+    /// <param name="comparison">One of the enumeration values that specifies the rules to use in the comparison.</param>
+    /// <returns>The line number.</returns>
+    public int GetLastLineNumber(string q, bool exactly = false, int start = 0, StringComparison? comparison = null)
+    {
+        if (string.IsNullOrEmpty(q)) return -1;
+        return SearchLastInternal(q, exactly, start, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+    }
+
+    /// <summary>
+    /// Gets line number by searching a keyword.
+    /// </summary>
+    /// <param name="q">The keyword to search.</param>
+    /// <param name="exactly">true if equaling; otherwise, false.</param>
+    /// <param name="beforeSelection">true if find next; otherwise, false.</param>
+    /// <param name="comparison">One of the enumeration values that specifies the rules to use in the comparison.</param>
+    /// <returns>The line number.</returns>
+    public int GetLastLineNumber(string q, bool exactly, bool beforeSelection, StringComparison? comparison = null)
+    {
+        if (string.IsNullOrEmpty(q)) return -1;
+        var i = beforeSelection && TextElement.SelectedItem is TextViewModel m ? (m.LineNumber - 1) : -1;
+        return SearchLastInternal(q, exactly, i, comparison).Select(ele => ele.LineNumber).FirstOrDefault(-1);
+    }
+
+    /// <summary>
     /// Gets all line numbers by searching a keyword.
     /// </summary>
     /// <param name="q">The keyword to search.</param>
@@ -452,10 +496,20 @@ public sealed partial class TextView : UserControl
     private IEnumerable<TextViewModel> SearchInternal(string q, bool exactly = false, int start = 0, StringComparison? comparison = null)
     {
         if (string.IsNullOrEmpty(q)) return new List<TextViewModel>();
-        var col = collection.Skip(start < 0 ? 0 : start);
+        var col = collection.Where(ele => ele != null && ele.LineNumber >= start);
         if (exactly)
-            return comparison.HasValue ? col.Where(ele => q.Equals(ele?.Text, comparison.Value)) : col.Where(ele => q.Equals(ele?.Text));
-        return comparison.HasValue ? col.Where(ele => !string.IsNullOrEmpty(ele?.Text) && ele.Text.Contains(q, comparison.Value)) : col.Where(ele => !string.IsNullOrEmpty(ele?.Text) && ele.Text.Contains(q));
+            return comparison.HasValue ? col.Where(ele => q.Equals(ele.Text, comparison.Value)) : col.Where(ele => q.Equals(ele.Text));
+        return comparison.HasValue ? col.Where(ele => !string.IsNullOrEmpty(ele.Text) && ele.Text.Contains(q, comparison.Value)) : col.Where(ele => !string.IsNullOrEmpty(ele.Text) && ele.Text.Contains(q));
+    }
+
+    private IEnumerable<TextViewModel> SearchLastInternal(string q, bool exactly = false, int start = 0, StringComparison? comparison = null)
+    {
+        if (string.IsNullOrEmpty(q)) return new List<TextViewModel>();
+        var col = start == -1 ? collection.Where(ele => ele != null) : collection.Where(ele => ele != null && ele.LineNumber <= start);
+        col = col.OrderByDescending(ele => ele.LineNumber);
+        if (exactly)
+            return comparison.HasValue ? col.Where(ele => q.Equals(ele.Text, comparison.Value)) : col.Where(ele => q.Equals(ele.Text));
+        return comparison.HasValue ? col.Where(ele => !string.IsNullOrEmpty(ele.Text) && ele.Text.Contains(q, comparison.Value)) : col.Where(ele => !string.IsNullOrEmpty(ele.Text) && ele.Text.Contains(q));
     }
 
     private void TextElement_ItemClick(object sender, ItemClickEventArgs e)

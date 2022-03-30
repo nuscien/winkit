@@ -80,7 +80,7 @@
         <Setter Property="DescriptionWrapping" Value="NoWrap" />
     </Style>
     <Style TargetType="local:TextButton" x:Key="WinKit.TextButtonStyle" >
-        <Setter Property="Foreground" Value="{StaticResource WinKit.Foreground}" />
+        <Setter Property="Foreground" Value="{ThemeResource WinKit.Foreground}" />
         <Setter Property="HoverForeground" Value="{ThemeResource WinKit.TitleForeground}" />
         <Setter Property="DisabledForeground" Value="{ThemeResource WinKit.DisabledForeground}" />
         <Setter Property="Background" Value="{ThemeResource WinKit.HoverBackground}" />

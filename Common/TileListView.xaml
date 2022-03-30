@@ -17,7 +17,7 @@
                 <Setter Property="IconHeight" Value="24" />
                 <Setter Property="IconMargin" Value="0,0,8,0" />
                 <Setter Property="TitleFontSize" Value="20" />
-                <Setter Property="TitleForeground" Value="{StaticResource TitleForeground}" />
+                <Setter Property="TitleForeground" Value="{ThemeResource WinKit.TitleForeground}" />
                 <Setter Property="HeaderPadding" Value="8" />
                 <Setter Property="ItemStyle" >
                     <Setter.Value>

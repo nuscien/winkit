@@ -2,6 +2,10 @@
 
 Includes some complex controls and utilities on WinUI 3.
 
+```csharp
+using Trivial.UI;
+```
+
 ## Controls
 
 - `TileItem` shows image and text.
@@ -11,6 +15,7 @@ Includes some complex controls and utilities on WinUI 3.
 - `TextButton` is a button with different states that you can customize colors.
 - `TextView` is a read-only text view for string with a greate number of line.
 - `SettingsExpanderHeader` is the expander header like the one in Windows Settings.
+- `FileListView` is a lite file browser.
 
 ## Utilities
 

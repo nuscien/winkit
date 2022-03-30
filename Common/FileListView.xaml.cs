@@ -316,36 +316,29 @@ public sealed partial class FileListView : UserControl
         if (directory == null || !directory.Exists) return;
         var id = tracing = Guid.NewGuid();
         Navigating?.Invoke(this, new DataEventArgs<IFileContainerReferenceInfo>(directory));
+        var oldDir = FileReferenceClient == client ? Directory : null;
         FileReferenceClient = client;
         Directory = directory;
-        collection.Clear();
         if (client == null) client = FileReferenceClientFactory.Instance;
-        var path = new List<IFileContainerReferenceInfo>
-        {
-            directory
-        };
-        for (var i = 0; i < depth; i++)
-        {
-            var item = path.LastOrDefault();
-            if (item == null || !client.Test(item)) break;
-            item = await client.GetParentAsync(item);
-            if (item == null || path.Contains(item)) break;
-            if (id != tracing) return;
-            path.Add(item);
-        }
-
-        path.Reverse();
+        if (!client.Test(directory)) return;
+        collection.Clear();
+        var parent = await client.GetParentAsync(directory);
+        var updatePath = parent != oldDir || oldDir == null;
         if (id != tracing) return;
-        this.path.Clear();
-        foreach (var item in path)
+        if (updatePath)
         {
-            this.path.Add(item);
+            path.Clear();
+            if (parent == null || parent == directory)
+                updatePath = false;
+            else
+                path.Add(parent);
         }
 
+        path.Add(directory);
         var directories = await client.GetDirectoriesAsync(directory);
-        if (id != tracing) return;
-        if (directories.Count > 0)
+        if (directories != null && directories.Count > 0)
         {
+            if (id != tracing) return;
             foreach (var item in directories)
             {
                 if (string.IsNullOrWhiteSpace(item.Name)) continue;
@@ -353,14 +346,39 @@ public sealed partial class FileListView : UserControl
             }
         }
 
-        if (id != tracing) return;
         var files = await client.GetFilesAsync(directory);
-        if (files.Count > 0)
+        if (files != null && files.Count > 0)
         {
+            if (id != tracing) return;
             foreach (var item in files)
             {
                 if (string.IsNullOrWhiteSpace(item.Name)) continue;
                 collection.Add(item);
+            }
+        }
+
+        if (updatePath)
+        {
+            var pathList = new List<IFileContainerReferenceInfo>
+            {
+                directory,
+                parent
+            };
+            for (var i = 0; i < depth; i++)
+            {
+                var item = pathList.LastOrDefault();
+                if (item == null || !client.Test(item)) break;
+                item = await client.GetParentAsync(item);
+                if (item == null || pathList.Contains(item)) break;
+                if (id != tracing) return;
+                pathList.Add(item);
+            }
+
+            pathList.Reverse();
+            path.Clear();
+            foreach (var item in pathList)
+            {
+                path.Add(item);
             }
         }
 

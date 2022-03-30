@@ -795,18 +795,86 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
     }
 
     /// <summary>
+    /// Lists all sub-directories.
+    /// </summary>
+    /// <returns>The directory collection.</returns>
+    public IEnumerable<LocalDirectoryReferenceInfo> GetDirectories()
+        => GetDirectories(false, null);
+
+    /// <summary>
+    /// Lists all sub-directories.
+    /// </summary>
+    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
+    /// <param name="predicate">An optional function to test each element for a condition.</param>
+    /// <returns>The directory collection.</returns>
+    public IEnumerable<LocalDirectoryReferenceInfo> GetDirectories(bool showHidden, Func<DirectoryInfo, bool> predicate = null)
+    {
+        var dir = Source;
+        if (dir == null) return new List<LocalDirectoryReferenceInfo>();
+        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
+        var col = dir.EnumerateDirectories();
+        if (col == null) return new List<LocalDirectoryReferenceInfo>();
+        if (!showHidden) col = col.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden));
+        if (predicate != null) col = col.Where(predicate);
+        return col.Select(ele => new LocalDirectoryReferenceInfo(ele, this));
+    }
+
+    /// <summary>
     /// Lists all files.
     /// </summary>
     /// <returns>The file collection.</returns>
-    public Task<IReadOnlyList<LocalFileReferenceInfo>> GetFilesAsync()
-        => GetLocalFilesAsync(Source, this);
+    public IEnumerable<LocalFileReferenceInfo> GetFiles()
+        => GetFiles(false, null);
+
+    /// <summary>
+    /// Lists all files.
+    /// </summary>
+    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
+    /// <param name="predicate">An optional function to test each element for a condition.</param>
+    /// <returns>The file collection.</returns>
+    public IEnumerable<LocalFileReferenceInfo> GetFiles(bool showHidden, Func<FileInfo, bool> predicate = null)
+    {
+        var dir = Source;
+        if (dir == null) return new List<LocalFileReferenceInfo>();
+        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
+        var col = dir.EnumerateFiles();
+        if (col == null) return new List<LocalFileReferenceInfo>();
+        if (!showHidden) col = col.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden));
+        if (predicate != null) col = col.Where(predicate);
+        return col.Select(ele => new LocalFileReferenceInfo(ele, this));
+    }
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
     /// <returns>The directory collection.</returns>
     public Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetDirectoriesAsync()
-        => GetLocalDirectoriesAsync(Source, this);
+        => GetReadOnlyListAsync(GetDirectories(false, null));
+
+    /// <summary>
+    /// Lists all sub-directories.
+    /// </summary>
+    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
+    /// <param name="predicate">An optional function to test each element for a condition.</param>
+    /// <returns>The directory collection.</returns>
+    public Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetDirectoriesAsync(bool showHidden, Func<DirectoryInfo, bool> predicate = null)
+        => GetReadOnlyListAsync(GetDirectories(showHidden, predicate));
+
+    /// <summary>
+    /// Lists all files.
+    /// </summary>
+    /// <returns>The file collection.</returns>
+    public Task<IReadOnlyList<LocalFileReferenceInfo>> GetFilesAsync()
+        => GetReadOnlyListAsync(GetFiles(false, null));
+
+    /// <summary>
+    /// Lists all files.
+    /// </summary>
+    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
+    /// <param name="predicate">An optional function to test each element for a condition.</param>
+    /// <returns>The file collection.</returns>
+    public Task<IReadOnlyList<LocalFileReferenceInfo>> GetFilesAsync(bool showHidden, Func<FileInfo, bool> predicate = null)
+        => GetReadOnlyListAsync(GetFiles(showHidden, predicate));
 
     /// <summary>
     /// Lists all files.
@@ -912,23 +980,8 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
         return parent;
     }
 
-    internal static Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetLocalDirectoriesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
-    {
-        if (dir == null)
-            return Task.FromResult<IReadOnlyList<LocalDirectoryReferenceInfo>>(new List<LocalDirectoryReferenceInfo>());
-        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
-        var col = dir.EnumerateDirectories()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalDirectoryReferenceInfo(ele, parent))?.ToList() ?? new List<LocalDirectoryReferenceInfo>();
-        return Task.FromResult<IReadOnlyList<LocalDirectoryReferenceInfo>>(col);
-    }
-
-    internal static Task<IReadOnlyList<LocalFileReferenceInfo>> GetLocalFilesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
-    {
-        if (dir == null)
-            return Task.FromResult<IReadOnlyList<LocalFileReferenceInfo>>(new List<LocalFileReferenceInfo>());
-        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
-        var col = dir.EnumerateFiles()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalFileReferenceInfo(ele, parent))?.ToList() ?? new List<LocalFileReferenceInfo>();
-        return Task.FromResult<IReadOnlyList<LocalFileReferenceInfo>>(col);
-    }
+    private static Task<IReadOnlyList<T>> GetReadOnlyListAsync<T>(IEnumerable<T> col)
+        => Task.FromResult<IReadOnlyList<T>>(col.ToList());
 
     internal static Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
     {

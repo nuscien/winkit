@@ -26,6 +26,7 @@
                     <Setter.Value>
                         <Style TargetType="Border" >
                             <Setter Property="MinWidth" Value="360" />
+                            <Setter Property="MaxWidth" Value="640" />
                         </Style>
                     </Setter.Value>
                 </Setter>
@@ -34,6 +35,7 @@
                         <Style TargetType="TextBlock" >
                             <Setter Property="VerticalAlignment" Value="Center" />
                             <Setter Property="Foreground" Value="{ThemeResource WinKit.TitleForeground}" />
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                         </Style>
                     </Setter.Value>
                 </Setter>
@@ -50,6 +52,7 @@
                         <Style TargetType="TextBlock" >
                             <Setter Property="VerticalAlignment" Value="Center" />
                             <Setter Property="Foreground" Value="{ThemeResource WinKit.DescriptionForeground}" />
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                         </Style>
                     </Setter.Value>
                 </Setter>

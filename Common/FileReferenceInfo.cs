@@ -418,12 +418,7 @@ public class BaseDirectoryReferenceInfo : BaseFileSystemReferenceInfo, IDirector
     public BaseDirectoryReferenceInfo(DirectoryInfo directory) : base()
     {
         Source = directory;
-        if (directory == null)
-        {
-            Exists = false;
-            return;
-        }
-
+        if (directory == null) return;
         if (!directory.Exists)
         {
             try
@@ -455,11 +450,11 @@ public class BaseDirectoryReferenceInfo : BaseFileSystemReferenceInfo, IDirector
             {
             }
 
-            Exists = false;
             return;
         }
 
         Name = directory.Name;
+        Exists = true;
         try
         {
             LastModification = directory.LastWriteTime;
@@ -536,12 +531,7 @@ public class BaseFileReferenceInfo : BaseFileSystemReferenceInfo, IFileReference
     public BaseFileReferenceInfo(FileInfo file, LocalDirectoryReferenceInfo parent = null) : base()
     {
         Source = file;
-        if (file == null)
-        {
-            Exists = false;
-            return;
-        }
-
+        if (file == null) return;
         if (!file.Exists)
         {
             try
@@ -585,35 +575,30 @@ public class BaseFileReferenceInfo : BaseFileSystemReferenceInfo, IFileReference
         }
         catch (IOException)
         {
-            Exists = false;
             return;
         }
         catch (NotSupportedException)
         {
-            Exists = false;
             return;
         }
         catch (InvalidOperationException)
         {
-            Exists = false;
             return;
         }
         catch (UnauthorizedAccessException)
         {
-            Exists = false;
             return;
         }
         catch (SecurityException)
         {
-            Exists = false;
             return;
         }
         catch (ExternalException)
         {
-            Exists = false;
             return;
         }
 
+        Exists = true;
         if (parent != null)
         {
             SetParent(parent);

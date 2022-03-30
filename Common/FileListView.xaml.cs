@@ -33,7 +33,7 @@ public sealed partial class FileListView : UserControl
     /// <summary>
     /// The dependency property of path height.
     /// </summary>
-    public static readonly DependencyProperty PathHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(PathHeight), new GridLength(40));
+    public static readonly DependencyProperty PathHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(PathHeight), new GridLength(30));
 
     /// <summary>
     /// The dependency property of path style.
@@ -144,7 +144,7 @@ public sealed partial class FileListView : UserControl
     public int Count => FileBrowser.Items.Count;
 
     /// <summary>
-    /// Gets the selected items.
+    /// Gets the selected item.
     /// </summary>
     public IFileSystemReferenceInfo SelectedItem
     {
@@ -153,9 +153,23 @@ public sealed partial class FileListView : UserControl
     }
 
     /// <summary>
+    /// Gets the selected index.
+    /// </summary>
+    public int SelectedIndex
+    {
+        get => FileBrowser.SelectedIndex;
+        set => FileBrowser.SelectedIndex = value;
+    }
+
+    /// <summary>
     /// Gets the selected items.
     /// </summary>
-    public IEnumerable<IFileSystemReferenceInfo> SelectedItems => FileBrowser.SelectedItems?.OfType<IFileSystemReferenceInfo>();
+    public IList<IFileSystemReferenceInfo> SelectedItems => FileBrowser.SelectedItems?.OfType<IFileSystemReferenceInfo>().ToList();
+
+    /// <summary>
+    /// Gets the selected items.
+    /// </summary>
+    public IReadOnlyList<ItemIndexRange> SelectedIndexes => FileBrowser.SelectedRanges;
 
     /// <summary>
     /// Gets or sets the width of line number.
@@ -257,9 +271,39 @@ public sealed partial class FileListView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the content for the file list header.
+    /// </summary>
+    public object Header
+    {
+        get => FileBrowser.Header;
+        set => FileBrowser.Header = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the content for the file list footer.
+    /// </summary>
+    public object Footer
+    {
+        get => FileBrowser.Footer;
+        set => FileBrowser.Footer = value;
+    }
+
+    /// <summary>
     /// Gets the file reference client.
     /// </summary>
     public IFileReferenceClient FileReferenceClient { get; private set; }
+
+    /// <summary>
+    /// Gets the directory navigated.
+    /// </summary>
+    public IFileContainerReferenceInfo Directory { get; private set; }
+
+    /// <summary>
+    /// Gets all files.
+    /// </summary>
+    /// <returns>The file collection.</returns>
+    public IEnumerable<IFileSystemReferenceInfo> GetFiles()
+        => FileBrowser.Items?.OfType<IFileSystemReferenceInfo>()?.ToList() ?? new List<IFileSystemReferenceInfo>();
 
     /// <summary>
     /// Sets data.
@@ -269,10 +313,11 @@ public sealed partial class FileListView : UserControl
     /// <param name="depth">The depth to load parent initialized.</param>
     public async Task NavigateAsync(IFileReferenceClient client, IFileContainerReferenceInfo directory, int depth = DefaultDepth)
     {
-        FileReferenceClient = client;
-        if (directory == null) return;
+        if (directory == null || !directory.Exists) return;
         var id = tracing = Guid.NewGuid();
         Navigating?.Invoke(this, new DataEventArgs<IFileContainerReferenceInfo>(directory));
+        FileReferenceClient = client;
+        Directory = directory;
         collection.Clear();
         if (client == null) client = FileReferenceClientFactory.Instance;
         var path = new List<IFileContainerReferenceInfo>
@@ -298,21 +343,27 @@ public sealed partial class FileListView : UserControl
         }
 
         var directories = await client.GetDirectoriesAsync(directory);
-        foreach (var item in directories)
+        if (id != tracing) return;
+        if (directories.Count > 0)
         {
-            if (string.IsNullOrWhiteSpace(item.Name)) continue;
-            collection.Add(item);
+            foreach (var item in directories)
+            {
+                if (string.IsNullOrWhiteSpace(item.Name)) continue;
+                collection.Add(item);
+            }
         }
 
         if (id != tracing) return;
         var files = await client.GetFilesAsync(directory);
-        foreach (var item in files)
+        if (files.Count > 0)
         {
-            if (string.IsNullOrWhiteSpace(item.Name)) continue;
-            collection.Add(item);
+            foreach (var item in files)
+            {
+                if (string.IsNullOrWhiteSpace(item.Name)) continue;
+                collection.Add(item);
+            }
         }
 
-        if (id != tracing) return;
         Navigated?.Invoke(this, new DataEventArgs<IFileContainerReferenceInfo>(directory));
     }
 

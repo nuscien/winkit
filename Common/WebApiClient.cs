@@ -257,7 +257,7 @@ public class WebApiClientResultInfo<T>
 /// </summary>
 public class JsonWebCacheClient
 {
-    private Func<Uri, CancellationToken, Task<JsonObjectNode>> handler;
+    private Func<JsonHttpClient<JsonObjectNode>> handler;
 
     /// <summary>
     /// Initializes a new instance of the JsonWebCacheClient class.
@@ -281,7 +281,8 @@ public class JsonWebCacheClient
     /// <param name="client">The web API client.</param>
     public JsonWebCacheClient(OAuthBasedClient client)
     {
-        handler = (uri, cancellationToken) => client.Create<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        if (client == null) return;
+        handler = () => FillHttpClient(client.Create<JsonObjectNode>());
     }
 
     /// <summary>
@@ -301,7 +302,8 @@ public class JsonWebCacheClient
     /// <param name="client">The web API client.</param>
     public JsonWebCacheClient(OAuthClient client)
     {
-        handler = (uri, cancellationToken) => client.Create<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        if (client == null) return;
+        handler = () => FillHttpClient(client.Create<JsonObjectNode>());
     }
 
     /// <summary>
@@ -314,6 +316,11 @@ public class JsonWebCacheClient
     {
         Folder = folder;
     }
+
+    /// <summary>
+    /// Adds or removes a handler raised on sending.
+    /// </summary>
+    public event EventHandler<SendingEventArgs> Sending;
 
     /// <summary>
     /// Gets the data cache.
@@ -348,21 +355,37 @@ public class JsonWebCacheClient
     /// </summary>
     /// <param name="client">The web API client.</param>
     public void SetWebApiClient(JsonHttpClient<JsonObjectNode> client)
-        => handler = client.GetAsync;
+    {
+        if (client == null)
+        {
+            handler = null;
+            return;
+        }
+
+        FillHttpClient(client);
+        handler = () => client;
+    }
+
+    /// <summary>
+    /// Sets web API client.
+    /// </summary>
+    /// <param name="client">The web API client.</param>
+    public void SetWebApiClient(Func<JsonHttpClient<JsonObjectNode>> client)
+        => handler = client == null ? null : () => FillHttpClient(client());
 
     /// <summary>
     /// Sets web API client.
     /// </summary>
     /// <param name="client">The web API client.</param>
     public void SetWebApiClient(OAuthBasedClient client)
-        => handler = (uri, cancellationToken) => client.Create<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        => handler = client == null ? null : () => FillHttpClient(client.Create<JsonObjectNode>());
 
     /// <summary>
     /// Sets web API client.
     /// </summary>
     /// <param name="client">The web API client.</param>
     public void SetWebApiClient(OAuthClient client)
-        => handler = (uri, cancellationToken) => client.Create<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        => handler = client == null ? null : () => FillHttpClient(client.Create<JsonObjectNode>());
 
     /// <summary>
     /// Gets result with information.
@@ -439,7 +462,8 @@ public class JsonWebCacheClient
     public Task<JsonObjectNode> GetAsync(Uri uri, CancellationToken cancellationToken = default)
     {
         var h = handler;
-        return h != null ? handler(uri, cancellationToken) : new JsonHttpClient<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        var client = h?.Invoke() ?? FillHttpClient(null);
+        return client.GetAsync(uri, cancellationToken);
     }
 
     /// <summary>
@@ -452,9 +476,17 @@ public class JsonWebCacheClient
     public async Task<JsonObjectNode> GetAsync(Uri uri, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken = default)
     {
         var h = handler;
-        var result = h != null ? await handler(uri, cancellationToken) : await new JsonHttpClient<JsonObjectNode>().GetAsync(uri, cancellationToken);
+        var client = h?.Invoke() ?? FillHttpClient(null);
+        var result = await client.GetAsync(uri, cancellationToken);
         callback?.Invoke(result, WebApiResultSourceTypes.Online);
         return result;
+    }
+
+    private JsonHttpClient<JsonObjectNode> FillHttpClient(JsonHttpClient<JsonObjectNode> client)
+    {
+        if (client == null) return new JsonHttpClient<JsonObjectNode>();
+        client.Sending += OnSending;
+        return client;
     }
 
     private async Task FillWebResult(WebApiClientResultInfo<JsonObjectNode> info, WebApiRequestOptions<JsonObjectNode> options, Uri uri, Action<JsonObjectNode, WebApiResultSourceTypes> callback, CancellationToken cancellationToken)
@@ -560,11 +592,7 @@ public class JsonWebCacheClient
         if (s.StartsWith("//"))
         {
             var end = s.IndexOfAny(new[] { '\n', '\r', '\t', ' ' });
-            if (end > 0)
-            {
-                date = Web.WebFormat.ParseDate(s.Substring(2, end).Trim()) ?? DateTime.Now;
-            }
-
+            if (end > 0) date = Web.WebFormat.ParseDate(s.Substring(2, end).Trim()) ?? DateTime.Now;
             s = s.Substring(s.IndexOf('\n') + 1);
         }
 
@@ -577,6 +605,9 @@ public class JsonWebCacheClient
         callback?.Invoke(json, WebApiResultSourceTypes.Cache);
         return json;
     }
+
+    private void OnSending(object sender, SendingEventArgs e)
+        => Sending?.Invoke(this, e);
 
     private static string GetFileName(string cacheKey)
         => string.Concat(cacheKey, ".cache.json");

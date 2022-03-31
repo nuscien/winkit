@@ -27,6 +27,7 @@
                         <Style TargetType="Border" >
                             <Setter Property="MinWidth" Value="360" />
                             <Setter Property="MaxWidth" Value="640" />
+                            <Setter Property="Margin" Value="0,0,10,0" />
                         </Style>
                     </Setter.Value>
                 </Setter>

@@ -6,875 +6,88 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
 
 namespace Trivial.IO;
 
 /// <summary>
-/// The client for loading file reference information.
+/// The reference information of storage folder.
 /// </summary>
-public interface IFileReferenceClient
-{
-    /// <summary>
-    /// Tests if supports the directory reference.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>true if supports; otherwise, false.</returns>
-    bool Test(IFileContainerReferenceInfo directory);
-
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The file collection.</returns>
-    Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(IFileContainerReferenceInfo directory);
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The directory collection.</returns>
-    Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(IFileContainerReferenceInfo directory);
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <param name="directory">The directory to get parent.</param>
-    /// <return>The parent information; or null, if no parent.</return>
-    Task<IFileContainerReferenceInfo> GetParentAsync(IFileContainerReferenceInfo directory);
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-public interface IFileSystemReferenceInfo
-{
-    /// <summary>
-    /// Gets the file name.
-    /// </summary>
-    string Name { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether the item exists.
-    /// </summary>
-    bool Exists { get; }
-
-    /// <summary>
-    /// Gets the file size.
-    /// </summary>
-    DateTime LastModification { get; }
-
-    /// <summary>
-    /// Gets the instance source for reference.
-    /// </summary>
-    object Source { get; }
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-public interface IFileReferenceInfo : IFileSystemReferenceInfo
-{
-    /// <summary>
-    /// Gets or sets the file size.
-    /// </summary>
-    long Size { get; }
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <returns>The parent reference information instance.</returns>
-    IFileContainerReferenceInfo GetParent();
-}
-
-/// <summary>
-/// The reference information of file container.
-/// </summary>
-public interface IFileContainerReferenceInfo : IFileSystemReferenceInfo
-{
-}
-
-/// <summary>
-/// The reference information of directory.
-/// </summary>
-public interface IDirectoryReferenceInfo : IFileContainerReferenceInfo
-{
-}
-
-/// <summary>
-/// The reference information of directory with host.
-/// </summary>
-public interface IDirectoryHostReferenceInfo : IDirectoryReferenceInfo
-{
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <returns>The file collection.</returns>
-    Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync();
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <returns>The directory collection.</returns>
-    Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync();
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    Task<IFileContainerReferenceInfo> GetParentAsync();
-}
-
-/// <summary>
-/// The client for loading file reference information.
-/// </summary>
-public abstract class BaseFileReferenceClient<T> : IFileReferenceClient where T : IDirectoryReferenceInfo
-{
-    /// <summary>
-    /// Tests if supports the directory reference.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>true if supports; otherwise, false.</returns>
-    public abstract bool Test(T directory);
-
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The file collection.</returns>
-    public abstract Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(T directory);
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The directory collection.</returns>
-    public abstract Task<IReadOnlyList<T>> GetDirectoriesAsync(T directory);
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <param name="directory">The directory to get parent.</param>
-    /// <return>The parent information; or null, if no parent.</return>
-    public abstract Task<T> GetParentAsync(T directory);
-
-    /// <summary>
-    /// Tests if supports the directory reference.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>true if supports; otherwise, false.</returns>
-    bool IFileReferenceClient.Test(IFileContainerReferenceInfo directory)
-    {
-        if (directory is not T info) return false;
-        return Test(info);
-    }
-
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The file collection.</returns>
-    async Task<IReadOnlyList<IFileReferenceInfo>> IFileReferenceClient.GetFilesAsync(IFileContainerReferenceInfo directory)
-    {
-        if (directory is not T info) return new List<IFileReferenceInfo>();
-        return await GetFilesAsync(info) ?? new List<IFileReferenceInfo>();
-    }
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The directory collection.</returns>
-    async Task<IReadOnlyList<IDirectoryReferenceInfo>> IFileReferenceClient.GetDirectoriesAsync(IFileContainerReferenceInfo directory)
-    {
-        var col = new List<IDirectoryReferenceInfo>();
-        if (directory is not T info) return col;
-        var list = await GetDirectoriesAsync(info);
-        if (list == null) return col;
-        foreach (var item in list)
-        {
-            col.Add(item);
-        }
-
-        return col;
-    }
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <param name="directory">The directory to get parent.</param>
-    /// <return>The parent information; or null, if no parent.</return>
-    async Task<IFileContainerReferenceInfo> IFileReferenceClient.GetParentAsync(IFileContainerReferenceInfo directory)
-    {
-        if (directory is not T info) return null;
-        return await GetParentAsync(info);
-    }
-}
-
-/// <summary>
-/// The file reference client factory.
-/// </summary>
-public class FileReferenceClientFactory : IFileReferenceClient
-{
-    private readonly Dictionary<Type, IFileReferenceClient> handlers = new();
-
-    /// <summary>
-    /// The singleton.
-    /// </summary>
-    public static readonly FileReferenceClientFactory Instance = new();
-
-    /// <summary>
-    /// Registers the client handler.
-    /// </summary>
-    /// <typeparam name="T">The type of client.</typeparam>
-    /// <param name="client">The client.</param>
-    public void Register<T>(BaseFileReferenceClient<T> client) where T : IDirectoryReferenceInfo
-        => Register(typeof(T), client);
-
-    /// <summary>
-    /// Registers the client handler.
-    /// </summary>
-    /// <typeparam name="T">The type of client.</typeparam>
-    /// <param name="client">The client.</param>
-    public void Register<T>(IFileReferenceClient client) where T : IDirectoryReferenceInfo
-        => Register(typeof(T), client);
-
-    /// <summary>
-    /// Registers the client handler.
-    /// </summary>
-    /// <param name="type">The type to register.</param>
-    /// <param name="client">The client.</param>
-    public void Register(Type type, IFileReferenceClient client)
-    {
-        if (client == null) handlers.Remove(type);
-        else handlers[type] = client;
-    }
-
-    /// <summary>
-    /// Removes the client handler.
-    /// </summary>
-    /// <typeparam name="T">The type of client.</typeparam>
-    public void Remove<T>()
-        => handlers.Remove(typeof(T));
-
-    /// <summary>
-    /// Removes the client handler.
-    /// </summary>
-    /// <param name="type">The type to unregister.</param>
-    public void Remove(Type type)
-        => handlers.Remove(type);
-
-    /// <summary>
-    /// Tests if supports the directory reference.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>true if supports; otherwise, false.</returns>
-    public bool Test(IFileContainerReferenceInfo directory)
-    {
-        if (directory == null) return false;
-        if (directory is IDirectoryHostReferenceInfo) return true;
-        var type = directory.GetType();
-        return handlers.ContainsKey(type) || directory.Source is DirectoryInfo;
-    }
-
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The file collection.</returns>
-    public async Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(IFileContainerReferenceInfo directory)
-    {
-        if (directory == null) return new List<IFileReferenceInfo>();
-        var type = directory.GetType();
-        if (handlers.TryGetValue(type, out var h) && h.Test(directory))
-            return await h.GetFilesAsync(directory) ?? new List<IFileReferenceInfo>();
-        if (directory is IDirectoryHostReferenceInfo dir) return await dir.GetFilesAsync() ?? new List<IFileReferenceInfo>();
-        return await LocalDirectoryReferenceInfo.GetFilesAsync(directory.Source as DirectoryInfo, null);
-    }
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <param name="directory">The directory to load sub-directories or files.</param>
-    /// <returns>The directory collection.</returns>
-    public async Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(IFileContainerReferenceInfo directory)
-    {
-        if (directory == null) return new List<IDirectoryReferenceInfo>();
-        var type = directory.GetType();
-        if (handlers.TryGetValue(type, out var h) && h.Test(directory))
-            return await h.GetDirectoriesAsync(directory) ?? new List<IDirectoryReferenceInfo>();
-        if (directory is IDirectoryHostReferenceInfo dir) return await dir.GetDirectoriesAsync() ?? new List<IDirectoryReferenceInfo>();
-        return await LocalDirectoryReferenceInfo.GetDirectoriesAsync(directory.Source as DirectoryInfo, null);
-    }
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <param name="directory">The directory to get parent.</param>
-    /// <return>The parent information; or null, if no parent.</return>
-    public async Task<IFileContainerReferenceInfo> GetParentAsync(IFileContainerReferenceInfo directory)
-    {
-        if (directory == null) return null;
-        var type = directory.GetType();
-        if (handlers.TryGetValue(type, out var h) && h.Test(directory))
-            return await h.GetParentAsync(directory);
-        if (directory is IDirectoryHostReferenceInfo dir) return await dir.GetParentAsync();
-        if (directory.Source is not DirectoryInfo info) return null;
-        return new LocalDirectoryReferenceInfo(info);
-    }
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-public class BaseFileSystemReferenceInfo : IFileSystemReferenceInfo
-{
-    /// <summary>
-    /// Initializes a new instance of the BaseFileSystemReferenceInfo class.
-    /// </summary>
-    protected BaseFileSystemReferenceInfo()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileSystemReferenceInfo class.
-    /// </summary>
-    /// <param name="source">The instance source for reference.</param>
-    protected BaseFileSystemReferenceInfo(object source)
-    {
-        Source = source;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileSystemReferenceInfo class.
-    /// </summary>
-    /// <param name="name">The file name.</param>
-    /// <param name="lastModification">The last modification time.</param>
-    /// <param name="exists">true if exists; otherwise, false.</param>
-    /// <param name="source">The instance source for reference.</param>
-    public BaseFileSystemReferenceInfo(string name, DateTime lastModification, object source = null, bool exists = true)
-    {
-        Name = name;
-        LastModification = lastModification;
-        Source = source;
-        Exists = exists;
-    }
-
-    /// <summary>
-    /// Gets the file name.
-    /// </summary>
-    public string Name { get; protected set; }
-
-    /// <summary>
-    /// Gets a value indicating whether the item exists.
-    /// </summary>
-    public bool Exists { get; protected set; }
-
-    /// <summary>
-    /// Gets the file size.
-    /// </summary>
-    public DateTime LastModification { get; protected set; }
-
-    /// <summary>
-    /// Gets the instance source for reference.
-    /// </summary>
-    public object Source { get; internal set; }
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-public class BaseDirectoryReferenceInfo : BaseFileSystemReferenceInfo, IDirectoryReferenceInfo
-{
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    protected BaseDirectoryReferenceInfo() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    /// <param name="source">The instance source for reference.</param>
-    protected BaseDirectoryReferenceInfo(object source) : base(source)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    /// <param name="name">The file name.</param>
-    /// <param name="lastModification">The last modification time.</param>
-    /// <param name="source">The instance source for reference.</param>
-    /// <param name="exists">true if exists; otherwise, false.</param>
-    public BaseDirectoryReferenceInfo(string name, DateTime lastModification, object source = null, bool exists = true)
-        : base(name, lastModification, source, exists)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    /// <param name="directory">The directory item.</param>
-    public BaseDirectoryReferenceInfo(DirectoryInfo directory) : base()
-    {
-        Source = directory;
-        if (directory == null) return;
-        if (!directory.Exists)
-        {
-            try
-            {
-                Name = directory.Name;
-            }
-            catch (IOException)
-            {
-            }
-            catch (ArgumentException)
-            {
-            }
-            catch (NotSupportedException)
-            {
-            }
-            catch (NullReferenceException)
-            {
-            }
-            catch (InvalidOperationException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-            catch (SecurityException)
-            {
-            }
-            catch (ExternalException)
-            {
-            }
-
-            return;
-        }
-
-        Name = directory.Name;
-        Exists = true;
-        try
-        {
-            LastModification = directory.LastWriteTime;
-            return;
-        }
-        catch (IOException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
-
-        Exists = false;
-    }
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-public class BaseFileReferenceInfo : BaseFileSystemReferenceInfo, IFileReferenceInfo
-{
-    private IFileContainerReferenceInfo parent;
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    protected BaseFileReferenceInfo() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="parent">The parent directory.</param>
-    /// <param name="source">The instance source for reference.</param>
-    protected BaseFileReferenceInfo(IFileContainerReferenceInfo parent, object source) : base(source)
-    {
-        SetParent(parent);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="name">The file name.</param>
-    /// <param name="lastModification">The last modification time.</param>
-    /// <param name="size">The file size.</param>
-    /// <param name="parent">The parent directory.</param>
-    /// <param name="source">The instance source for reference.</param>
-    /// <param name="exists">true if exists; otherwise, false.</param>
-    public BaseFileReferenceInfo(string name, DateTime lastModification, long size, BaseDirectoryReferenceInfo parent, object source = null, bool exists = true)
-        : base(name, lastModification, source, exists)
-    {
-        Size = size;
-        SetParent(parent);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="file">The file item.</param>
-    /// <param name="parent">The parent folder.</param>
-    public BaseFileReferenceInfo(FileInfo file, LocalDirectoryReferenceInfo parent = null) : base()
-    {
-        Source = file;
-        if (file == null) return;
-        if (!file.Exists)
-        {
-            try
-            {
-                Name = file.Name;
-            }
-            catch (IOException)
-            {
-            }
-            catch (ArgumentException)
-            {
-            }
-            catch (NotSupportedException)
-            {
-            }
-            catch (NullReferenceException)
-            {
-            }
-            catch (InvalidOperationException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-            catch (SecurityException)
-            {
-            }
-            catch (ExternalException)
-            {
-            }
-
-            Exists = false;
-            return;
-        }
-
-        Name = file.Name;
-        try
-        {
-            LastModification = file.LastWriteTime;
-            Size = file.Length;
-        }
-        catch (IOException)
-        {
-            return;
-        }
-        catch (NotSupportedException)
-        {
-            return;
-        }
-        catch (InvalidOperationException)
-        {
-            return;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return;
-        }
-        catch (SecurityException)
-        {
-            return;
-        }
-        catch (ExternalException)
-        {
-            return;
-        }
-
-        Exists = true;
-        if (parent != null)
-        {
-            SetParent(parent);
-            return;
-        }
-
-        try
-        {
-            var dir = file.Directory;
-            if (dir == null || !dir.Exists) return;
-            SetParent(new LocalDirectoryReferenceInfo(dir));
-        }
-        catch (IOException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
-    }
-
-    /// <summary>
-    /// Gets the file size.
-    /// </summary>
-    public long Size { get; protected set; }
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    public BaseDirectoryReferenceInfo GetParent()
-        => GetParentInfo() as BaseDirectoryReferenceInfo;
-
-    /// <summary>
-    /// Sets the parent.
-    /// </summary>
-    /// <param name="info">The parent.</param>
-    protected virtual void SetParent(IFileContainerReferenceInfo info)
-        => parent = info;
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <returns>The parent reference information instance.</returns>
-    protected virtual IFileContainerReferenceInfo GetParentInfo()
-        => parent;
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    /// <returns>The parent reference information instance.</returns>
-    IFileContainerReferenceInfo IFileReferenceInfo.GetParent()
-        => GetParentInfo();
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-/// <typeparam name="T">The type of instance source.</typeparam>
-public class BaseDirectoryReferenceInfo<T> : BaseDirectoryReferenceInfo
-{
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    protected BaseDirectoryReferenceInfo() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    /// <param name="source">The instance source for reference.</param>
-    protected BaseDirectoryReferenceInfo(T source) : base(source)
-    {
-        Source = source;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseDirectoryReferenceInfo class.
-    /// </summary>
-    /// <param name="name">The file name.</param>
-    /// <param name="lastModification">The last modification time.</param>
-    /// <param name="source">The instance source for reference.</param>
-    /// <param name="exists">true if exists; otherwise, false.</param>
-    public BaseDirectoryReferenceInfo(string name, DateTime lastModification, T source = default, bool exists = true)
-        : base(name, lastModification, source, exists)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="directory">The directory item.</param>
-    internal BaseDirectoryReferenceInfo(DirectoryInfo directory) : base(directory)
-    {
-        if (directory is T s) Source = s;
-    }
-
-    /// <summary>
-    /// Gets the directory information instance.
-    /// </summary>
-    public new T Source { get; private set; }
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-/// <typeparam name="T">The type of instance source.</typeparam>
-public class BaseFileReferenceInfo<T> : BaseFileReferenceInfo
-{
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    protected BaseFileReferenceInfo() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="parent">The parent directory.</param>
-    /// <param name="source">The instance source for reference.</param>
-    protected BaseFileReferenceInfo(IFileContainerReferenceInfo parent, T source) : base(parent, source)
-    {
-        Source = source;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="name">The file name.</param>
-    /// <param name="lastModification">The last modification time.</param>
-    /// <param name="size">The file size.</param>
-    /// <param name="parent">The parent directory.</param>
-    /// <param name="source">The instance source for reference.</param>
-    /// <param name="exists">true if exists; otherwise, false.</param>
-    public BaseFileReferenceInfo(string name, DateTime lastModification, long size, BaseDirectoryReferenceInfo parent, T source = default, bool exists = true)
-        : base(name, lastModification, size, parent, source, exists)
-    {
-        Source = source;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the BaseFileReferenceInfo class.
-    /// </summary>
-    /// <param name="file">The file item.</param>
-    /// <param name="parent">The parent folder.</param>
-    internal BaseFileReferenceInfo(FileInfo file, LocalDirectoryReferenceInfo parent = null) : base(file, parent)
-    {
-        if (file is T s) Source = s;
-    }
-
-    /// <summary>
-    /// Gets the directory information instance.
-    /// </summary>
-    public new T Source { get; private set; }
-}
-
-/// <summary>
-/// The reference information of file.
-/// </summary>
-public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryInfo>, IDirectoryHostReferenceInfo
+public class StorageFolderReferenceInfo : BaseDirectoryReferenceInfo<StorageFolder>, IDirectoryHostReferenceInfo
 {
     IFileContainerReferenceInfo parent;
 
     /// <summary>
-    /// Initializes a new instance of the LocalDirectoryReferenceInfo class.
+    /// Initializes a new instance of the StorageFolderReferenceInfo class.
     /// </summary>
     /// <param name="directory">The directory instance.</param>
     /// <param name="parent">The parent folder.</param>
-    public LocalDirectoryReferenceInfo(DirectoryInfo directory, LocalDirectoryReferenceInfo parent = null) : base(directory)
+    public StorageFolderReferenceInfo(StorageFolder directory, StorageFolderReferenceInfo parent = null) : this(directory, parent, true)
     {
-        this.parent = parent;
     }
 
     /// <summary>
-    /// Initializes a new instance of the LocalDirectoryReferenceInfo class.
+    /// Initializes a new instance of the StorageFolderReferenceInfo class.
     /// </summary>
     /// <param name="directory">The directory instance.</param>
     /// <param name="parent">The parent folder.</param>
-    public LocalDirectoryReferenceInfo(DirectoryInfo directory, LocalPackageFileReferenceInfo parent) : base(directory)
+    /// <param name="getProperties">true if get properties immediately; otherwise, false.</param>
+    internal StorageFolderReferenceInfo(StorageFolder directory, StorageFolderReferenceInfo parent, bool getProperties) : base(directory)
     {
+        Exists = directory != null;
         this.parent = parent;
+        if (getProperties) _ = GetPropertiesAsync();
     }
 
     /// <summary>
-    /// Lists all sub-directories.
+    /// Gets the date created.
     /// </summary>
-    /// <returns>The directory collection.</returns>
-    public IEnumerable<LocalDirectoryReferenceInfo> GetDirectories()
-        => GetDirectories(false, null);
+    public DateTime Creation { get; private set; }
 
     /// <summary>
     /// Lists all sub-directories.
     /// </summary>
-    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
+    /// <returns>The directory collection.</returns>
+    public Task<IReadOnlyList<StorageFolderReferenceInfo>> GetDirectoriesAsync()
+        => GetDirectoriesAsync(null);
+
+    /// <summary>
+    /// Lists all sub-directories.
+    /// </summary>
     /// <param name="predicate">An optional function to test each element for a condition.</param>
     /// <returns>The directory collection.</returns>
-    public IEnumerable<LocalDirectoryReferenceInfo> GetDirectories(bool showHidden, Func<DirectoryInfo, bool> predicate = null)
+    public async Task<IReadOnlyList<StorageFolderReferenceInfo>> GetDirectoriesAsync(Func<StorageFolder, bool> predicate)
     {
         var dir = Source;
-        if (dir == null) return new List<LocalDirectoryReferenceInfo>();
-        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
-        var col = dir.EnumerateDirectories();
-        if (col == null) return new List<LocalDirectoryReferenceInfo>();
-        if (!showHidden) col = col.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden));
+        if (dir == null) return new List<StorageFolderReferenceInfo>();
+        IEnumerable<StorageFolder> col = await dir.GetFoldersAsync();
+        if (col == null) return new List<StorageFolderReferenceInfo>();
         if (predicate != null) col = col.Where(predicate);
-        return col.Select(ele => new LocalDirectoryReferenceInfo(ele, this));
+        return col.Select(ele => new StorageFolderReferenceInfo(ele, this)).ToList();
     }
 
     /// <summary>
     /// Lists all files.
     /// </summary>
     /// <returns>The file collection.</returns>
-    public IEnumerable<LocalFileReferenceInfo> GetFiles()
-        => GetFiles(false, null);
+    public Task<IReadOnlyList<StorageFileReferenceInfo>> GetFilesAsync()
+        => GetFilesAsync(null);
 
     /// <summary>
     /// Lists all files.
     /// </summary>
-    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
     /// <param name="predicate">An optional function to test each element for a condition.</param>
     /// <returns>The file collection.</returns>
-    public IEnumerable<LocalFileReferenceInfo> GetFiles(bool showHidden, Func<FileInfo, bool> predicate = null)
+    public async Task<IReadOnlyList<StorageFileReferenceInfo>> GetFilesAsync(Func<StorageFile, bool> predicate)
     {
         var dir = Source;
-        if (dir == null) return new List<LocalFileReferenceInfo>();
-        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
-        var col = dir.EnumerateFiles();
-        if (col == null) return new List<LocalFileReferenceInfo>();
-        if (!showHidden) col = col.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden));
+        if (dir == null) return new List<StorageFileReferenceInfo>();
+        IEnumerable<StorageFile> col = await dir.GetFilesAsync();
+        if (col == null) return new List<StorageFileReferenceInfo>();
         if (predicate != null) col = col.Where(predicate);
-        return col.Select(ele => new LocalFileReferenceInfo(ele, this));
+        return col.Select(ele => new StorageFileReferenceInfo(ele, this)).ToList();
     }
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <returns>The directory collection.</returns>
-    public Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetDirectoriesAsync()
-        => GetReadOnlyListAsync(GetDirectories(false, null));
-
-    /// <summary>
-    /// Lists all sub-directories.
-    /// </summary>
-    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
-    /// <param name="predicate">An optional function to test each element for a condition.</param>
-    /// <returns>The directory collection.</returns>
-    public Task<IReadOnlyList<LocalDirectoryReferenceInfo>> GetDirectoriesAsync(bool showHidden, Func<DirectoryInfo, bool> predicate = null)
-        => GetReadOnlyListAsync(GetDirectories(showHidden, predicate));
-
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <returns>The file collection.</returns>
-    public Task<IReadOnlyList<LocalFileReferenceInfo>> GetFilesAsync()
-        => GetReadOnlyListAsync(GetFiles(false, null));
-
-    /// <summary>
-    /// Lists all files.
-    /// </summary>
-    /// <param name="showHidden">true if show hidden; otherwise, false.</param>
-    /// <param name="predicate">An optional function to test each element for a condition.</param>
-    /// <returns>The file collection.</returns>
-    public Task<IReadOnlyList<LocalFileReferenceInfo>> GetFilesAsync(bool showHidden, Func<FileInfo, bool> predicate = null)
-        => GetReadOnlyListAsync(GetFiles(showHidden, predicate));
 
     /// <summary>
     /// Lists all files.
@@ -891,72 +104,105 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
         => GetDirectoriesAsync(Source, this);
 
     /// <summary>
-    /// Refreshes the state of the object.
-    /// </summary>
-    public void Refresh()
-    {
-        var source = Source;
-        if (source == null) return;
-        try
-        {
-            source.Refresh();
-            Name = source.Name;
-            LastModification = source.LastWriteTime;
-            if (GetParent().Source != Source.Parent)
-            {
-                parent = null;
-                GetParent();
-            }
-        }
-        catch (IOException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
-    }
-
-    /// <summary>
     /// Gets the parent.
     /// </summary>
-    public LocalDirectoryReferenceInfo GetParent()
-        => GetParentInternal() as LocalDirectoryReferenceInfo;
-
-    /// <summary>
-    /// Gets the parent.
-    /// </summary>
-    public Task<LocalDirectoryReferenceInfo> GetParentAsync()
-        => Task.FromResult(GetParentInternal() as LocalDirectoryReferenceInfo);
+    public async Task<StorageFolderReferenceInfo> GetParentAsync()
+        => await GetParentInternalAsync() as StorageFolderReferenceInfo;
 
     /// <summary>
     /// Gets the parent.
     /// </summary>
     Task<IFileContainerReferenceInfo> IDirectoryHostReferenceInfo.GetParentAsync()
-        => Task.FromResult(GetParentInternal());
+        => GetParentInternalAsync();
+
+    /// <summary>
+    /// Gets properties.
+    /// </summary>
+    /// <returns>The properties.</returns>
+    internal async Task<BasicProperties> GetPropertiesAsync()
+    {
+        var info = Source;
+        if (info == null) return null;
+        try
+        {
+            Name = info.Name;
+            Creation = LastModification = info.DateCreated.DateTime;
+            var properties = await info.GetBasicPropertiesAsync();
+            LastModification = properties.DateModified.DateTime;
+            return properties;
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Converts a number to angle model.
+    /// </summary>
+    /// <param name="value">The raw value.</param>
+    public static explicit operator LocalDirectoryReferenceInfo(StorageFolderReferenceInfo value)
+    {
+        try
+        {
+            var path = value?.Source?.Path;
+            if (string.IsNullOrWhiteSpace(path)) return null;
+            var dir = new DirectoryInfo(path);
+            if (!dir.Exists) return null;
+            return new LocalDirectoryReferenceInfo(dir);
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Gets the parent.
     /// </summary>
-    private IFileContainerReferenceInfo GetParentInternal()
+    private async Task<IFileContainerReferenceInfo> GetParentInternalAsync()
     {
         if (parent != null) return parent;
         try
         {
-            var dir = Source.Parent;
-            if (dir == null || !dir.Exists) return null;
-            parent = new LocalDirectoryReferenceInfo(dir);
+            var dir = await Source.GetParentAsync();
+            if (dir == null) return null;
+            parent = new StorageFolderReferenceInfo(dir);
         }
         catch (IOException)
         {
@@ -980,86 +226,111 @@ public class LocalDirectoryReferenceInfo : BaseDirectoryReferenceInfo<DirectoryI
         return parent;
     }
 
-    private static Task<IReadOnlyList<T>> GetReadOnlyListAsync<T>(IEnumerable<T> col)
-        => Task.FromResult<IReadOnlyList<T>>(col.ToList());
-
-    internal static Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
+    internal async static Task<IReadOnlyList<IDirectoryReferenceInfo>> GetDirectoriesAsync(StorageFolder dir, StorageFolderReferenceInfo parent)
     {
-        if (dir == null)
-            return Task.FromResult<IReadOnlyList<IDirectoryReferenceInfo>>(new List<IDirectoryReferenceInfo>());
-        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
-        var col = dir.EnumerateDirectories()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalDirectoryReferenceInfo(ele, parent) as IDirectoryReferenceInfo)?.ToList() ?? new List<IDirectoryReferenceInfo>();
-        return Task.FromResult<IReadOnlyList<IDirectoryReferenceInfo>>(col);
+        if (dir == null) return new List<IDirectoryReferenceInfo>();
+        if (parent == null) parent = new StorageFolderReferenceInfo(dir);
+        var folders = await dir.GetFoldersAsync();
+        var list = new List<IDirectoryReferenceInfo>();
+        if (folders == null) return list;
+        foreach (var folder in folders)
+        {
+            var info = new StorageFolderReferenceInfo(folder, parent, false);
+            await info.GetPropertiesAsync();
+            list.Add(info);
+        }
+
+        return list;
     }
 
-    internal static Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(DirectoryInfo dir, LocalDirectoryReferenceInfo parent)
+    internal async static Task<IReadOnlyList<IFileReferenceInfo>> GetFilesAsync(StorageFolder dir, StorageFolderReferenceInfo parent)
     {
-        if (dir == null)
-            return Task.FromResult<IReadOnlyList<IFileReferenceInfo>>(new List<IFileReferenceInfo>());
-        if (parent == null) parent = new LocalDirectoryReferenceInfo(dir);
-        var col = dir.EnumerateFiles()?.Where(ele => !ele.Attributes.HasFlag(FileAttributes.Hidden))?.Select(ele => new LocalFileReferenceInfo(ele, parent) as IFileReferenceInfo)?.ToList() ?? new List<IFileReferenceInfo>();
-        return Task.FromResult<IReadOnlyList<IFileReferenceInfo>>(col);
+        if (dir == null) return new List<IFileReferenceInfo>();
+        if (parent == null) parent = new StorageFolderReferenceInfo(dir);
+        var files = await dir.GetFilesAsync();
+        var list = new List<IFileReferenceInfo>();
+        if (files == null) return list;
+        foreach (var file in files)
+        {
+            var info = new StorageFileReferenceInfo(file, parent, false);
+            await info.GetPropertiesAsync();
+            list.Add(info);
+        }
+
+        return list;
     }
 }
 
 /// <summary>
 /// The reference information of file.
 /// </summary>
-public class LocalFileReferenceInfo: BaseFileReferenceInfo<FileInfo>
+public class StorageFileReferenceInfo : BaseFileReferenceInfo<StorageFile>
 {
+    private bool isLoading;
+
     /// <summary>
-    /// Initializes a new instance of the LocalFileReferenceInfo class.
+    /// Initializes a new instance of the StorageFileReferenceInfo class.
     /// </summary>
     /// <param name="file">The file item.</param>
     /// <param name="parent">The parent folder.</param>
-    public LocalFileReferenceInfo(FileInfo file, LocalDirectoryReferenceInfo parent = null) : base(file, parent)
+    public StorageFileReferenceInfo(StorageFile file, StorageFolderReferenceInfo parent = null) : this(file, parent, true)
     {
     }
 
     /// <summary>
-    /// Refreshes the state of the object.
+    /// Initializes a new instance of the StorageFileReferenceInfo class.
     /// </summary>
-    public void Refresh()
+    /// <param name="file">The file item.</param>
+    /// <param name="parent">The parent folder.</param>
+    /// <param name="getProperties">true if get properties immediately; otherwise, false.</param>
+    internal StorageFileReferenceInfo(StorageFile file, StorageFolderReferenceInfo parent, bool getProperties) : base(parent, file)
     {
-        var source = Source;
-        if (source == null) return;
-        try
-        {
-            source.Refresh();
-            Name = source.Name;
-            LastModification = source.LastWriteTime;
-            Size = source.Length;
-            if (GetParent().Source != Source.Directory)
-            {
-                SetParent(null);
-                GetParentInfo();
-            }
-        }
-        catch (IOException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
+        Exists = file != null && file.IsAvailable;
+        if (parent == null) _ = UpdateParentAsync();
+        if (getProperties) _ = GetPropertiesAsync();
+    }
+
+    /// <summary>
+    /// Gets the date created.
+    /// </summary>
+    public DateTime Creation { get; private set; }
+
+    /// <summary>
+    /// Gets the file attributes.
+    /// </summary>
+    public Windows.Storage.FileAttributes Attributes { get; private set; }
+
+    /// <summary>
+    /// Retrieves an adjusted thumbnail image for the file, determined by the purpose of the thumbnail, the requested size, and the specified options.
+    /// </summary>
+    /// <param name="mode">The enum value that describes the purpose of the thumbnail and determines how the thumbnail image is adjusted.</param>
+    /// <returns>When this method completes successfully, it returns a thumbnail that represents the thumbnail image; or null, if there is no thumbnail image associated with the file.</returns>
+    public async Task<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode)
+    {
+        var r = Source;
+        if (r == null) return null;
+        return await Source.GetThumbnailAsync(mode);
+    }
+
+    /// <summary>
+    /// Retrieves an adjusted thumbnail image for the file, determined by the purpose of the thumbnail, the requested size, and the specified options.
+    /// </summary>
+    /// <param name="mode">The enum value that describes the purpose of the thumbnail and determines how the thumbnail image is adjusted.</param>
+    /// <param name="requestedSize">The requested size, in pixels, of the longest edge of the thumbnail. Windows uses this size as a guide and tries to scale the thumbnail image without reducing the quality of the image.</param>
+    /// <param name="options">The enum value that describes the desired behavior to use to retrieve the thumbnail image. The specified behavior might affect the size and/or quality of the image and how quickly the thumbnail image is retrieved.</param>
+    /// <returns>When this method completes successfully, it returns a thumbnail that represents the thumbnail image; or null, if there is no thumbnail image associated with the file.</returns>
+    public async Task<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode, uint requestedSize, ThumbnailOptions options = ThumbnailOptions.None)
+    {
+        var r = Source;
+        if (r == null) return null;
+        return await Source.GetThumbnailAsync(mode, requestedSize, options);
     }
 
     /// <summary>
     /// Gets the parent.
     /// </summary>
-    public new LocalDirectoryReferenceInfo GetParent()
-        => base.GetParent() as LocalDirectoryReferenceInfo;
+    public new StorageFolderReferenceInfo GetParent()
+        => base.GetParent() as StorageFolderReferenceInfo;
 
     /// <summary>
     /// Gets the parent.
@@ -1067,12 +338,113 @@ public class LocalFileReferenceInfo: BaseFileReferenceInfo<FileInfo>
     protected override IFileContainerReferenceInfo GetParentInfo()
     {
         var info = base.GetParentInfo();
-        if (info != null) return info;
+        if (info == null && !isLoading) _ = UpdateParentAsync();
+        return base.GetParentInfo();
+    }
+
+    /// <summary>
+    /// Gets properties.
+    /// </summary>
+    /// <returns>The properties.</returns>
+    internal async Task<BasicProperties> GetPropertiesAsync()
+    {
+        var info = Source;
+        if (info == null || !info.IsAvailable) return null;
+        BasicProperties properties = null;
         try
         {
-            var dir = Source.Directory;
-            if (dir == null || !dir.Exists) return null;
-            SetParent(new LocalDirectoryReferenceInfo(dir));
+            isLoading = true;
+            Name = info.Name;
+            Creation = LastModification = info.DateCreated.DateTime;
+            Attributes = info.Attributes;
+            properties = await info.GetBasicPropertiesAsync();
+            LastModification = properties.DateModified.DateTime;
+            try
+            {
+                Size = (long)properties.Size;
+            }
+            catch (OverflowException)
+            {
+            }
+            catch (InvalidCastException)
+            {
+            }
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+        finally
+        {
+            isLoading = false;
+        }
+
+        await UpdateParentAsync();
+        return properties;
+    }
+
+    /// <summary>
+    /// Converts a number to angle model.
+    /// </summary>
+    /// <param name="value">The raw value.</param>
+    public static explicit operator LocalFileReferenceInfo(StorageFileReferenceInfo value)
+    {
+        try
+        {
+            var path = value?.Source?.Path;
+            if (string.IsNullOrWhiteSpace(path)) return null;
+            var file = new FileInfo(path);
+            if (!file.Exists) return null;
+            return new LocalFileReferenceInfo(file);
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    private async Task UpdateParentAsync()
+    {
+        var info = Source;
+        if (info == null) return;
+        try
+        {
+            isLoading = true;
+            var dir = await info.GetParentAsync();
+            if (dir != null) SetParent(new StorageFolderReferenceInfo(dir));
         }
         catch (IOException)
         {
@@ -1092,22 +464,9 @@ public class LocalFileReferenceInfo: BaseFileReferenceInfo<FileInfo>
         catch (ExternalException)
         {
         }
-
-        return base.GetParentInfo();
-    }
-}
-
-/// <summary>
-/// The reference information of package (such as compressed) file.
-/// </summary>
-public class LocalPackageFileReferenceInfo : LocalFileReferenceInfo, IFileContainerReferenceInfo
-{
-    /// <summary>
-    /// Initializes a new instance of the LocalPackageFileReferenceInfo class.
-    /// </summary>
-    /// <param name="file">The file item.</param>
-    /// <param name="parent">The parent folder.</param>
-    public LocalPackageFileReferenceInfo(FileInfo file, LocalDirectoryReferenceInfo parent = null) : base(file, parent)
-    {
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Trivial.Data;
@@ -20,6 +22,7 @@ using Trivial.Tasks;
 using Trivial.Text;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Text;
 
 namespace Trivial.UI;
@@ -323,7 +326,7 @@ public sealed partial class FileListView : UserControl
         if (!client.Test(directory)) return;
         collection.Clear();
         var parent = await client.GetParentAsync(directory);
-        var updatePath = parent != oldDir || oldDir == null;
+        var updatePath = depth > 0 && (parent != oldDir || oldDir == null);
         if (id != tracing) return;
         if (updatePath)
         {
@@ -364,7 +367,7 @@ public sealed partial class FileListView : UserControl
                 directory,
                 parent
             };
-            for (var i = 0; i < depth; i++)
+            for (var i = 1; i < depth; i++)
             {
                 var item = pathList.LastOrDefault();
                 if (item == null || !client.Test(item)) break;
@@ -392,6 +395,48 @@ public sealed partial class FileListView : UserControl
     /// <param name="depth">The depth to load parent initialized.</param>
     public Task NavigateAsync(DirectoryInfo directory, int depth = DefaultDepth)
         => NavigateAsync(null, directory == null ? null : new LocalDirectoryReferenceInfo(directory), depth);
+
+    /// <summary>
+    /// Sets data.
+    /// </summary>
+    /// <param name="directory">The start directory.</param>
+    /// <param name="depth">The depth to load parent initialized.</param>
+    public Task NavigateAsync(StorageFolder directory, int depth = 1)
+    {
+        if (directory == null) return Task.Run(() => { });
+        try
+        {
+            var path = directory.Path;
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                var dir = new DirectoryInfo(path);
+                if (dir.Exists) return NavigateAsync(null, new LocalDirectoryReferenceInfo(dir), depth);
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return NavigateAsync(null, new StorageFolderReferenceInfo(directory), depth);
+    }
 
     private void FileBrowser_ItemClick(object sender, ItemClickEventArgs e)
         => ItemClick?.Invoke(this, e);

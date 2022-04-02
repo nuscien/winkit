@@ -27,7 +27,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ListView x:DefaultBindMode="OneWay" x:Name="ListPanel" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+    <ListView x:DefaultBindMode="OneWay" x:Name="ListPanel" SelectionMode="{x:Bind SelectionMode}" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" SelectionChanged="ListPanel_SelectionChanged" >
         <ListView.Header>
             <StackPanel Orientation="Vertical">
                 <Border x:Name="Top" ></Border>
@@ -57,9 +57,7 @@
             </StackPanel>
         </ListView.Header>
         <ListView.Footer>
-            <StackPanel Orientation="Vertical">
-                <Border x:Name="Bottom" ></Border>
-            </StackPanel>
+            <Border x:Name="Bottom" ></Border>
         </ListView.Footer>
     </ListView>
 </UserControl>

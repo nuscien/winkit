@@ -30,9 +30,14 @@ public sealed partial class TileListView : UserControl
     public static readonly DependencyProperty ItemStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ItemStyle), OnItemStyleChanged);
 
     /// <summary>
-    /// The dependency property of list view style.
+    /// The dependency property of list view item style.
     /// </summary>
-    public static readonly DependencyProperty ListViewStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ListViewStyle), (c, e, p) => c.ListViewStyle = e.NewValue);
+    public static readonly DependencyProperty ItemContainerStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(ItemContainerStyle), (c, e, p) => c.ItemContainerStyle = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of selection mode.
+    /// </summary>
+    public static readonly DependencyProperty SelectionModeProperty = DependencyObjectProxy.RegisterProperty(nameof(SelectionMode), ListViewSelectionMode.None);
 
     /// <summary>
     /// The dependency property of header height.
@@ -168,6 +173,11 @@ public sealed partial class TileListView : UserControl
     }
 
     /// <summary>
+    /// Occurs when the currently selected item changes.
+    /// </summary>
+    public event SelectionChangedEventHandler SelectionChanged;
+
+    /// <summary>
     /// Gets the children.
     /// </summary>
     public ItemCollection Items => ListPanel.Items;
@@ -184,10 +194,37 @@ public sealed partial class TileListView : UserControl
     /// <summary>
     /// Gets or sets the style of internal list view.
     /// </summary>
-    public Style ListViewStyle
+    public Style ItemContainerStyle
     {
-        get => ListPanel.Style;
-        set => ListPanel.Style = value;
+        get => ListPanel.ItemContainerStyle;
+        set => ListPanel.ItemContainerStyle = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the selection mode.
+    /// </summary>
+    public ListViewSelectionMode SelectionMode
+    {
+        get => (ListViewSelectionMode)GetValue(SelectionModeProperty);
+        set => SetValue(SelectionModeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the selected index.
+    /// </summary>
+    public int SelectedIndex
+    {
+        get => ListPanel.SelectedIndex;
+        set => ListPanel.SelectedIndex = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the selected item.
+    /// </summary>
+    public TileItem SelectedItem
+    {
+        get => ListPanel.SelectedItem as TileItem;
+        set => ListPanel.SelectedItem = value;
     }
 
     /// <summary>
@@ -493,11 +530,6 @@ public sealed partial class TileListView : UserControl
         {
             Style = ItemStyle
         };
-        //item.SetBinding(StyleProperty, new Binding
-        //{
-        //    Source = this,
-        //    Path = "ItemStyle"
-        //});
         ListPanel.Items.Add(item);
         return item;
     }
@@ -613,6 +645,14 @@ public sealed partial class TileListView : UserControl
         }
     }
 
+    /// <summary>
+    /// Scrolls the list to bring the specified item into view.
+    /// </summary>
+    /// <param name="item">The item to scroll into view.</param>
+    /// <param name="aligment">The alignment.</param>
+    public void ScrollIntoView(TileItem item, ScrollIntoViewAlignment aligment = ScrollIntoViewAlignment.Default)
+        => ListPanel.ScrollIntoView(item, aligment);
+
     private static void OnItemStyleChanged(TileListView c, ChangeEventArgs<Style> e, DependencyProperty p)
     {
         foreach (var item in c.ListPanel.Items)
@@ -631,4 +671,7 @@ public sealed partial class TileListView : UserControl
     {
         if (args?.Item is TileListView c) c.UsePrepareImageUri();
     }
+
+    private void ListPanel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => SelectionChanged?.Invoke(this, e);
 }

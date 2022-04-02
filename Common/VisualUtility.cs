@@ -992,6 +992,54 @@ public static partial class VisualUtility
         return false;
     }
 
+    /// <summary>
+    /// Tries to parse a color.
+    /// </summary>
+    /// <param name="s">The input string to parse.</param>
+    /// <param name="result">The result.</param>
+    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    public static bool TryParseColor(string s, out Windows.UI.Color result)
+    {
+        if (!Drawing.ColorCalculator.TryParse(s, out var color))
+        {
+            result = default;
+            return false;
+        }
+
+        result = Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+        return true;
+    }
+
+    /// <summary>
+    /// Parses a color.
+    /// </summary>
+    /// <param name="s">The input string to parse.</param>
+    /// <returns>The result color parsed.</returns>
+    /// <exception cref="FormatException">s was incorrect to parse as a color.</exception>
+    public static Windows.UI.Color ParseColor(string s)
+    {
+        s = s.Trim();
+        if (string.IsNullOrEmpty(s)) return Microsoft.UI.Colors.Transparent;
+        if (TryParseColor(s, out var r)) return r;
+        throw new FormatException("s is not a color.", new ArgumentException("s is not supported.", nameof(s)));
+    }
+
+    /// <summary>
+    /// Converts a color to hex format string.
+    /// </summary>
+    /// <param name="value">The source color value.</param>
+    /// <returns>A hex format string.</returns>
+    public static string ToHexString(Windows.UI.Color value)
+        => value.A == 255 ? $"#{value.R:x2}{value.G:x2}{value.B:x2}" : $"#{value.A:x2}{value.R:x2}{value.G:x2}{value.B:x2}";
+
+    /// <summary>
+    /// Converts a color to hex format string.
+    /// </summary>
+    /// <param name="value">The source color value.</param>
+    /// <returns>A hex format string.</returns>
+    public static string ToRgbaString(Windows.UI.Color value)
+        => $"rgba({value.R}, {value.G}, {value.B}, {value.A / 255d:0.######})";
+
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
     {
         if (json == null) return;

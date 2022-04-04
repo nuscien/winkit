@@ -36,6 +36,7 @@ public sealed partial class MainWindow : Window
         {
             "nbc" => typeof(Nbc.NewsPage),
             "bilibili" => typeof(Bilibili.ChannelPage),
+            "web" => typeof(WebPage),
             _ => typeof(HomePage)
         }, null);
     }

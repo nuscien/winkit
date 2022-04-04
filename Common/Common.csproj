@@ -44,6 +44,8 @@
     <None Remove="CommentView.xaml" />
     <None Remove="FileListView.xaml" />
     <None Remove="SettingsExpanderHeader.xaml" />
+    <None Remove="SingleWebView.xaml" />
+    <None Remove="TabbedWebView.xaml" />
     <None Remove="TextButton.xaml" />
     <None Remove="TextView.xaml" />
     <None Remove="TileCollection.xaml" />
@@ -79,6 +81,18 @@
     <None Include="README.md" Pack="true" PackagePath="README.md" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="SingleWebView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="TabbedWebView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

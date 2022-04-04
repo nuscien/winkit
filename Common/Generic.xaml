@@ -8,12 +8,12 @@
             <SolidColorBrush x:Key="WinKit.Foreground" Color="#222222" />
             <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1" >
                 <GradientStopCollection>
-                    <GradientStop Offset="0" Color="#333333" />
+                    <GradientStop Offset="0" Color="#2C2C2C" />
                     <GradientStop Offset="1" Color="#111111" />
                 </GradientStopCollection>
             </LinearGradientBrush>
             <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#666666" />
-            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#CC222222" />
+            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#99282828" />
             <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#CCCCCC" />
             <SolidColorBrush x:Key="WinKit.HoverBackground" Color="#20808080" />
             <LinearGradientBrush x:Key="WinKit.HoverBorderBrush" StartPoint="0.5,0" EndPoint="0.5,1" >
@@ -27,12 +27,12 @@
             <SolidColorBrush x:Key="WinKit.Foreground" Color="#F0F0F0" />
             <LinearGradientBrush x:Key="WinKit.TitleForeground" StartPoint="0.5,0" EndPoint="0.5,1" >
                 <GradientStopCollection>
-                    <GradientStop Offset="0" Color="#F9F9F9" />
-                    <GradientStop Offset="1" Color="#C9C9C9" />
+                    <GradientStop Offset="0" Color="#FCFCFC" />
+                    <GradientStop Offset="1" Color="#DDDDDD" />
                 </GradientStopCollection>
             </LinearGradientBrush>
             <SolidColorBrush x:Key="WinKit.DescriptionForeground" Color="#AAAAAA" />
-            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#CCF0F0F0" />
+            <SolidColorBrush x:Key="WinKit.DisabledForeground" Color="#99EEEEEE" />
             <SolidColorBrush x:Key="WinKit.ImageBackground" Color="#333333" />
             <SolidColorBrush x:Key="WinKit.HoverBackground" Color="#20808080" />
             <LinearGradientBrush x:Key="WinKit.HoverBorderBrush" StartPoint="0.5,0" EndPoint="0.5,1" >
@@ -88,6 +88,7 @@
         <Setter Property="DisabledBackground" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="BorderBrush" Value="{ThemeResource WinKit.HoverBorderBrush}" />
+        <Setter Property="DisabledBorderThickness" Value="0" />
         <Setter Property="Padding" Value="11,5" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>

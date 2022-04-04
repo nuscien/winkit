@@ -1040,6 +1040,84 @@ public static partial class VisualUtility
     public static string ToRgbaString(Windows.UI.Color value)
         => $"rgba({value.R}, {value.G}, {value.B}, {value.A / 255d:0.######})";
 
+    /// <summary>
+    /// Tries to parse a URI.
+    /// </summary>
+    /// <param name="url">The URL.</param>
+    /// <returns>The URI.</returns>
+    public static Uri TryCreateUri(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+        try
+        {
+            return new Uri(url);
+        }
+        catch (FormatException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Adds object to JS environment.
+    /// </summary>
+    /// <param name="webview">The web view.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="json">The value.</param>
+    public static void AddExternalObjectToScript(WebView2 webview, string name, JsonObjectNode json)
+        => _ = AddExternalObjectToScriptAsync(webview, name, json);
+
+    /// <summary>
+    /// Adds object to JS environment.
+    /// </summary>
+    /// <param name="webview">The web view.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="json">The value.</param>
+    public static void AddHostObjectToScript(WebView2 webview, string name, JsonObjectNode json)
+        => _ = AddHostObjectToScriptAsync(webview, name, json);
+
+    /// <summary>
+    /// Adds object to JS environment.
+    /// </summary>
+    /// <param name="webview">The web view.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="json">The value.</param>
+    public static async Task AddExternalObjectToScriptAsync(WebView2 webview, string name, JsonObjectNode json)
+    {
+        if (string.IsNullOrEmpty(name) || json == null || webview == null) return;
+        await webview.EnsureCoreWebView2Async();
+        var sb = new StringBuilder();
+        sb.Append(@"(function() { if (!window.external) window.external = { }; window.external.");
+        sb.Append(name);
+        sb.Append(" = ");
+        sb.Append(json.ToString());
+        sb.Append("; })();");
+        await webview.CoreWebView2.ExecuteScriptAsync(sb.ToString());
+    }
+
+    /// <summary>
+    /// Adds object to JS environment.
+    /// </summary>
+    /// <param name="webview">The web view.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="json">The value.</param>
+    public static async Task AddHostObjectToScriptAsync(WebView2 webview, string name, JsonObjectNode json)
+    {
+        if (string.IsNullOrEmpty(name) || json == null || webview == null) return;
+        await webview.EnsureCoreWebView2Async();
+        var sb = new StringBuilder();
+        sb.Append(@"(function() { if (!window.chrome) window.chrome = {}; if (!window.chrome.webview) window.chrome.webview = {}; if (!window.chrome.webview.hostObjects) window.chrome.webview.hostObjects = {}; window.chrome.webview.hostObjects.");
+        sb.Append(name);
+        sb.Append(" = ");
+        sb.Append(json.ToString());
+        sb.Append("; })();");
+        await webview.CoreWebView2.ExecuteScriptAsync(sb.ToString());
+    }
+
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
     {
         if (json == null) return;

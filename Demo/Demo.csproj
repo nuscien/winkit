@@ -28,6 +28,7 @@
     <None Remove="ControlResources.xaml" />
     <None Remove="HomePage.xaml" />
     <None Remove="Nbc\NewsPage.xaml" />
+    <None Remove="WebPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +53,11 @@
        package has not yet been restored -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="WebPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="ControlResources.xaml">

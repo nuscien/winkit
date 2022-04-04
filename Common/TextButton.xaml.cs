@@ -124,6 +124,11 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty DisabledBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(DisabledBorderThickness));
 
     /// <summary>
+    /// The dependency property of panel opacity on disabled.
+    /// </summary>
+    public static readonly DependencyProperty DisabledPanelOpacityProperty = DependencyObjectProxy.RegisterProperty(nameof(DisabledPanelOpacity), 0d);
+
+    /// <summary>
     /// The dependency property of text wrapping.
     /// </summary>
     public static readonly DependencyProperty TextWrappingProperty = DependencyObjectProxy.RegisterProperty<TextWrapping>(nameof(TextWrapping));
@@ -412,6 +417,15 @@ public sealed partial class TextButton : UserControl
     {
         get => (Thickness)GetValue(DisabledBorderThicknessProperty);
         set => SetValue(DisabledBorderThicknessProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the opacity of the background panel when the state is disabled.
+    /// </summary>
+    public double DisabledPanelOpacity
+    {
+        get => (double)GetValue(DisabledPanelOpacityProperty);
+        set => SetValue(DisabledPanelOpacityProperty, value);
     }
 
     /// <summary>

@@ -1,0 +1,74 @@
+﻿<UserControl
+    x:Class="Trivial.UI.SingleWebView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:SingleWebView" >
+                <Setter Property="ButtonForeground" Value="{ThemeResource WinKit.Foreground}" />
+                <Setter Property="ButtonBackground" Value="Transparent" />
+                <Setter Property="ButtonHoverForeground" Value="{ThemeResource WinKit.TitleForeground}" />
+                <Setter Property="ButtonHoverBackground" Value="{ThemeResource WinKit.HoverBackground}" />
+                <Setter Property="ButtonDisabledForeground" Value="{ThemeResource WinKit.DisabledForeground}" />
+                <Setter Property="ButtonDisabledBackground" Value="Transparent" />
+                <Setter Property="ButtonPadding" Value="8,6" />
+                <Setter Property="ButtonMargin" Value="0" />
+                <Setter Property="UrlInputPadding" Value="8,4" />
+                <Setter Property="UrlInputMargin" Value="4,0" />
+                <Setter Property="NavigationBarPadding" Value="4" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid x:Name="HostElement" x:DefaultBindMode="OneWay" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+        <Grid.Resources>
+            <ResourceDictionary>
+                <Style x:Key="WinKit.BarButton" TargetType="local:TextButton" >
+                    <Setter Property="Foreground" Value="{x:Bind ButtonForeground}" />
+                    <Setter Property="Background" Value="{x:Bind ButtonBackground}" />
+                    <Setter Property="HoverForeground" Value="{x:Bind ButtonHoverForeground}" />
+                    <Setter Property="HoverBackground" Value="{x:Bind ButtonHoverBackground}" />
+                    <Setter Property="DisabledForeground" Value="{x:Bind ButtonDisabledForeground}" />
+                    <Setter Property="DisabledBackground" Value="{x:Bind ButtonDisabledBackground}" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="CornerRadius" Value="4" />
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="WinKit.UrlTextBox" TargetType="TextBox" >
+                    <Setter Property="IsSpellCheckEnabled" Value="False" />
+                </Style>
+            </ResourceDictionary>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{x:Bind CommandBarHeight}" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border>
+            <RelativePanel Padding="{x:Bind NavigationBarPadding}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <local:TextButton x:Name="BackButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" IsEnabled="False" RelativePanel.AlignVerticalCenterWithPanel="True" Click="BackButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                    <local:TextButton.IconSource>
+                        <FontIconSource Glyph="&#xE0A6;"/>
+                    </local:TextButton.IconSource>
+                </local:TextButton>
+                <local:TextButton x:Name="RefreshButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" RelativePanel.RightOf="BackButton" RelativePanel.AlignVerticalCenterWithPanel="True" Click="RefreshButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                    <local:TextButton.IconSource>
+                        <FontIconSource Glyph="&#xE149;"/>
+                    </local:TextButton.IconSource>
+                </local:TextButton>
+                <TextBox Visibility="Collapsed" x:Name="UrlElement" IsReadOnly="True" IsSpellCheckEnabled="False" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="RefreshButton" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" />
+                <AutoSuggestBox TextBoxStyle="{ThemeResource WinKit.UrlTextBox}" x:Name="UrlInput" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="RefreshButton" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" QuerySubmitted="OnUrlQuerySubmitted" TextChanged="OnUrlTextChanged" SuggestionChosen="OnUrlSuggestionChosen" />
+            </RelativePanel>
+        </Border>
+        <WebView2 x:Name="Browser" DefaultBackgroundColor="{x:Bind DefaultWebViewBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" Grid.Row="1" />
+        <ProgressBar x:Name="LoadingElement" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Visibility="Collapsed" IsIndeterminate="True" ShowPaused="False" ShowError="False" Grid.Row="1" />
+    </Grid>
+</UserControl>

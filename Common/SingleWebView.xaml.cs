@@ -177,6 +177,11 @@ public sealed partial class SingleWebView : UserControl
     public event TypedEventHandler<SingleWebView, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
 
     /// <summary>
+    /// Occurs when the webpage send request to close itself.
+    /// </summary>
+    public event TypedEventHandler<SingleWebView, object> WindowCloseRequested;
+
+    /// <summary>
     /// Occurs when the downloading is starting.
     /// </summary>
     public event TypedEventHandler<SingleWebView, CoreWebView2DownloadStartingEventArgs> DownloadStarting;
@@ -420,9 +425,12 @@ public sealed partial class SingleWebView : UserControl
     /// Reloads web page.
     /// </summary>
     public void Reload()
-    {
-        Browser.Reload();
-    }
+        => Browser.Reload();
+
+    /// <summary>
+    /// Gets or sets the handler for searching.
+    /// </summary>
+    public Func<string, Uri> SearchHandler { get; set; }
 
     /// <summary>
     /// Turns back history.
@@ -522,11 +530,9 @@ public sealed partial class SingleWebView : UserControl
         sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
         sender.CoreWebView2.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged;
         sender.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
+        sender.CoreWebView2.WindowCloseRequested += OnWindowCloseRequested;
         CoreWebView2Initialized?.Invoke(this, args);
     }
-
-    private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
-        => NewWindowRequested?.Invoke(this, args);
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)
     {
@@ -575,6 +581,12 @@ public sealed partial class SingleWebView : UserControl
     private void OnDownloadStarting(CoreWebView2 sender, CoreWebView2DownloadStartingEventArgs args)
         => DownloadStarting?.Invoke(this, args);
 
+    private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+        => NewWindowRequested?.Invoke(this, args);
+
+    private void OnWindowCloseRequested(CoreWebView2 sender, object args)
+        => WindowCloseRequested?.Invoke(this, args);
+
     private void OnUrlQuerySubmitted(AutoSuggestBox _, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         var s = UrlInput.Text?.Trim();
@@ -585,7 +597,20 @@ public sealed partial class SingleWebView : UserControl
         }
 
         var uri = VisualUtility.TryCreateUri(s);
-        if (uri == null && !s.Contains("://")) uri = VisualUtility.TryCreateUri(string.Concat("https://", s));
+        if (uri == null)
+        {
+            var search = SearchHandler;
+            if (search != null)
+            {
+                uri = search(s);
+            }
+            else if (!s.Contains("://"))
+            {
+                if (!s.Contains(' ') || s.IndexOf('.') < s.IndexOf(' '))
+                    uri = VisualUtility.TryCreateUri(string.Concat("https://", s));
+            }
+        }
+
         if (uri == null) return;
         UpdateUrlSource(uri);
         UrlQuerySubmitted?.Invoke(this, args);

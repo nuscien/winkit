@@ -12,7 +12,7 @@
             <NavigationViewItem Tag="home" IsSelected="True" >Home</NavigationViewItem>
             <NavigationViewItem Tag="nbc" >NBC</NavigationViewItem>
             <NavigationViewItem Tag="bilibili" >Bilibili</NavigationViewItem>
-            <NavigationViewItem Tag="web" >Web view</NavigationViewItem>
+            <NavigationViewItem Tag="web" >Browser</NavigationViewItem>
         </NavigationView.MenuItems>
         <Frame x:Name="ContentFrame" />
     </NavigationView>

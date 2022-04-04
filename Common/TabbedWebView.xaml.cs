@@ -90,6 +90,11 @@ public sealed partial class TabbedWebView : UserControl
     public event EventHandler<WebViewTabEventArgs> WebViewTabCreated;
 
     /// <summary>
+    /// Occurs on the selection has changed.
+    /// </summary>
+    public event SelectionChangedEventHandler SelectionChanged;
+
+    /// <summary>
     /// Gets or sets the source.
     /// </summary>
     public Uri Source
@@ -112,8 +117,8 @@ public sealed partial class TabbedWebView : UserControl
     /// </summary>
     public TabViewWidthMode TabWidthMode
     {
-        get => (TabViewWidthMode)GetValue(IsReadOnlyProperty);
-        set => SetValue(IsReadOnlyProperty, value);
+        get => (TabViewWidthMode)GetValue(TabWidthModeProperty);
+        set => SetValue(TabWidthModeProperty, value);
     }
 
     /// <summary>
@@ -230,6 +235,21 @@ public sealed partial class TabbedWebView : UserControl
         {
             _ = OnNewWindowRequestedAsync(e);
         };
+        c.WindowCloseRequested += (sender, e) =>
+        {
+            try
+            {
+                c.Close();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+
+            HostElement.TabItems.Remove(tab);
+        };
         if (source != null) c.Source = source;
         return c;
     }
@@ -246,7 +266,17 @@ public sealed partial class TabbedWebView : UserControl
 
     private void OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
     {
-        GetWebView(args.Tab)?.Close();
+        try
+        {
+            GetWebView(args.Tab)?.Close();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+
         sender.TabItems.Remove(args.Tab);
     }
 
@@ -264,4 +294,7 @@ public sealed partial class TabbedWebView : UserControl
             webview.IsReadOnly = e.NewValue;
         }
     }
+
+    private void HostElement_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => SelectionChanged?.Invoke(this, e);
 }

@@ -24,6 +24,17 @@
                 <Setter Property="UrlInputPadding" Value="8,4" />
                 <Setter Property="UrlInputMargin" Value="4,0" />
                 <Setter Property="NavigationBarPadding" Value="4" />
+                <Setter Property="LoadingStyle" >
+                    <Setter.Value>
+                        <Style TargetType="ProgressRing" >
+                            <Setter Property="Width" Value="16" />
+                            <Setter Property="Height" Value="16" />
+                            <Setter Property="Margin" Value="16,0" />
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -59,7 +70,12 @@
                         <FontIconSource Glyph="&#xE0A6;"/>
                     </local:TextButton.IconSource>
                 </local:TextButton>
-                <local:TextButton x:Name="RefreshButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" RelativePanel.RightOf="BackButton" RelativePanel.AlignVerticalCenterWithPanel="True" Click="RefreshButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                <local:TextButton x:Name="ForwardButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" IsEnabled="False" RelativePanel.RightOf="BackButton" RelativePanel.AlignVerticalCenterWithPanel="True" Click="ForwardButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                    <local:TextButton.IconSource>
+                        <FontIconSource Glyph="&#xE0AB;"/>
+                    </local:TextButton.IconSource>
+                </local:TextButton>
+                <local:TextButton x:Name="RefreshButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" RelativePanel.RightOf="ForwardButton" RelativePanel.AlignVerticalCenterWithPanel="True" Click="RefreshButton_Click" Style="{ThemeResource WinKit.BarButton}" >
                     <local:TextButton.IconSource>
                         <FontIconSource Glyph="&#xE149;"/>
                     </local:TextButton.IconSource>
@@ -68,7 +84,7 @@
                 <AutoSuggestBox TextBoxStyle="{ThemeResource WinKit.UrlTextBox}" x:Name="UrlInput" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="RefreshButton" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" QuerySubmitted="OnUrlQuerySubmitted" TextChanged="OnUrlTextChanged" SuggestionChosen="OnUrlSuggestionChosen" />
             </RelativePanel>
         </Border>
+        <ProgressRing x:Name="LoadingElement" IsActive="False" Style="{x:Bind LoadingStyle}" />
         <WebView2 x:Name="Browser" DefaultBackgroundColor="{x:Bind DefaultWebViewBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" Grid.Row="1" />
-        <ProgressBar x:Name="LoadingElement" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Visibility="Collapsed" IsIndeterminate="True" ShowPaused="False" ShowError="False" Grid.Row="1" />
     </Grid>
 </UserControl>

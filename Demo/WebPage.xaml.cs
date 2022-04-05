@@ -30,4 +30,9 @@ public sealed partial class WebPage : Page
     {
         InitializeComponent();
     }
+
+    private void TabbedWebView_TabCloseRequested(UI.TabbedWebView sender, TabViewTabCloseRequestedEventArgs args)
+    {
+        if (HostElement.WebViews.Count < 1) HostElement.Add(null);
+    }
 }

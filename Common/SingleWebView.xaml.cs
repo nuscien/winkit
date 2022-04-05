@@ -121,6 +121,16 @@ public sealed partial class SingleWebView : UserControl
     public static readonly DependencyProperty NavigationBarPaddingProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(NavigationBarPadding));
 
     /// <summary>
+    /// The dependency property of the loading style.
+    /// </summary>
+    public static readonly DependencyProperty LoadingStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(LoadingStyle));
+
+    /// <summary>
+    /// The flag indicating whether the webpage is loading.
+    /// </summary>
+    private bool isLoading;
+
+    /// <summary>
     /// Initialized a new instance of the SingleWebView class.
     /// </summary>
     public SingleWebView()
@@ -249,8 +259,16 @@ public sealed partial class SingleWebView : UserControl
     /// </summary>
     public Uri Source
     {
-        get => (Uri)GetValue(SourceProperty);
-        set => SetValue(SourceProperty, value);
+        get
+        {
+            return Browser.Source;
+        }
+
+        set
+        {
+            Browser.Source = value;
+            UpdateUrlInput(value);
+        }
     }
 
     /// <summary>
@@ -389,6 +407,15 @@ public sealed partial class SingleWebView : UserControl
     }
 
     /// <summary>
+    /// Gets or set the style of loading element.
+    /// </summary>
+    public Style LoadingStyle
+    {
+        get => (Style)GetValue(LoadingStyleProperty);
+        set => SetValue(LoadingStyleProperty, value);
+    }
+
+    /// <summary>
     /// Gets the document title.
     /// </summary>
     public string DocumentTitle => Browser.CoreWebView2?.DocumentTitle;
@@ -436,6 +463,15 @@ public sealed partial class SingleWebView : UserControl
     /// </summary>
     public void Reload()
         => Browser.Reload();
+
+    /// <summary>
+    /// Stops processing of the web page.
+    /// </summary>
+    public void Stop()
+    {
+        UpdateLoadingState(false);
+        if (Browser.CoreWebView2 != null) Browser.CoreWebView2.Stop();
+    }
 
     /// <summary>
     /// Turns back history.
@@ -528,7 +564,7 @@ public sealed partial class SingleWebView : UserControl
     /// Hides loading element.
     /// </summary>
     public void HideLoading()
-        => LoadingElement.Visibility = Visibility.Collapsed;
+        => LoadingElement.IsActive = false;
 
     /// <summary>
     /// Closes.
@@ -560,14 +596,21 @@ public sealed partial class SingleWebView : UserControl
 
     private void OnNavigationCompleted(WebView2 _, CoreWebView2NavigationCompletedEventArgs args)
     {
-        LoadingElement.Visibility = Visibility.Collapsed;
+        UpdateLoadingState(false);
         NavigationCompleted?.Invoke(this, args);
     }
 
     private void OnNavigationStarting(WebView2 _, CoreWebView2NavigationStartingEventArgs args)
     {
-        LoadingElement.Visibility = Visibility.Visible;
+        UpdateLoadingState(!string.IsNullOrEmpty(args?.Uri));
         NavigationStarting?.Invoke(this, args);
+    }
+
+    private void UpdateLoadingState(bool value)
+    {
+        if (isLoading == value) return;
+        LoadingElement.IsActive = isLoading = value;
+        RefreshButton.SetFontIcon(isLoading ? "\xE106" : "\xE149");
     }
 
     private void OnWebMessageReceived(WebView2 _, CoreWebView2WebMessageReceivedEventArgs args)
@@ -591,6 +634,7 @@ public sealed partial class SingleWebView : UserControl
     private void OnHistoryChanged(CoreWebView2 sender, object args)
     {
         BackButton.IsEnabled = Browser.CanGoBack;
+        ForwardButton.IsEnabled = Browser.CanGoForward;
         HistoryChanged?.Invoke(this, args);
     }
 
@@ -628,7 +672,7 @@ public sealed partial class SingleWebView : UserControl
         }
 
         if (uri == null) return;
-        UpdateUrlSource(uri);
+        Source = uri;
         UrlQuerySubmitted?.Invoke(this, args);
     }
 
@@ -641,13 +685,15 @@ public sealed partial class SingleWebView : UserControl
     private void BackButton_Click(object sender, RoutedEventArgs e)
         => GoBack();
 
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
-        => Browser.Reload();
+    private void ForwardButton_Click(object sender, RoutedEventArgs e)
+        => GoForward();
 
-    private void UpdateUrlSource(Uri uri)
+    private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
-        Browser.Source = uri;
-        UpdateUrlInput(uri);
+        var webview = Browser.CoreWebView2;
+        if (webview == null) return;
+        if (isLoading) webview.Stop();
+        else Browser.Reload();
     }
 
     private void UpdateUrlInput(Uri uri)
@@ -665,7 +711,7 @@ public sealed partial class SingleWebView : UserControl
     }
 
     private static void UpdateUrlSource(SingleWebView c, ChangeEventArgs<Uri> e, DependencyProperty d)
-        => c.UpdateUrlSource(e.NewValue);
+        => c.Source = e.NewValue;
 
     private static void UpdateReadOnly(SingleWebView c, ChangeEventArgs<bool> e, DependencyProperty d)
     {

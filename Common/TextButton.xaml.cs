@@ -580,6 +580,68 @@ public sealed partial class TextButton : UserControl
             UriSource = uri
         };
 
+    /// <summary>
+    /// Sets font icon.
+    /// </summary>
+    /// <param name="glyph">The icon glyphl.</param>
+    /// <returns>The font icon source.</returns>
+    public FontIconSource SetFontIcon(string glyph)
+    {
+        if (string.IsNullOrWhiteSpace(glyph)) return null;
+        var icon = new FontIconSource
+        {
+            Glyph = glyph
+        };
+        IconSource = icon;
+        return icon;
+    }
+
+    /// <summary>
+    /// Sets font icon.
+    /// </summary>
+    /// <param name="glyph">The icon glyphl.</param>
+    /// <returns>The font icon source.</returns>
+    public FontIconSource SetFontIcon(char glyph)
+    {
+        var icon = new FontIconSource
+        {
+            Glyph = glyph.ToString()
+        };
+        IconSource = icon;
+        return icon;
+    }
+
+    /// <summary>
+    /// Sets font icon.
+    /// </summary>
+    /// <param name="symbol">The icon symbol.</param>
+    /// <returns>The font icon source.</returns>
+    public SymbolIconSource SetIcon(Symbol symbol)
+    {
+        var icon = new SymbolIconSource
+        {
+            Symbol = symbol
+        };
+        IconSource = icon;
+        return icon;
+    }
+
+    /// <summary>
+    /// Sets font icon.
+    /// </summary>
+    /// <param name="uri">The icon URI.</param>
+    /// <returns>The font icon source.</returns>
+    public BitmapIconSource SetIcon(Uri uri)
+    {
+        if (uri == null) return null;
+        var icon = new BitmapIconSource
+        {
+            UriSource = uri
+        };
+        IconSource = icon;
+        return icon;
+    }
+
     private void Button_Click(object sender, RoutedEventArgs e)
         => Click?.Invoke(this, e);
 

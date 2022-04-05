@@ -38,7 +38,7 @@ public sealed partial class SingleWebView : UserControl
     /// <summary>
     /// The dependency property of command bar height.
     /// </summary>
-    public static readonly DependencyProperty CommandBarHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(CommandBarHeight), new GridLength(40));
+    public static readonly DependencyProperty NavigationBarHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(NavigationBarHeight), new GridLength(40));
 
     /// <summary>
     /// The dependency property of command bar padding.
@@ -54,6 +54,11 @@ public sealed partial class SingleWebView : UserControl
     /// The dependency property of the default web view background color.
     /// </summary>
     public static readonly DependencyProperty DefaultWebViewBackgroundColorProperty = DependencyObjectProxy.RegisterProperty(nameof(DefaultWebViewBackgroundColor), Microsoft.UI.Colors.Transparent);
+
+    /// <summary>
+    /// The dependency property of the command bar.
+    /// </summary>
+    public static readonly DependencyProperty NavigationBarBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(NavigationBarBackground));
 
     /// <summary>
     /// The dependency property of the button foreground.
@@ -121,6 +126,16 @@ public sealed partial class SingleWebView : UserControl
     public static readonly DependencyProperty NavigationBarPaddingProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(NavigationBarPadding));
 
     /// <summary>
+    /// The dependency property of the navigation bar margin.
+    /// </summary>
+    public static readonly DependencyProperty NavigationBarMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(NavigationBarMargin));
+
+    /// <summary>
+    /// The dependency property of the navigation bar corner radius.
+    /// </summary>
+    public static readonly DependencyProperty NavigationBarCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(NavigationBarCornerRadius));
+
+    /// <summary>
     /// The dependency property of the loading style.
     /// </summary>
     public static readonly DependencyProperty LoadingStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(LoadingStyle));
@@ -138,9 +153,6 @@ public sealed partial class SingleWebView : UserControl
         InitializeComponent();
     }
 
-    //
-    // 摘要:
-    //     Occurs when the user submits a search query.
     /// <summary>
     /// Occurs when the user submits a search query.
     /// </summary>
@@ -227,6 +239,11 @@ public sealed partial class SingleWebView : UserControl
     public event DataEventHandler<string> DocumentTitleChanged;
 
     /// <summary>
+    /// Gets the download list.
+    /// </summary>
+    public List<CoreWebView2DownloadOperation> DownloadList { get; internal set; } = new();
+
+    /// <summary>
     /// Gets the web view element.
     /// </summary>
     public WebView2 WebView2 => Browser;
@@ -239,10 +256,10 @@ public sealed partial class SingleWebView : UserControl
     /// <summary>
     /// The height of command bar.
     /// </summary>
-    public GridLength CommandBarHeight
+    public GridLength NavigationBarHeight
     {
-        get => (GridLength)GetValue(CommandBarHeightProperty);
-        set => SetValue(CommandBarHeightProperty, value);
+        get => (GridLength)GetValue(NavigationBarHeightProperty);
+        set => SetValue(NavigationBarHeightProperty, value);
     }
 
     /// <summary>
@@ -287,6 +304,15 @@ public sealed partial class SingleWebView : UserControl
     {
         get => (Windows.UI.Color)GetValue(DefaultWebViewBackgroundColorProperty);
         set => SetValue(DefaultWebViewBackgroundColorProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or set the foreground of command bar.
+    /// </summary>
+    public Brush NavigationBarBackground
+    {
+        get => (Brush)GetValue(NavigationBarBackgroundProperty);
+        set => SetValue(NavigationBarBackgroundProperty, value);
     }
 
     /// <summary>
@@ -407,6 +433,24 @@ public sealed partial class SingleWebView : UserControl
     }
 
     /// <summary>
+    /// Gets or set the margin of navigation bar.
+    /// </summary>
+    public Thickness NavigationBarMargin
+    {
+        get => (Thickness)GetValue(NavigationBarMarginProperty);
+        set => SetValue(NavigationBarMarginProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or set the corner radius of navigation bar.
+    /// </summary>
+    public CornerRadius NavigationBarCornerRadius
+    {
+        get => (CornerRadius)GetValue(NavigationBarCornerRadiusProperty);
+        set => SetValue(NavigationBarCornerRadiusProperty, value);
+    }
+
+    /// <summary>
     /// Gets or set the style of loading element.
     /// </summary>
     public Style LoadingStyle
@@ -429,6 +473,16 @@ public sealed partial class SingleWebView : UserControl
     /// Gets the a value indicating whether contains the full screen element.
     /// </summary>
     public bool ContainsFullScreenElement => Browser.CoreWebView2?.ContainsFullScreenElement ?? false;
+
+    /// <summary>
+    /// Gets a value indicating whether can go back in history.
+    /// </summary>
+    public bool CanGoBack => Browser.CanGoBack;
+
+    /// <summary>
+    /// Gets a value indicating whether can go forward in history.
+    /// </summary>
+    public bool CanGoForward => Browser.CanGoForward;
 
     /// <summary>
     /// Gets or sets the handler for searching.
@@ -639,7 +693,10 @@ public sealed partial class SingleWebView : UserControl
     }
 
     private void OnDownloadStarting(CoreWebView2 sender, CoreWebView2DownloadStartingEventArgs args)
-        => DownloadStarting?.Invoke(this, args);
+    {
+        DownloadList.Add(args.DownloadOperation);
+        DownloadStarting?.Invoke(this, args);
+    }
 
     private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
         => NewWindowRequested?.Invoke(this, args);
@@ -667,7 +724,7 @@ public sealed partial class SingleWebView : UserControl
             else if (!s.Contains("://"))
             {
                 if (!s.Contains(' ') || s.IndexOf('.') < s.IndexOf(' '))
-                    uri = VisualUtility.TryCreateUri(string.Concat("https://", s));
+                    uri = VisualUtility.TryCreateUri(string.Concat(s.StartsWith("//") ? "https:" : "https://", s));
             }
         }
 

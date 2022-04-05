@@ -103,6 +103,11 @@ public sealed partial class TabbedWebView : UserControl
     public event SelectionChangedEventHandler SelectionChanged;
 
     /// <summary>
+    /// Gets the download list.
+    /// </summary>
+    public List<CoreWebView2DownloadOperation> DownloadList { get; internal set; } = new();
+
+    /// <summary>
     /// Gets or sets the source.
     /// </summary>
     public Uri Source
@@ -185,7 +190,7 @@ public sealed partial class TabbedWebView : UserControl
     /// </summary>
     /// <returns>The web view instance.</returns>
     public SingleWebView GetFirstWebView()
-        => WebViews.FirstOrDefault() ?? Add(null);
+        => WebViews.FirstOrDefault() ?? Add(null as Uri);
 
     /// <summary>
     /// Gets the tab view item.
@@ -196,20 +201,31 @@ public sealed partial class TabbedWebView : UserControl
         => webview == null ? null : HostElement.TabItems?.OfType<TabViewItem>()?.FirstOrDefault(ele => ele?.Content is SingleWebView v && v == webview);
 
     /// <summary>
+    /// Adds a new tab.
+    /// </summary>
+    /// <param name="tab">The tab view item to add.</param>
+    public void Add(TabViewItem tab)
+    {
+        if (tab != null) HostElement.TabItems.Add(tab);
+    }
+
+    /// <summary>
     /// Adds a new web view.
     /// </summary>
     /// <param name="source">The source URI.</param>
+    /// <param name="callback">The callback.</param>
     /// <returns>The web view instance.</returns>
-    public SingleWebView Add(Uri source)
-        => NavigateTo(null, source);
+    public SingleWebView Add(Uri source, Action<TabViewItem> callback = null)
+        => NavigateTo(null, source, callback);
 
     /// <summary>
     /// Adds a new web view.
     /// </summary>
     /// <param name="tab">The tab view item.</param>
     /// <param name="source">The source URI.</param>
+    /// <param name="callback">The callback.</param>
     /// <returns>The web view instance.</returns>
-    public SingleWebView NavigateTo(TabViewItem tab, Uri source)
+    public SingleWebView NavigateTo(TabViewItem tab, Uri source, Action<TabViewItem> callback = null)
     {
         SingleWebView c;
         var name = source == null ? "Blank" : (source.Host ?? "Loading…");
@@ -230,7 +246,8 @@ public sealed partial class TabbedWebView : UserControl
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                IsReadOnly = IsReadOnly
+                IsReadOnly = IsReadOnly,
+                DownloadList = DownloadList
             };
             tab = new TabViewItem
             {
@@ -238,6 +255,7 @@ public sealed partial class TabbedWebView : UserControl
                 Content = c,
                 IsSelected = true,
             };
+            callback?.Invoke(tab);
             HostElement.TabItems.Add(tab);
             WebViewTabCreated?.Invoke(this, new WebViewTabEventArgs(tab, c, source));
         }
@@ -246,6 +264,7 @@ public sealed partial class TabbedWebView : UserControl
             c = tab.Content as SingleWebView;
             tab.Header = name;
             if (c == null) return null;
+            callback?.Invoke(tab);
         }
 
         c.DocumentTitleChanged += (sender, e) =>
@@ -279,6 +298,49 @@ public sealed partial class TabbedWebView : UserControl
         return c;
     }
 
+    /// <summary>
+    /// Inserts a new tab.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="tab">The tab view item to insert.</param>
+    public void Insert(int index, TabViewItem tab)
+    {
+        if (tab == null) return;
+        HostElement.TabItems.Insert(index, tab);
+    }
+
+    /// <summary>
+    /// Removes a specific tab.
+    /// </summary>
+    /// <param name="item">The tab view item to remove.</param>
+    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    public bool Remove(object item)
+        => item is not null && HostElement.TabItems.Remove(item);
+
+    /// <summary>
+    /// Removes a specific tab.
+    /// </summary>
+    /// <param name="index">The index to remove.</param>
+    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    public void RemoveAt(int index)
+        => HostElement.TabItems.RemoveAt(index);
+
+    /// <summary>
+    /// Determines whether the tabs contains a specific value.
+    /// </summary>
+    /// <param name="tab">The tab view item to test.</param>
+    /// <returns>true if contains; otherwise, false.</returns>
+    public bool Contains(TabViewItem tab)
+        => tab != null && HostElement.TabItems.Contains(tab);
+
+    /// <summary>
+    /// Determines whether the tabs contains a specific value.
+    /// </summary>
+    /// <param name="webview">The web view to test.</param>
+    /// <returns>true if contains; otherwise, false.</returns>
+    public bool Contains(SingleWebView webview)
+        => webview != null && HostElement.TabItems.Any(ele => ele is TabViewItem tab && tab.Content is SingleWebView v && v == webview);
+
     private void OnNewWindowRequested(SingleWebView sender, CoreWebView2NewWindowRequestedEventArgs e)
         => _ = OnNewWindowRequestedAsync(e);
 
@@ -286,7 +348,7 @@ public sealed partial class TabbedWebView : UserControl
     {
         e.Handled = true;
         var deferral = e.GetDeferral();
-        var n = Add(null);
+        var n = Add(null as Uri);
         await n.EnsureCoreWebView2Async();
         e.NewWindow = n.CoreWebView2;
         deferral.Complete();

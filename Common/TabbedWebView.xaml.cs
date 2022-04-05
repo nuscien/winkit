@@ -10,14 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Trivial.Data;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Trivial.UI;
 using DependencyObjectProxy = DependencyObjectProxy<TabbedWebView>;
@@ -77,12 +75,22 @@ public sealed partial class TabbedWebView : UserControl
     public static readonly DependencyProperty TabWidthModeProperty = DependencyObjectProxy.RegisterProperty<TabViewWidthMode>(nameof(TabWidthMode));
 
     /// <summary>
+    /// Occurs when fullscreen request sent including to enable and disable.
+    /// </summary>
+    public event DataEventHandler<int> ContainsFullScreenElementChanged;
+
+    /// <summary>
     /// Initialized a new instance of the TabbedWebView class.
     /// </summary>
     public TabbedWebView()
     {
         InitializeComponent();
     }
+
+    /// <summary>
+    /// Occurs on the tab is closed.
+    /// </summary>
+    public event TypedEventHandler<TabbedWebView, TabViewTabCloseRequestedEventArgs> TabCloseRequested;
 
     /// <summary>
     /// Occurs on the web view tab has created.
@@ -168,11 +176,24 @@ public sealed partial class TabbedWebView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the handler to create default URI.
+    /// </summary>
+    public Func<Uri> DefaultUriCreator { get; set; }
+
+    /// <summary>
     /// Gets the the web view in first tab.
     /// </summary>
     /// <returns>The web view instance.</returns>
     public SingleWebView GetFirstWebView()
         => WebViews.FirstOrDefault() ?? Add(null);
+
+    /// <summary>
+    /// Gets the tab view item.
+    /// </summary>
+    /// <param name="webview">The web view.</param>
+    /// <returns>The tab view item which contains the web view; or null, if non-exists.</returns>
+    public TabViewItem GetTabItem(SingleWebView webview)
+        => webview == null ? null : HostElement.TabItems?.OfType<TabViewItem>()?.FirstOrDefault(ele => ele?.Content is SingleWebView v && v == webview);
 
     /// <summary>
     /// Adds a new web view.
@@ -231,10 +252,8 @@ public sealed partial class TabbedWebView : UserControl
         {
             tab.Header = e.Data ?? string.Empty;
         };
-        c.NewWindowRequested += (sender, e) =>
-        {
-            _ = OnNewWindowRequestedAsync(e);
-        };
+        c.NewWindowRequested += OnNewWindowRequested;
+        c.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged; 
         c.WindowCloseRequested += (sender, e) =>
         {
             try
@@ -247,12 +266,21 @@ public sealed partial class TabbedWebView : UserControl
             catch (NullReferenceException)
             {
             }
+            catch (ApplicationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
 
             HostElement.TabItems.Remove(tab);
         };
         if (source != null) c.Source = source;
         return c;
     }
+
+    private void OnNewWindowRequested(SingleWebView sender, CoreWebView2NewWindowRequestedEventArgs e)
+        => _ = OnNewWindowRequestedAsync(e);
 
     private async Task OnNewWindowRequestedAsync(CoreWebView2NewWindowRequestedEventArgs e)
     {
@@ -276,15 +304,48 @@ public sealed partial class TabbedWebView : UserControl
         catch (NullReferenceException)
         {
         }
+        catch (ApplicationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
 
         sender.TabItems.Remove(args.Tab);
+        TabCloseRequested?.Invoke(this, args);
     }
 
-    private SingleWebView GetWebView(TabViewItem tab)
-        => tab?.Content as SingleWebView;
+    private void OnContainsFullScreenElementChanged(object sender, DataEventArgs<bool> e)
+    {
+        var i = 0;
+        foreach (var item in WebViews)
+        {
+            try
+            {
+                if (item.ContainsFullScreenElement) i++;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ApplicationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+
+        ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<int>(i));
+    }
 
     private void HostElement_AddTabButtonClick(TabView sender, object args)
-        => Add(null);
+        => Add(DefaultUriCreator?.Invoke());
+
+    private void HostElement_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => SelectionChanged?.Invoke(this, e);
 
     private static void UpdateReadOnly(TabbedWebView c, ChangeEventArgs<bool> e, DependencyProperty d)
     {
@@ -295,6 +356,11 @@ public sealed partial class TabbedWebView : UserControl
         }
     }
 
-    private void HostElement_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        => SelectionChanged?.Invoke(this, e);
+    /// <summary>
+    /// Gets the web view instance.
+    /// </summary>
+    /// <param name="tab">The tab view item.</param>
+    /// <returns>The web view contained by the tab view item; or null, if non-exists.</returns>
+    private static SingleWebView GetWebView(TabViewItem tab)
+        => tab?.Content as SingleWebView;
 }

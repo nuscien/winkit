@@ -399,6 +399,16 @@ public sealed partial class SingleWebView : UserControl
     public CoreWebView2Settings Settings => Browser.CoreWebView2?.Settings;
 
     /// <summary>
+    /// Gets the a value indicating whether contains the full screen element.
+    /// </summary>
+    public bool ContainsFullScreenElement => Browser.CoreWebView2?.ContainsFullScreenElement ?? false;
+
+    /// <summary>
+    /// Gets or sets the handler for searching.
+    /// </summary>
+    public Func<string, Uri> SearchHandler { get; set; }
+
+    /// <summary>
     /// Ensures the core of web view initialized.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -428,11 +438,6 @@ public sealed partial class SingleWebView : UserControl
         => Browser.Reload();
 
     /// <summary>
-    /// Gets or sets the handler for searching.
-    /// </summary>
-    public Func<string, Uri> SearchHandler { get; set; }
-
-    /// <summary>
     /// Turns back history.
     /// </summary>
     public void GoBack()
@@ -457,6 +462,17 @@ public sealed partial class SingleWebView : UserControl
     {
         await Browser.EnsureCoreWebView2Async();
         return await Browser.ExecuteScriptAsync(javascriptCode);
+    }
+
+    /// <summary>
+    /// Executes JavaScript on document created.
+    /// </summary>
+    /// <param name="javascriptCode">The script.</param>
+    /// <returns>The result.</returns>
+    public async Task<string> AddScriptToExecuteOnDocumentCreatedAsync(string javascriptCode)
+    {
+        await Browser.EnsureCoreWebView2Async();
+        return await Browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(javascriptCode);
     }
 
     /// <summary>

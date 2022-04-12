@@ -229,9 +229,15 @@ public static partial class VisualUtility
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The event arguments.</param>
-    public static void AnimatedButtonPointerEntered(object sender, PointerRoutedEventArgs e)
+    public static void AnimatedButtonPointerOver(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
+        if (sender is AnimatedIcon ai)
+        {
+            AnimatedIcon.SetState(ai, "PointerOver");
+            return;
+        }
+
+        if (sender is not ContentControl button || button.Content is not AnimatedIcon icon) return;
         AnimatedIcon.SetState(icon, "PointerOver");
     }
 
@@ -240,10 +246,33 @@ public static partial class VisualUtility
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The event arguments.</param>
-    public static void AnimatedButtonPointerExited(object sender, PointerRoutedEventArgs e)
+    public static void AnimatedButtonNormal(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Button button || button.Content is not AnimatedIcon icon) return;
-        AnimatedIcon.SetState(icon, "PointerOver");
+        if (sender is AnimatedIcon ai)
+        {
+            AnimatedIcon.SetState(ai, "Normal");
+            return;
+        }
+
+        if (sender is not ContentControl button || button.Content is not AnimatedIcon icon) return;
+        AnimatedIcon.SetState(icon, "Normal");
+    }
+
+    /// <summary>
+    /// Occurs on animated button pointer exitesd.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments.</param>
+    public static void AnimatedButtonPressed(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is AnimatedIcon ai)
+        {
+            AnimatedIcon.SetState(ai, "Pressed");
+            return;
+        }
+
+        if (sender is not ContentControl button || button.Content is not AnimatedIcon icon) return;
+        AnimatedIcon.SetState(icon, "Pressed");
     }
 
     /// <summary>

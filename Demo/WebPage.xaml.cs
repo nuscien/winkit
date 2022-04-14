@@ -33,6 +33,6 @@ public sealed partial class WebPage : Page
 
     private void TabbedWebView_TabCloseRequested(UI.TabbedWebView sender, TabViewTabCloseRequestedEventArgs args)
     {
-        if (HostElement.WebViews.Count < 1) HostElement.Add(null);
+        if (HostElement.WebViews.Count < 1) HostElement.Add(null as Uri);
     }
 }

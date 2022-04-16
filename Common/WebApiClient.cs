@@ -484,7 +484,7 @@ public class JsonWebCacheClient
 
     private JsonHttpClient<JsonObjectNode> FillHttpClient(JsonHttpClient<JsonObjectNode> client)
     {
-        if (client == null) return new JsonHttpClient<JsonObjectNode>();
+        if (client == null) client = new JsonHttpClient<JsonObjectNode>();
         client.Sending += OnSending;
         return client;
     }

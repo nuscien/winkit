@@ -40,6 +40,7 @@
                 <Setter Property="TextStyle" >
                     <Setter.Value>
                         <Style TargetType="TextBlock" >
+                            <Setter Property="TextWrapping" Value="WrapWholeWords" />
                             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                         </Style>
                     </Setter.Value>

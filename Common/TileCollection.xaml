@@ -28,7 +28,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <StackPanel x:DefaultBindMode="OneWay" x:Name="OwnerPanel" Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+    <StackPanel x:DefaultBindMode="OneWay" x:Name="OwnerPanel" Orientation="Vertical" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" ProcessKeyboardAccelerators="OwnerPanel_ProcessKeyboardAccelerators" >
         <Border x:Name="Top" ></Border>
         <local:BlockHeader
             x:Name="HeaderElement"
@@ -56,10 +56,10 @@
             >
             <local:BlockHeader.RightChildren>
                 <Border x:Name="BeforePaging"></Border>
-                <Button Click="PreviousButton_Click" Width="24" Height="20" CornerRadius="10,0,0,10" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,1,0" >
+                <Button Click="OnPreviousButtonClick" Width="24" Height="20" CornerRadius="10,0,0,10" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,1,0" IsTabStop="False" >
                     <Path Data="M0,0 M10,10 M8,0 L2,5 L8,10" Stroke="{x:Bind Foreground}" StrokeThickness="1" Width="11" Height="11" />
                 </Button>
-                <Button Click="NextButton_Click" Width="24" Height="20" CornerRadius="0,10,10,0" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <Button Click="OnNextButtonClick" Width="24" Height="20" CornerRadius="0,10,10,0" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsTabStop="False" >
                     <Path Data="M0,0 M10,10 M2,0 L8,5 L2,10" Stroke="{x:Bind Foreground}" StrokeThickness="1" Width="11" Height="11" />
                 </Button>
                 <Border x:Name="AfterPaging"></Border>

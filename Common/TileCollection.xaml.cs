@@ -646,11 +646,53 @@ public sealed partial class TileCollection : UserControl
         }
     }
 
-    private void PreviousButton_Click(object sender, RoutedEventArgs e)
+    private void OnPreviousButtonClick(object sender, RoutedEventArgs e)
+        => OnPreviousButtonClick();
+
+    private void OnNextButtonClick(object sender, RoutedEventArgs e)
+        => OnNextButtonClick();
+
+    private void OnPreviousButtonClick()
         => ScrollByHorizontalOffset(-(int)(ListScrollView.ActualWidth * 3 / 4) - 1);
 
-    private void NextButton_Click(object sender, RoutedEventArgs e)
+    private void OnNextButtonClick()
         => ScrollByHorizontalOffset((int)(ListScrollView.ActualWidth * 3 / 4) + 1);
+
+    private object GetFocusItem(out int i)
+    {
+        var j = -1;
+        foreach (var item in ListPanel.Children)
+        {
+            j++;
+            if (item.FocusState == FocusState.Unfocused) continue;
+            i = j;
+            return item;
+        }
+
+        i = -1;
+        return null;
+    }
+
+    private void OwnerPanel_ProcessKeyboardAccelerators(UIElement sender, ProcessKeyboardAcceleratorEventArgs args)
+    {
+        switch (args.Key)
+        {
+            case Windows.System.VirtualKey.Left:
+                if (args.Modifiers.HasFlag(Windows.System.VirtualKeyModifiers.Control))
+                    OnPreviousButtonClick();
+                break;
+            case Windows.System.VirtualKey.Right:
+                if (args.Modifiers.HasFlag(Windows.System.VirtualKeyModifiers.Control))
+                    OnNextButtonClick();
+                break;
+            //case Windows.System.VirtualKey.GamepadLeftThumbstickLeft:
+            //    OnPreviousButtonClick();
+            //    break;
+            //case Windows.System.VirtualKey.GamepadLeftThumbstickRight:
+            //    OnNextButtonClick();
+            //    break;
+        }
+    }
 
     /// <summary>
     /// Occurs on container content changing.

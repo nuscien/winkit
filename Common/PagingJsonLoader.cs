@@ -109,8 +109,19 @@ public abstract class BaseJsonPagingLoader
     /// <param name="value">The data result.</param>
     /// <param name="page">The page index.</param>
     /// <param name="kind">The source kind.</param>
-    protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind)
+    protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online)
+        => ReceiveResult(value, page, kind);
+
+    /// <summary>
+    /// Raises the event.
+    /// </summary>
+    /// <param name="value">The data result.</param>
+    /// <param name="page">The page index.</param>
+    /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
+    /// <param name="kind">The source kind.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, bool skipToUpdateCache, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online)
     {
+        if (!skipToUpdateCache) cache[page] = value;
         DataLoaded?.Invoke(this, new(value, page, kind));
     }
 
@@ -126,7 +137,7 @@ public abstract class BaseJsonPagingLoader
     /// Resets page index.
     /// </summary>
     public void ResetPageIndex()
-        => PageIndex = 1;
+        => PageIndex = -1;
 
     /// <summary>
     /// Clears cache.
@@ -142,11 +153,21 @@ public abstract class BaseJsonPagingLoader
     /// </summary>
     /// <param name="page">The page index.</param>
     /// <param name="cancellationToken">The optional cancellation token.</param>
-    /// <returns>The result.</returns>
-    public async Task<JsonObjectNode> LoadPageAsync(int page, CancellationToken cancellationToken = default)
+    /// <returns>The result; null if skip, or the result is null.</returns>
+    public Task<JsonObjectNode> LoadPageAsync(int page, CancellationToken cancellationToken = default)
+        => LoadPageAsync(page, false, cancellationToken);
+
+    /// <summary>
+    /// Loads data of the specific page.
+    /// </summary>
+    /// <param name="page">The page index.</param>
+    /// <param name="wait">true if wait to continue; otherwise, false, to skip on working.</param>
+    /// <param name="cancellationToken">The optional cancellation token.</param>
+    /// <returns>The result; null if skip, or the result is null.</returns>
+    public async Task<JsonObjectNode> LoadPageAsync(int page, bool wait, CancellationToken cancellationToken = default)
     {
         if (page < 0) return null;
-        if (slim.CurrentCount < 0) return null;
+        if (!wait && slim.CurrentCount < 0) return null;
         try
         {
             try
@@ -180,8 +201,12 @@ public abstract class BaseJsonPagingLoader
             }
 
             if (result == null) return null;
-            if (!disableAutoRaise) DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online));
-            cache[page] = result;
+            if (!disableAutoRaise)
+            {
+                cache[page] = result;
+                DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online));
+            }
+
             PageIndex = page;
             return result;
         }

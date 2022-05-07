@@ -23,7 +23,7 @@
     </UserControl.Resources>
     <Grid x:DefaultBindMode="OneWay" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
         <Border x:Name="BackgroundPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" >
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="{x:Bind LeftMargin}" >
             <Border x:Name="BeforePanel" VerticalAlignment="Stretch" ></Border>
             <Border x:Name="IconPanel"  Visibility="Collapsed" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Margin="{x:Bind IconMargin}" CornerRadius="{x:Bind IconCornerRadius}" VerticalAlignment="Center" >
                 <Image Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Stretch="{x:Bind IconStretch}" >
@@ -35,7 +35,7 @@
             <TextBlock Text="{x:Bind Title}" Foreground="{x:Bind TitleForeground}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind TitleLineHeight}" VerticalAlignment="Center" />
             <Border x:Name="AfterPanel" VerticalAlignment="Stretch" ></Border>
         </StackPanel>
-        <StackPanel x:Name="RightPanel" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Stretch" >
+        <StackPanel x:Name="RightPanel" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="{x:Bind RightMargin}" >
         </StackPanel>
         <Border x:Name="CoverPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
     </Grid>

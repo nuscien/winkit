@@ -90,9 +90,19 @@ public sealed partial class TileCollection : UserControl
     public static readonly DependencyProperty HeaderBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HeaderBorderBrush), (c, e, p) => c.HeaderBorderBrush = e.NewValue);
 
     /// <summary>
-    /// The dependency property of corner radius.
+    /// The dependency property of header corner radius.
     /// </summary>
     public static readonly DependencyProperty HeaderCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(HeaderCornerRadius), (c, e, p) => c.HeaderCornerRadius = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header left margin.
+    /// </summary>
+    public static readonly DependencyProperty HeaderLeftMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HeaderLeftMargin), (c, e, p) => c.HeaderLeftMargin = e.NewValue);
+
+    /// <summary>
+    /// The dependency property of header right margin.
+    /// </summary>
+    public static readonly DependencyProperty HeaderRightMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HeaderRightMargin), (c, e, p) => c.HeaderRightMargin = e.NewValue);
 
     /// <summary>
     /// The dependency property of title.
@@ -299,6 +309,24 @@ public sealed partial class TileCollection : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the margin of header left zone.
+    /// </summary>
+    public Thickness HeaderLeftMargin
+    {
+        get => HeaderElement.LeftMargin;
+        set => HeaderElement.LeftMargin = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the margin of header right zone.
+    /// </summary>
+    public Thickness HeaderRightMargin
+    {
+        get => HeaderElement.RightMargin;
+        set => HeaderElement.RightMargin = value;
+    }
+
+    /// <summary>
     /// Gets or sets the title.
     /// </summary>
     public string Title
@@ -422,6 +450,15 @@ public sealed partial class TileCollection : UserControl
     {
         get => Top.Child;
         set => Top.Child = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the content of middle customized zone.
+    /// </summary>
+    public UIElement MiddleContent
+    {
+        get => Middle.Child;
+        set => Middle.Child = value;
     }
 
     /// <summary>

@@ -129,6 +129,11 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty DisabledPanelOpacityProperty = DependencyObjectProxy.RegisterProperty(nameof(DisabledPanelOpacity), 0d);
 
     /// <summary>
+    /// The dependency property of text margin.
+    /// </summary>
+    public static readonly DependencyProperty TextMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(TextMargin));
+
+    /// <summary>
     /// The dependency property of text wrapping.
     /// </summary>
     public static readonly DependencyProperty TextWrappingProperty = DependencyObjectProxy.RegisterProperty<TextWrapping>(nameof(TextWrapping));
@@ -154,6 +159,11 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty ImageHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(ImageHeight));
 
     /// <summary>
+    /// The dependency property of image margin.
+    /// </summary>
+    public static readonly DependencyProperty ImageMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(ImageMargin));
+
+    /// <summary>
     /// The dependency property of image corner radius.
     /// </summary>
     public static readonly DependencyProperty ImageCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(ImageCornerRadius));
@@ -177,6 +187,11 @@ public sealed partial class TextButton : UserControl
     /// The dependency property of icon height.
     /// </summary>
     public static readonly DependencyProperty IconHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconHeight));
+
+    /// <summary>
+    /// The dependency property of icon margin.
+    /// </summary>
+    public static readonly DependencyProperty IconMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(IconMargin));
 
     /// <summary>
     /// Initializes a new instance of the TextButton class.
@@ -291,6 +306,15 @@ public sealed partial class TextButton : UserControl
     {
         get => (Orientation)GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the margin of text.
+    /// </summary>
+    public Thickness TextMargin
+    {
+        get => (Thickness)GetValue(TextMarginProperty);
+        set => SetValue(TextMarginProperty, value);
     }
 
     /// <summary>
@@ -456,6 +480,15 @@ public sealed partial class TextButton : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the margin of image.
+    /// </summary>
+    public Thickness ImageMargin
+    {
+        get => (Thickness)GetValue(ImageMarginProperty);
+        set => SetValue(ImageMarginProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the corner radius of image.
     /// </summary>
     public CornerRadius ImageCornerRadius
@@ -489,6 +522,15 @@ public sealed partial class TextButton : UserControl
     {
         get => (double)GetValue(IconHeightProperty);
         set => SetValue(IconHeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the margin of icon.
+    /// </summary>
+    public Thickness IconMargin
+    {
+        get => (Thickness)GetValue(IconMarginProperty);
+        set => SetValue(IconMarginProperty, value);
     }
 
     /// <summary>

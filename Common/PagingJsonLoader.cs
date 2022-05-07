@@ -110,7 +110,7 @@ public abstract class BaseJsonPagingLoader
     /// <param name="page">The page index.</param>
     /// <param name="kind">The source kind.</param>
     protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online)
-        => ReceiveResult(value, page, kind);
+        => ReceiveResult(value, page, false, kind);
 
     /// <summary>
     /// Raises the event.

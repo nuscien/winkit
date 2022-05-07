@@ -53,6 +53,8 @@
             IconWidth="{x:Bind IconWidth}"
             IconHeight="{x:Bind IconHeight}"
             IconMargin="{x:Bind IconMargin}"
+            LeftMargin="{x:Bind HeaderLeftMargin}"
+            RightMargin="{x:Bind HeaderRightMargin}"
             >
             <local:BlockHeader.RightChildren>
                 <Border x:Name="BeforePaging"></Border>
@@ -65,6 +67,7 @@
                 <Border x:Name="AfterPaging"></Border>
             </local:BlockHeader.RightChildren>
         </local:BlockHeader>
+        <Border x:Name="Middle" ></Border>
         <Grid>
             <ScrollViewer x:Name="ListScrollView" VerticalScrollMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden" PointerEntered="ScrollViewer_PointerEntered" PointerExited="ScrollViewer_PointerExited" >
                 <StackPanel x:Name="ListPanel" Orientation="Horizontal" Spacing="{x:Bind ListItemSpacing}" >

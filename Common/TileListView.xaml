@@ -29,7 +29,7 @@
     </UserControl.Resources>
     <ListView x:DefaultBindMode="OneWay" x:Name="ListPanel" SelectionMode="{x:Bind SelectionMode}" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" SelectionChanged="ListPanel_SelectionChanged" >
         <ListView.Header>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" >
                 <Border x:Name="Top" ></Border>
                 <local:BlockHeader
                     x:Name="HeaderElement"
@@ -53,7 +53,11 @@
                     IconUri="{x:Bind IconUri}"
                     IconWidth="{x:Bind IconWidth}"
                     IconHeight="{x:Bind IconHeight}"
-                    IconMargin="{x:Bind IconMargin}" />
+                    IconMargin="{x:Bind IconMargin}"
+                    LeftMargin="{x:Bind HeaderLeftMargin}"
+                    RightMargin="{x:Bind HeaderRightMargin}"
+                    />
+                <Border x:Name="Middle" ></Border>
             </StackPanel>
         </ListView.Header>
         <ListView.Footer>

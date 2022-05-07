@@ -84,6 +84,16 @@ public sealed partial class BlockHeader : UserControl
     public static readonly DependencyProperty IconCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(IconCornerRadius));
 
     /// <summary>
+    /// The dependency property of left margin.
+    /// </summary>
+    public static readonly DependencyProperty LeftMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(LeftMargin));
+
+    /// <summary>
+    /// The dependency property of right margin.
+    /// </summary>
+    public static readonly DependencyProperty RightMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(RightMargin));
+
+    /// <summary>
     /// Initializes a new instance of the BlockHeader class.
     /// </summary>
     public BlockHeader()
@@ -197,6 +207,24 @@ public sealed partial class BlockHeader : UserControl
     {
         get => (CornerRadius)GetValue(IconCornerRadiusProperty);
         set => SetValue(IconCornerRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the margin of left zone.
+    /// </summary>
+    public Thickness LeftMargin
+    {
+        get => (Thickness)GetValue(LeftMarginProperty);
+        set => SetValue(LeftMarginProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the margin of right zone.
+    /// </summary>
+    public Thickness RightMargin
+    {
+        get => (Thickness)GetValue(RightMarginProperty);
+        set => SetValue(RightMarginProperty, value);
     }
 
     /// <summary>

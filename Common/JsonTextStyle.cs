@@ -18,54 +18,88 @@ namespace Trivial.UI;
 public class JsonTextStyle : ICloneable
 {
     /// <summary>
-    /// The foreground color of property key.
+    /// Initializes a new instance of the JsonTextStyle class.
     /// </summary>
-    private static readonly Brush propertyForeground = new SolidColorBrush(Color.FromArgb(255, 0xCE, 0x91, 0x78));
+    public JsonTextStyle()
+    {
+        PropertyForeground = new SolidColorBrush(Color.FromArgb(255, 0xd7, 0xba, 0x7c));
+        StringForeground = new SolidColorBrush(Color.FromArgb(255, 0xCE, 0x91, 0x78));
+        KeywordForeground = new SolidColorBrush(Color.FromArgb(255, 0x56, 0x9C, 0xD6));
+        NumberForeground = new SolidColorBrush(Color.FromArgb(255, 0xB5, 0xCE, 0xA8));
+        PunctuationForeground = new SolidColorBrush(Color.FromArgb(255, 0xDC, 0xDC, 0xDC));
+    }
 
     /// <summary>
-    /// The foreground color of string value.
+    /// Initializes a new instance of the JsonTextStyle class.
     /// </summary>
-    private static readonly Brush stringForeground = new SolidColorBrush(Color.FromArgb(255, 0xCE, 0x91, 0x78));
+    /// <param name="theme">The application theme.</param>
+    /// <param name="isCompact">true if compact the white spaces; otherwise, false.</param>
+    public JsonTextStyle(Microsoft.UI.Xaml.ApplicationTheme theme, bool isCompact = false)
+    {
+        if (theme == Microsoft.UI.Xaml.ApplicationTheme.Dark)
+        {
+            PropertyForeground = new SolidColorBrush(Color.FromArgb(255, 0xa1, 0xdb, 0xfc));
+            StringForeground = new SolidColorBrush(Color.FromArgb(255, 0xcb, 0x92, 0x7b));
+            KeywordForeground = new SolidColorBrush(Color.FromArgb(255, 0x52, 0x9b, 0xd3));
+            NumberForeground = new SolidColorBrush(Color.FromArgb(255, 0xb7, 0xcd, 0x8e));
+            PunctuationForeground = new SolidColorBrush(Color.FromArgb(255, 0xDC, 0xDC, 0xDC));
+        }
+        else
+        {
+            PropertyForeground = new SolidColorBrush(Color.FromArgb(255, 0x0f, 0x51, 0xa2));
+            StringForeground = new SolidColorBrush(Color.FromArgb(255, 0x9e, 0x20, 0x1c));
+            KeywordForeground = new SolidColorBrush(Color.FromArgb(255, 0x00, 0x0e, 0xf9));
+            NumberForeground = new SolidColorBrush(Color.FromArgb(255, 0x24, 0x85, 0x9c));
+            PunctuationForeground = new SolidColorBrush(Color.FromArgb(255, 0x22, 0x22, 0x22));
+        }
+
+        IsCompact = isCompact;
+    }
 
     /// <summary>
-    /// The foreground color of language keyword.
+    /// Initializes a new instance of the JsonTextStyle class.
     /// </summary>
-    private static readonly Brush keywordForeground = new SolidColorBrush(Color.FromArgb(255, 0x56, 0x9C, 0xD6));
+    /// <param name="propertyForeground">The foreground color of property key.</param>
+    /// <param name="stringForeground">The foreground color of string value.</param>
+    /// <param name="keywordForeground">The foreground color of language keyword.</param>
+    /// <param name="numberForeground">The foreground color of number.</param>
+    /// <param name="punctuationForeground">The foreground color of punctuation.</param>
+    /// <param name="isCompact">true if compact the white spaces; otherwise, false.</param>
+    public JsonTextStyle(Brush propertyForeground, Brush stringForeground, Brush keywordForeground, Brush numberForeground, Brush punctuationForeground, bool isCompact = false)
+    {
+        PropertyForeground = propertyForeground;
+        StringForeground = stringForeground;
+        KeywordForeground = keywordForeground;
+        NumberForeground = numberForeground;
+        PunctuationForeground = punctuationForeground;
+        IsCompact = isCompact;
+    }
 
-    /// <summary>
-    /// The foreground color of number.
-    /// </summary>
-    private static readonly Brush numberForeground = new SolidColorBrush(Color.FromArgb(255, 0xB5, 0xCE, 0xA8));
-
-    /// <summary>
-    /// The foreground color of punctuation.
-    /// </summary>
-    private static readonly Brush punctuationForeground = new SolidColorBrush(Color.FromArgb(255, 0xDC, 0xDC, 0xDC));
 
     /// <summary>
     /// Gets or sets the foreground color of property key.
     /// </summary>
-    public Brush PropertyForeground { get; set; } = propertyForeground;
+    public Brush PropertyForeground { get; set; }
 
     /// <summary>
     /// Gets or sets the foreground color of string value.
     /// </summary>
-    public Brush StringForeground { get; set; } = stringForeground;
+    public Brush StringForeground { get; set; }
 
     /// <summary>
     /// Gets or sets the foreground color of language keyword.
     /// </summary>
-    public Brush KeywordForeground { get; set; } = keywordForeground;
+    public Brush KeywordForeground { get; set; }
 
     /// <summary>
     /// Gets or sets the foreground color of number.
     /// </summary>
-    public Brush NumberForeground { get; set; } = numberForeground;
+    public Brush NumberForeground { get; set; }
 
     /// <summary>
     /// Gets or sets the foreground color of punctuation.
     /// </summary>
-    public Brush PunctuationForeground { get; set; } = punctuationForeground;
+    public Brush PunctuationForeground { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether compact the whitespaces.

@@ -99,13 +99,13 @@
         </Button.Resources>
         <Grid>
             <StackPanel Orientation="{x:Bind Orientation}" Spacing="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                <Border x:Name="BeforeElement" />
-                <Border x:Name="ImagePanel" Visibility="Collapsed" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Margin="{x:Bind ImageMargin}" CornerRadius="{x:Bind ImageCornerRadius}" >
-                    <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" />
+                <Border x:Name="BeforeElement" HorizontalAlignment="{x:Bind HorizontalItemAlignment}" VerticalAlignment="{x:Bind VerticalItemAlignment}" />
+                <Border x:Name="ImagePanel" Visibility="Collapsed" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Margin="{x:Bind ImageMargin}" CornerRadius="{x:Bind ImageCornerRadius}" HorizontalAlignment="{x:Bind HorizontalItemAlignment}" VerticalAlignment="{x:Bind VerticalItemAlignment}" >
+                    <Image Source="{x:Bind ImageSource}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Stretch="{x:Bind Stretch}" HorizontalAlignment="{x:Bind HorizontalItemAlignment}" VerticalAlignment="{x:Bind VerticalItemAlignment}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" />
                 </Border>
-                <IconSourceElement x:Name="IconControl" Visibility="Collapsed" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Margin="{x:Bind IconMargin}" IconSource="{x:Bind IconSource}" />
-                <TextBlock x:Name="TextControl" Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" Margin="{x:Bind TextMargin}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TextBlock_IsTextTrimmedChanged" />
-                <Border x:Name="AfterElement" />
+                <IconSourceElement x:Name="IconControl" Visibility="Collapsed" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" Margin="{x:Bind IconMargin}" IconSource="{x:Bind IconSource}" HorizontalAlignment="{x:Bind HorizontalItemAlignment}" VerticalAlignment="{x:Bind VerticalItemAlignment}" />
+                <TextBlock x:Name="TextControl" Text="{x:Bind Text}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" Margin="{x:Bind TextMargin}" FontFamily="{x:Bind FontFamily}" TextWrapping="{x:Bind TextWrapping}" TextTrimming="{x:Bind TextTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" HorizontalAlignment="{x:Bind HorizontalItemAlignment}" VerticalAlignment="{x:Bind VerticalItemAlignment}" IsTextTrimmedChanged="TextBlock_IsTextTrimmedChanged" />
+                <Border x:Name="AfterElement" HorizontalAlignment="{x:Bind HorizontalItemAlignment}" VerticalAlignment="{x:Bind VerticalItemAlignment}" />
             </StackPanel>
             <Border x:Name="NormalPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="1" ></Border>
             <Border x:Name="HoverPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="0" ></Border>

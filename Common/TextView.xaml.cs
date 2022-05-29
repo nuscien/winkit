@@ -235,6 +235,11 @@ public sealed partial class TextView : UserControl
     public IList<string> SelectedLines => TextElement.SelectedItems?.OfType<TextViewModel>()?.Select(ele => ele.Text)?.ToList();
 
     /// <summary>
+    /// Gets a collection of item index range that describe the currently selected items in the list.
+    /// </summary>
+    public IReadOnlyList<ItemIndexRange> SelectedRanges => TextElement.SelectedRanges;
+
+    /// <summary>
     /// Gets or sets the content of header.
     /// </summary>
     public object Header
@@ -356,6 +361,27 @@ public sealed partial class TextView : UserControl
         var line = collection.FirstOrDefault(ele => ele?.LineNumber == lineNumber);
         if (line != null) TextElement.ScrollIntoView(line, alignment);
     }
+
+    /// <summary>
+    /// Selects a block of items described by the item index range.
+    /// </summary>
+    /// <param name="itemIndexRange">Information about the range of items, including the index of the first and last items in the range, and the number of items.</param>
+    public void SelectRange(ItemIndexRange itemIndexRange)
+        => TextElement.SelectRange(itemIndexRange);
+
+    /// <summary>
+    /// Selects a block of items described by the item index range.
+    /// </summary>
+    /// <param name="firstIndex">The index of the first item in the instance of the range to select.</param>
+    /// <param name="length">The number of items in the instance of the range to select.</param>
+    public void SelectRange(int firstIndex, uint length)
+        => TextElement.SelectRange(new ItemIndexRange(firstIndex, length));
+
+    /// <summary>
+    /// Selects all the items in a view.
+    /// </summary>
+    public void SelectAll()
+        => TextElement.SelectAll();
 
     /// <summary>
     /// Appends.

@@ -64,6 +64,16 @@ public sealed partial class TextButton : UserControl
     public static readonly DependencyProperty OrientationProperty = DependencyObjectProxy.RegisterProperty(nameof(Orientation), Orientation.Horizontal);
 
     /// <summary>
+    /// The dependency property of content horizontal alignment.
+    /// </summary>
+    public static readonly DependencyProperty HorizontalItemAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(HorizontalItemAlignment), HorizontalAlignment.Center);
+
+    /// <summary>
+    /// The dependency property of content vertical alignment.
+    /// </summary>
+    public static readonly DependencyProperty VerticalItemAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(VerticalItemAlignment), VerticalAlignment.Center);
+
+    /// <summary>
     /// The dependency property of spacing.
     /// </summary>
     public static readonly DependencyProperty SpacingProperty = DependencyObjectProxy.RegisterProperty(nameof(Spacing), OnSpacingChanged, 0d);
@@ -306,6 +316,24 @@ public sealed partial class TextButton : UserControl
     {
         get => (Orientation)GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the contentn horizontal alignment.
+    /// </summary>
+    public HorizontalAlignment HorizontalItemAlignment
+    {
+        get => (HorizontalAlignment)GetValue(HorizontalItemAlignmentProperty);
+        set => SetValue(HorizontalItemAlignmentProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the contentn vertical alignment.
+    /// </summary>
+    public VerticalAlignment VerticalItemAlignment
+    {
+        get => (VerticalAlignment)GetValue(VerticalItemAlignmentProperty);
+        set => SetValue(VerticalItemAlignmentProperty, value);
     }
 
     /// <summary>

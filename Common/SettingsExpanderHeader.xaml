@@ -22,7 +22,7 @@
     <Grid x:DefaultBindMode="OneWay" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
         <StackPanel Orientation="Horizontal" Spacing="{x:Bind IconSpacing}" HorizontalAlignment="Left" VerticalAlignment="Center" >
             <FontIcon x:Name="IconElement" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind IconGlyph}" Margin="0" Visibility="Collapsed" />
-            <StackPanel Orientation="Vertical" >
+            <StackPanel Orientation="Vertical" Spacing="0" >
                 <TextBlock x:Name="TitleText" Text="{x:Bind Text}" Foreground="{x:Bind Foreground}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind LineHeight}" />
                 <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind DescriptionLineHeight}" Visibility="Collapsed" />
             </StackPanel>

@@ -413,6 +413,18 @@ public static partial class VisualUtility
     /// <summary>
     /// Create text inlines.
     /// </summary>
+    /// <param name="inlines">The inline collection.</param>
+    /// <param name="json">The data source.</param>
+    /// <param name="theme">The application theme.</param>
+    /// <param name="isCompact">true if compact the white spaces; otherwise, false.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
+    /// <returns>The inline collection</returns>
+    public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonObjectNode json, ApplicationTheme theme, bool isCompact = false, Action<Inline> watcher = null)
+        => CreateTextInlines(inlines, json, new JsonTextStyle(theme, isCompact), watcher);
+
+    /// <summary>
+    /// Create text inlines.
+    /// </summary>
     /// <param name="json">The data source.</param>
     /// <param name="style">The optional style for JSON.</param>
     /// <returns>The inline collection</returns>
@@ -454,6 +466,18 @@ public static partial class VisualUtility
 
         return col;
     }
+
+    /// <summary>
+    /// Create text inlines.
+    /// </summary>
+    /// <param name="inlines">The inline collection.</param>
+    /// <param name="json">The data source.</param>
+    /// <param name="theme">The application theme.</param>
+    /// <param name="isCompact">true if compact the white spaces; otherwise, false.</param>
+    /// <param name="watcher">The optional watcher for each inline.</param>
+    /// <returns>The inline collection</returns>
+    public static IList<Inline> CreateTextInlines(InlineCollection inlines, JsonArrayNode json, ApplicationTheme theme, bool isCompact = false, Action<Inline> watcher = null)
+        => CreateTextInlines(inlines, json, new JsonTextStyle(theme, isCompact), watcher);
 
     /// <summary>
     /// Creates a paragraph.

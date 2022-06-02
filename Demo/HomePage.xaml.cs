@@ -41,14 +41,6 @@ public sealed partial class HomePage : Page
             });
         }
 
-        _ = ThenAsync();
         FileBrowserElement.NavigateAsync(new DirectoryInfo("C:\\"));
-    }
-
-    private async Task ThenAsync()
-    {
-        await Task.Delay(5000);
-        TextViewElement.ScrollIntoView(240);
-        TextViewElement.SelectedLineNumber = 250;
     }
 }

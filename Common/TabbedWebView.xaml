@@ -7,6 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <TabView x:Name="HostElement" x:DefaultBindMode="OneWay" HorizontalAlignment="{x:Bind HorizontalAlignment}" VerticalAlignment="{x:Bind VerticalAlignment}" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" TabWidthMode="{x:Bind TabWidthMode}" TabCloseRequested="OnTabCloseRequested" AddTabButtonClick="HostElement_AddTabButtonClick" SelectionChanged="HostElement_SelectionChanged" >
-    </TabView>
+    <Border x:DefaultBindMode="OneWay" HorizontalAlignment="{x:Bind HorizontalAlignment}" VerticalAlignment="{x:Bind VerticalAlignment}" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
+        <TabView x:Name="HostElement" TabWidthMode="{x:Bind TabWidthMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabCloseRequested="OnTabCloseRequested" AddTabButtonClick="HostElement_AddTabButtonClick" SelectionChanged="HostElement_SelectionChanged" >
+        </TabView>
+    </Border>
 </UserControl>

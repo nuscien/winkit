@@ -193,6 +193,13 @@ public sealed partial class TabbedWebView : UserControl
         => WebViews.FirstOrDefault() ?? Add(null as Uri);
 
     /// <summary>
+    /// Gets the the web view in first tab.
+    /// </summary>
+    /// <returns>The web view instance.</returns>
+    public SingleWebView GetLastWebView()
+        => WebViews.LastOrDefault() ?? Add(null as Uri);
+
+    /// <summary>
     /// Gets the tab view item.
     /// </summary>
     /// <param name="webview">The web view.</param>
@@ -323,7 +330,57 @@ public sealed partial class TabbedWebView : UserControl
     /// <param name="index">The index to remove.</param>
     /// <returns>true if remove succeeded; otherwise, false.</returns>
     public void RemoveAt(int index)
-        => HostElement.TabItems.RemoveAt(index);
+    {
+        var item = HostElement.TabItems.Skip(index).FirstOrDefault();
+        if (item == null) return;
+        try
+        {
+            GetWebView(item as TabViewItem)?.Close();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ApplicationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        HostElement.TabItems.Remove(item);
+    }
+
+    /// <summary>
+    /// Clears all tabs.
+    /// </summary>
+    public void Clear()
+    {
+        var col = HostElement.TabItems.OfType<TabViewItem>().ToList();
+        foreach (var tab in col)
+        {
+            try
+            {
+                GetWebView(tab)?.Close();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ApplicationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+
+        HostElement.TabItems.Clear();
+    }
 
     /// <summary>
     /// Determines whether the tabs contains a specific value.
@@ -346,6 +403,7 @@ public sealed partial class TabbedWebView : UserControl
 
     private async Task OnNewWindowRequestedAsync(CoreWebView2NewWindowRequestedEventArgs e)
     {
+        if (e.WindowFeatures != null && (e.WindowFeatures.HasPosition || e.WindowFeatures.HasSize)) return;
         e.Handled = true;
         var deferral = e.GetDeferral();
         var n = Add(null as Uri);

@@ -16,6 +16,7 @@ using Trivial.UI;
 - `TextView` is a read-only text view for string with a greate number of line.
 - `SettingsExpanderHeader` is the expander header like the one in Windows Settings.
 - `FileListView` is a lite file browser.
+- `TabbedWebView` is a lite web browser powered by Microsoft Edge WebView2.
 
 ## Utilities
 

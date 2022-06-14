@@ -43,6 +43,7 @@
     <None Remove="BlockHeader.xaml" />
     <None Remove="CommentView.xaml" />
     <None Remove="FileListView.xaml" />
+    <None Remove="LocalWebAppPage.xaml" />
     <None Remove="SettingsExpanderHeader.xaml" />
     <None Remove="SingleWebView.xaml" />
     <None Remove="TabbedWebView.xaml" />
@@ -81,6 +82,12 @@
     <None Include="README.md" Pack="true" PackagePath="README.md" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="LocalWebAppPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

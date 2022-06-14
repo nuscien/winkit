@@ -256,6 +256,20 @@ public class LocalWebAppOptions
     }
 
     /// <summary>
+    /// Gets online path of a relative embedded path.
+    /// </summary>
+    /// <param name="localRelativePath">The relative path of embedded file.</param>
+    /// <returns>A online path mapped.</returns>
+    public string GetLocalPath(string localRelativePath)
+    {
+        var host = RootDirectory?.FullName;
+        if (string.IsNullOrEmpty(host)) return null;
+        if (localRelativePath.StartsWith('.')) localRelativePath = localRelativePath[1..];
+        else if (localRelativePath.StartsWith('~')) localRelativePath = localRelativePath[1..];
+        return Path.Combine(host, localRelativePath);
+    }
+
+    /// <summary>
     /// Reads the file.
     /// </summary>
     /// <param name="file">The file to read.</param>

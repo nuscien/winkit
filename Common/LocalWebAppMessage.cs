@@ -59,6 +59,11 @@ public class LocalWebAppRequestMessage
     /// Gets or sets the additional context data which will return with result.
     /// </summary>
     public JsonObjectNode Context { get; set; }
+
+    /// <summary>
+    /// Gets or sets the data and time on process.
+    /// </summary>
+    public DateTime ProcessingTime { get; set; } = DateTime.Now;
 }
 
 /// <summary>

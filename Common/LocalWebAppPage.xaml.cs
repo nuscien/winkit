@@ -118,10 +118,10 @@ let postMsg = window.chrome && window.chrome.webview && typeof window.chrome.web
 let hs = []; let stepNumber = 0;
 function genRandomStr() {
   if (stepNumber >= Number.MAX_SAFE_INTEGER) stepNumber = 0; stepNumber++;
-  return 'r' + Math.floor(Math.random() * 46656).toString(36) + stepNumber.toString(36) + (new Date().getTime().toString(36));
+  return 'r' + Math.floor(Math.random() * 46655).toString(36) + stepNumber.toString(36) + (new Date().getTime().toString(36));
 }
 function sendRequest(handlerId, cmd, data, info, context, noResp) {
-  let req = { handler: handlerId, cmd, data, info, context }; let promise = null;
+  let req = { handler: handlerId, cmd, data, info, context, date: new Date() }; let promise = null;
   if (!noResp) { req.trace = genRandomStr();
     promise = new Promise(function (resolve, reject) {
       let handler = {};
@@ -175,6 +175,20 @@ window.edgePlatform = {
     if (!callback) return;
     if (typeof callback === 'function' || typeof callback.proc === 'function') hs.push(callback);
   },
+  getCommandHandler(id) {
+    if (!id || typeof id !== 'string') return null;
+    return {
+      id() {
+        return id;
+      },
+      call(cmd, data, context, info) {
+        sendRequest(id, cmd, data, info, context, false)
+      },
+      request(cmd, data, context, info) {
+        sendRequest(id, cmd, data, info, context, true)
+      }
+    };
+  },
   files: {
     list(dir, options) {
       if (!options) options = {};
@@ -185,10 +199,15 @@ window.edgePlatform = {
       return sendRequest(null, 'get-file', { path, read: options.read }, null, options.context);
     }
   },
+  download: {
+  },
   hostInfo: ");
         sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest, isDebug).ToString(IndentStyles.Compact));
-        sb.Append(", resources: ");
+        sb.Append(", dataRes: ");
         var resourceReg = new JsonObjectNode();
+        sb.Append(resourceReg.ToString(IndentStyles.Compact));
+        sb.Append(", strRes: ");
+        resourceReg = new JsonObjectNode();
         sb.Append(resourceReg.ToString(IndentStyles.Compact));
         sb.AppendLine(" }; })();");
         _ = Browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(sb.ToString());

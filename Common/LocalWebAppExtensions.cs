@@ -105,7 +105,13 @@ internal static class LocalWebAppExtensions
             { "info", resp?.AdditionalInfo },
             { "message", resp?.Message },
             { "error", resp?.IsError ?? true },
-            { "context", req.Context }
+            { "context", req.Context },
+            { "timeline", new JsonObjectNode
+            {
+                { "request", json.TryGetDateTimeValue("date") },
+                { "processing", req.ProcessingTime },
+                { "processed", DateTime.Now }
+            } }
         };
     }
 

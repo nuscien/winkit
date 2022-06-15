@@ -320,31 +320,137 @@ public class LocalWebAppHost
         if (resp == null) return null;
         var ver = resp.TryGetStringValue("version")?.Trim();
         if (string.IsNullOrEmpty(ver)) return null;
-        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, false) <= 0)
+        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, false) <= 0 && resp.TryGetBooleanValue("force") != true)
             return null;
         url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
-        var zip = await HttpClientExtensions.WriteFileAsync(new Uri(url), Path.Combine(CacheDirectory.FullName, "ResourcePackage.zip"));
-        if (zip == null) return null;
-        var path = Path.Combine(CacheDirectory.FullName, "ResourcePackage");
-        Directory.Delete(path, true);
-        System.IO.Compression.ZipFile.ExtractToDirectory(zip.FullName, path);
-        zip.Delete();
-        var root = CacheDirectory.Parent;
-        var dir = new DirectoryInfo(path);
-        var host = await LoadAsync(root, Options, dir, cancellationToken);
-        if (host?.Manifest?.Version != ver && resp.TryGetBooleanValue("force") != true)
+        FileInfo zip = null;
+        string path;
+        try
         {
-            dir.Delete(true);
-            return null;
+            zip = await HttpClientExtensions.WriteFileAsync(new Uri(url), Path.Combine(CacheDirectory.FullName, "ResourcePackage.zip"), null, cancellationToken);
+            if (zip == null) return null;
+            path = Path.Combine(CacheDirectory.FullName, "ResourcePackage");
+            TryDeleteDirectory(path);
+            System.IO.Compression.ZipFile.ExtractToDirectory(zip.FullName, path);
+        }
+        catch (ArgumentException)
+        {
+            path = null;
+        }
+        catch (InvalidOperationException)
+        {
+            path = null;
+        }
+        catch (IOException)
+        {
+            path = null;
+        }
+        catch (FormatException)
+        {
+            path = null;
+        }
+        catch (SecurityException)
+        {
+            path = null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            path = null;
+        }
+        catch (NotSupportedException)
+        {
+            path = null;
+        }
+        catch (ExternalException)
+        {
+            path = null;
         }
 
-        path = Path.Combine(root.FullName, string.Concat('v', ver));
-        Directory.Delete(path, true);
+        zip.Delete();
+        if (path == null) return null;
+        var root = CacheDirectory.Parent;
+        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
+        if (dir == null || !dir.Exists) return null;
+        try
+        {
+            var host = await LoadAsync(root, Options, dir, cancellationToken);
+            if (host?.Manifest?.Version != ver)
+            {
+                dir.Delete(true);
+                return null;
+            }
+
+            path = Path.Combine(root.FullName, string.Concat('v', ver));
+        }
+        catch (ArgumentException)
+        {
+            path = null;
+        }
+        catch (InvalidOperationException)
+        {
+            path = null;
+        }
+        catch (IOException)
+        {
+            path = null;
+        }
+        catch (FormatException)
+        {
+            path = null;
+        }
+        catch (SecurityException)
+        {
+            path = null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            path = null;
+        }
+        catch (NotSupportedException)
+        {
+            path = null;
+        }
+        catch (ExternalException)
+        {
+            path = null;
+        }
+
+        if (path == null) return null;
+        TryDeleteDirectory(path);
         dir.MoveTo(path);
         var settings = await TryGetSettingsAsync(CacheDirectory) ?? new JsonObjectNode();
         settings.SetValue("version", ver);
         await TrySaveSettingsAsync(CacheDirectory, settings);
         return ver;
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            Directory.Delete(path, true);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
     }
 
     private static string GetUrl(string url, Dictionary<string, string> parameters)

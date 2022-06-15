@@ -18,7 +18,7 @@ using Trivial.Web;
 
 namespace Trivial.UI;
 
-internal class LocalWebAppExtensions
+internal static class LocalWebAppExtensions
 {
     public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest, bool isDebug = false)
     {
@@ -26,7 +26,7 @@ internal class LocalWebAppExtensions
         var hostInfo = new JsonObjectNode
         {
             { "version", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() },
-            { "appName", manifest.Id },
+            { "appName", manifest?.Id },
             { "runtime", new JsonObjectNode
             {
                 { "kind", "WindowsAppSdk" },
@@ -71,11 +71,50 @@ internal class LocalWebAppExtensions
         return hostInfo;
     }
 
-    public static LocalWebAppResponseMessage ListFiles(LocalWebAppRequestMessage request, LocalWebAppOptions options)
+    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers)
+    {
+        if (json == null) return null;
+        var req = new LocalWebAppRequestMessage
+        {
+            Uri = uri,
+            IsFullTrusted = !string.IsNullOrWhiteSpace(host?.VirtualHost) && uri?.Host == host.VirtualHost,
+            TraceId = json.TryGetStringValue("trace")?.Trim(),
+            Command = json.TryGetStringValue("cmd")?.Trim(),
+            MessageHandlerId = json.TryGetStringValue("handler")?.Trim(),
+            Data = json.TryGetObjectValue("data"),
+            AdditionalInfo = json.TryGetObjectValue("info"),
+            Context = json.TryGetObjectValue("context")
+        };
+        LocalWebAppResponseMessage resp = null;
+        if (string.IsNullOrWhiteSpace(host?.Manifest?.Id))
+            resp = new LocalWebAppResponseMessage("The app runs failed.");
+        else if (string.IsNullOrEmpty(req.Command))
+            resp = new LocalWebAppResponseMessage(string.Concat("Command name should not be null or empty."));
+        else if (string.IsNullOrEmpty(req.MessageHandlerId))
+            resp = await OnLocalWebAppMessageRequestAsync(req, host);
+        else if (handlers.TryGetValue(req.MessageHandlerId, out var h) && h != null)
+            resp = await h(req);
+        else
+            resp = new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", req.MessageHandlerId));
+        return new JsonObjectNode
+        {
+            { "trace", req.TraceId },
+            { "cmd", req.Command },
+            { "handler", req.MessageHandlerId },
+            { "data", resp?.Data },
+            { "info", resp?.AdditionalInfo },
+            { "message", resp?.Message },
+            { "error", resp?.IsError ?? true },
+            { "context", req.Context }
+        };
+    }
+
+    public static LocalWebAppResponseMessage ListFiles(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
         var path = request?.Data?.TryGetStringValue("path");
         if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
-        if (path.StartsWith('.') || path.StartsWith('~')) path = options.GetLocalPath(path);
+        if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
+        if (path.StartsWith('.') || path.StartsWith('~')) path = host.GetLocalPath(path);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
         if (dir == null || !dir.Exists) return new("Not found.");
         var resp = new LocalWebAppResponseMessage
@@ -134,11 +173,12 @@ internal class LocalWebAppExtensions
         return resp;
     }
 
-    public static async Task<LocalWebAppResponseMessage> GetFileAsync(LocalWebAppRequestMessage request, LocalWebAppOptions options)
+    public static async Task<LocalWebAppResponseMessage> GetFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
         var path = request?.Data?.TryGetStringValue("path");
         if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
-        if (path.StartsWith('.') || path.StartsWith('~')) path = options.GetLocalPath(path);
+        if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
+        if (path.StartsWith('.') || path.StartsWith('~')) path = host.GetLocalPath(path);
         var file = FileSystemInfoUtility.TryGetFileInfo(path);
         if (file == null && Directory.Exists(path))
         {
@@ -268,6 +308,22 @@ internal class LocalWebAppExtensions
         }
 
         return resp;
+    }
+
+    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    {
+        if (string.IsNullOrEmpty(request?.Command)) return null;
+        switch (request.Command.ToLowerInvariant())
+        {
+            case "list-file":
+                return ListFiles(request, host);
+            case "get-file":
+                return await GetFileAsync(request, host);
+            case "write-file":
+                break;
+        }
+
+        return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));
     }
 
     private static JsonObjectNode ToJson(FileSystemInfo item, bool skipHidden = false)

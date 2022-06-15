@@ -26,6 +26,11 @@ public class LocalWebAppRequestMessage
     public Uri Uri { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the source is full truested.
+    /// </summary>
+    public bool IsFullTrusted { get; set; }
+
+    /// <summary>
     /// Gets or sets the trace identifier.
     /// </summary>
     public string TraceId { get; set; }

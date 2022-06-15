@@ -116,27 +116,27 @@ public class LocalWebAppFileInfo
     /// <summary>
     /// Verifies by signature.
     /// </summary>
-    /// <param name="options">The options of the standalone web app.</param>
+    /// <param name="host">The standalone web app host.</param>
     /// <returns>true if pass; otherwise, false.</returns>
-    public bool Verify(LocalWebAppOptions options)
-        => Verify(options, out _);
+    public bool Verify(LocalWebAppHost host)
+        => Verify(host, out _);
 
     /// <summary>
     /// Verifies by signature.
     /// </summary>
-    /// <param name="options">The options of the standalone web app.</param>
+    /// <param name="host">The standalone web app host.</param>
     /// <param name="file">The file output.</param>
     /// <returns>true if pass; otherwise, false.</returns>
-    public bool Verify(LocalWebAppOptions options, out FileInfo file)
+    public bool Verify(LocalWebAppHost host, out FileInfo file)
     {
-        if (options == null)
+        if (host == null)
         {
             file = null;
             return false;
         }
 
         var path = FormattedPath;
-        var virtualHost = options.VirtualHost;
+        var virtualHost = host.VirtualHost;
         if (!string.IsNullOrWhiteSpace(virtualHost))
         {
             switch (SourceType)
@@ -163,7 +163,7 @@ public class LocalWebAppFileInfo
             return false;
         }
 
-        var rootPath = options.RootDirectory;
+        var rootPath = host.ResourcePackageDirectory;
         try
         {
             if (rootPath == null) rootPath = new DirectoryInfo(Environment.CurrentDirectory);
@@ -174,7 +174,7 @@ public class LocalWebAppFileInfo
             }
 
             file = new FileInfo(System.IO.Path.Combine(rootPath.FullName, path));
-            return Verify(file, Signature, options);
+            return Verify(file, Signature, host);
         }
         catch (ArgumentException)
         {
@@ -205,14 +205,14 @@ public class LocalWebAppFileInfo
     /// <summary>
     /// Tries to get online path.
     /// </summary>
-    /// <param name="options">The standalone web app options.</param>
+    /// <param name="host">The standalone web app host.</param>
     /// <returns></returns>
-    public string TryGetOnlinePath(LocalWebAppOptions options = null)
+    public string TryGetOnlinePath(LocalWebAppHost host = null)
     {
         return SourceType switch
         {
             LocalWebAppFileSourceType.Online or LocalWebAppFileSourceType.Localhost => FormattedPath,
-            LocalWebAppFileSourceType.Embedded => options?.GetVirtualPath(FormattedPath),
+            LocalWebAppFileSourceType.Embedded => host?.GetVirtualPath(FormattedPath),
             _ => null,
         };
     }
@@ -288,28 +288,28 @@ public class LocalWebAppFileInfo
     /// </summary>
     /// <param name="file">The file to test.</param>
     /// <param name="signature">The signature.</param>
-    /// <param name="options">The standalone web app options.</param>
+    /// <param name="host">The standalone web app host.</param>
     /// <returns>true if pass; otherwise, false.</returns>
-    internal static bool Verify(FileInfo file, string signature, LocalWebAppOptions options)
+    internal static bool Verify(FileInfo file, string signature, LocalWebAppHost host)
     {
         if (file == null || !file.Exists) return false;
         try
         {
             if (string.IsNullOrWhiteSpace(signature)) return file.Length < 1;
             using var rsa = RSA.Create();
-            rsa.ImportParameters(options.PublicKey);
+            rsa.ImportParameters(host.Options.PublicKey);
             var sign = WebFormat.Base64UrlDecode(signature);
             try
             {
                 using var stream = file.OpenRead();
                 if (stream == null) return false;
-                return rsa.VerifyData(stream, sign, options.HashAlgorithmName, RSASignaturePadding.Pkcs1);
+                return rsa.VerifyData(stream, sign, host.Options.HashAlgorithmName, RSASignaturePadding.Pkcs1);
             }
             catch (IOException)
             {
-                using var stream = options.ReadFile(file);
+                using var stream = host.ReadFile(file);
                 if (stream == null) return false;
-                return rsa.VerifyData(stream, sign, options.HashAlgorithmName, RSASignaturePadding.Pkcs1);
+                return rsa.VerifyData(stream, sign, host.Options.HashAlgorithmName, RSASignaturePadding.Pkcs1);
             }
         }
         catch (ArgumentException)
@@ -336,54 +336,6 @@ public class LocalWebAppFileInfo
 
         return false;
     }
-}
-
-/// <summary>
-/// The host app binding information of standalone web app.
-/// </summary>
-public class LocalWebAppHostBindingInfo
-{
-    /// <summary>
-    /// Gets or sets the app identifier in store.
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string AppId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the kind of the app framework.
-    /// </summary>
-    [JsonPropertyName("kind")]
-    public string FrameworkKind { get; set; }
-
-    /// <summary>
-    /// Gets or sets the minimum version.
-    /// </summary>
-    [JsonPropertyName("min")]
-    public string MinimumVersion { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maximum version.
-    /// </summary>
-    [JsonPropertyName("max")]
-    public string MaximumVersion { get; set; }
-}
-
-/// <summary>
-/// The update information of standalone web app.
-/// </summary>
-public class WebAppPackageUpdateInfo
-{
-    /// <summary>
-    /// Gets or sets the URL of web app package update service.
-    /// </summary>
-    [JsonPropertyName("src")]
-    public string Url { get; set; }
-
-    /// <summary>
-    /// Gets or sets the variable parameters.
-    /// </summary>
-    [JsonPropertyName("params")]
-    public Dictionary<string, string> VariableParameters { get; set; }
 }
 
 /// <summary>

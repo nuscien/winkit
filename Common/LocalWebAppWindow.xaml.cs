@@ -64,16 +64,28 @@ public sealed partial class LocalWebAppWindow : Window
     /// Initializes a new instance of the LocalWebAppWindow class.
     /// </summary>
     public LocalWebAppWindow(LocalWebAppOptions options) : this()
-    {
-        LoadDataAsync(options);
-    }
+        => _ = MainElement.LoadAsync(options);
 
     /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
-    public Task LoadDataAsync(LocalWebAppOptions options)
-        => MainElement.LoadDataAsync(options);
+    public Task LoadAsync(LocalWebAppOptions options)
+        => MainElement.LoadAsync(options);
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="host">The standalone web app host.</param>
+    public Task LoadAsync(LocalWebAppHost host)
+        => MainElement.LoadAsync(host);
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="host">The standalone web app host.</param>
+    public Task LoadAsync(Task<LocalWebAppHost> host)
+        => MainElement.LoadAsync(host);
 
     private void OnClosed(object sender, WindowEventArgs args)
         => MainElement.Close();

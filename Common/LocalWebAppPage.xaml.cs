@@ -34,8 +34,7 @@ namespace Trivial.UI;
 /// </summary>
 public sealed partial class LocalWebAppPage : Page
 {
-    private LocalWebAppManifest manifest;
-    private LocalWebAppOptions options;
+    private LocalWebAppHost host;
     private readonly Dictionary<string, LocalWebAppMessageProcessAsync> proc = new();
 
     /// <summary>
@@ -55,15 +54,42 @@ public sealed partial class LocalWebAppPage : Page
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
-    public async Task LoadDataAsync(LocalWebAppOptions options)
+    public async Task LoadAsync(LocalWebAppOptions options)
+    {
+        if (options == null) return;
+        var host = await LocalWebAppHost.LoadAsync(options);
+        await LoadAsync(host);
+    }
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="host">The standalone web app host.</param>
+    public async Task LoadAsync(Task<LocalWebAppHost> host)
+    {
+        if (host == null) return;
+        await LoadAsync(await host);
+    }
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="host">The standalone web app host.</param>
+    public async Task LoadAsync(LocalWebAppHost host)
     {
         //Browser.NavigateToString(@"<html><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" ><base target=""_blank"" /></head><body></body></html>");
-        if (options == null) return;
-        manifest = await LocalWebAppManifest.LoadAsync(options);
-        this.options = options;
+        if (host == null) return;
+        this.host = host;
         await Browser.EnsureCoreWebView2Async();
-        Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(options.VirtualHost, options.RootDirectory.FullName, Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-        Browser.CoreWebView2.Navigate(options.GetVirtualPath(manifest.HomepagePath ?? "index.html"));
+        Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, host.ResourcePackageDirectory.FullName, CoreWebView2HostResourceAccessKind.Allow);
+        var homepage = host.Manifest.HomepagePath?.Trim();
+        if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
+        if (host.Options?.DebugMode ?? false)
+        {
+            // ToDo: Show debug notification prompt.
+        }
+
+        Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
     }
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)
@@ -82,13 +108,9 @@ public sealed partial class LocalWebAppPage : Page
     private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
     {
         var settings = Browser.CoreWebView2.Settings;
-#if DEBUG
-        var isDebug = true;
-#else
-        settings.AreDevToolsEnabled = false;
+        var isDebug = host.Options?.DebugMode ?? false;
+        settings.AreDevToolsEnabled = isDebug;
         settings.AreDefaultContextMenusEnabled = false;
-        var isDebug = false;
-#endif
         Browser.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;
         var sb = new StringBuilder();
         sb.Append(@"(function () { if (window.edgePlatform) return;
@@ -149,14 +171,14 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
   } catch (ex) { }
 }
 window.edgePlatform = { 
-  onHostMessage(callback) {
+  onMessage(callback) {
     if (!callback) return;
     if (typeof callback === 'function' || typeof callback.proc === 'function') hs.push(callback);
   },
   files: {
     list(dir, options) {
       if (!options) options = {};
-      return sendRequest(null, 'list-file', { path: dir, q: options.q }, null, options.context);
+      return sendRequest(null, 'list-file', { path: dir, q: options.q, showHidden: options.showHidden }, null, options.context);
     },
     get(path, options) {
       if (!options) options = {};
@@ -164,7 +186,7 @@ window.edgePlatform = {
     }
   },
   hostInfo: ");
-        sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(manifest, isDebug).ToString(IndentStyles.Compact));
+        sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest, isDebug).ToString(IndentStyles.Compact));
         sb.Append(", resources: ");
         var resourceReg = new JsonObjectNode();
         sb.Append(resourceReg.ToString(IndentStyles.Compact));
@@ -208,56 +230,11 @@ window.edgePlatform = {
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
     {
         if (json == null) return;
-        var req = new LocalWebAppRequestMessage
-        {
-            Uri = sender.Source,
-            TraceId = json.TryGetStringValue("trace")?.Trim(),
-            Command = json.TryGetStringValue("cmd")?.Trim(),
-            MessageHandlerId = json.TryGetStringValue("handler")?.Trim(),
-            Data = json.TryGetObjectValue("data"),
-            AdditionalInfo = json.TryGetObjectValue("info"),
-            Context = json.TryGetObjectValue("context")
-        };
-        LocalWebAppResponseMessage resp = null;
-        if (string.IsNullOrEmpty(req.Command))
-            resp = new LocalWebAppResponseMessage(string.Concat("Command name should not be null or empty."));
-        else if (string.IsNullOrEmpty(req.MessageHandlerId))
-            resp = await OnLocalWebAppMessageRequestAsync(req);
-        else if (proc.TryGetValue(req.MessageHandlerId, out var h) && h != null)
-            resp = await h(req);
-        else
-            resp = new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", req.MessageHandlerId));
-        json = new JsonObjectNode
-        {
-            { "trace", req.TraceId },
-            { "cmd", req.Command },
-            { "handler", req.MessageHandlerId },
-            { "data", resp?.Data },
-            { "info", resp?.AdditionalInfo },
-            { "message", resp?.Message },
-            { "error", resp?.IsError ?? true },
-            { "context", req.Context }
-        };
+        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc);
         sender.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
     private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)
     {
-    }
-
-    private async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request)
-    {
-        if (string.IsNullOrEmpty(request?.Command)) return null;
-        switch (request.Command.ToLowerInvariant())
-        {
-            case "list-file":
-                return LocalWebAppExtensions.ListFiles(request, options);
-            case "get-file":
-                return await LocalWebAppExtensions.GetFileAsync(request, options);
-            case "write-file":
-                break;
-        }
-
-        return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));
     }
 }

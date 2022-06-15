@@ -26,10 +26,10 @@ namespace Trivial.Web;
 public class LocalWebAppManifest
 {
     /// <summary>
-    /// Gets or sets the name of the app.
+    /// Gets or sets the identifier of the app.
     /// </summary>
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
 
     /// <summary>
     /// Gets or sets the version of the app.

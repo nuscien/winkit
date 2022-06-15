@@ -72,11 +72,11 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Stops navigating.
     /// </summary>
-    public void Stop()
+    public void Close()
     {
         var webview2 = Browser.CoreWebView2;
         if (webview2 == null) return;
-        Browser.CoreWebView2.Stop();
+        Browser.Close();
     }
 
     private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
@@ -98,8 +98,8 @@ function genRandomStr() {
   if (stepNumber >= Number.MAX_SAFE_INTEGER) stepNumber = 0; stepNumber++;
   return 'r' + Math.floor(Math.random() * 46656).toString(36) + stepNumber.toString(36) + (new Date().getTime().toString(36));
 }
-function sendRequest(handlerId, action, data, info, context, noResp) {
-  let req = { handler: handlerId, action, data, info, context }; let promise = null;
+function sendRequest(handlerId, cmd, data, info, context, noResp) {
+  let req = { handler: handlerId, cmd, data, info, context }; let promise = null;
   if (!noResp) { req.trace = genRandomStr();
     promise = new Promise(function (resolve, reject) {
       let handler = {};
@@ -160,48 +160,11 @@ window.edgePlatform = {
     },
     get(path, options) {
       if (!options) options = {};
-      return sendRequest(null, 'get-file', { path }, null, options.context);
-    }
-    read(path, options) {
-      if (!options) options = {};
-      return sendRequest(null, 'read-file', { path }, null, options.context);
+      return sendRequest(null, 'get-file', { path, read: options.read }, null, options.context);
     }
   },
   hostInfo: ");
-        var eas = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
-        var hostInfo = new JsonObjectNode
-        {
-            { "version", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() },
-            { "appName", manifest.Name },
-            { "netfx", RuntimeInformation.FrameworkDescription },
-            { "os", new JsonObjectNode
-            {
-                { "value", Environment.OSVersion?.ToString() ?? RuntimeInformation.OSDescription },
-                { "arch", RuntimeInformation.OSArchitecture.ToString() },
-                { "version", Environment.OSVersion?.Version?.ToString() },
-                { "platform", Environment.OSVersion?.Platform.ToString() }
-            } },
-            { "webview2", CoreWebView2Environment.GetAvailableBrowserVersionString() },
-            { "cmdLine", new JsonObjectNode
-            {
-                { "value", Environment.CommandLine },
-                { "args", Environment.GetCommandLineArgs() },
-            } },
-            { "systemAccount", string.Concat(Environment.UserDomainName ?? Environment.MachineName, '\\', Environment.UserName) },
-            { "mkt", System.Globalization.CultureInfo.CurrentUICulture?.Name?.Trim() ?? System.Globalization.CultureInfo.CurrentCulture?.Name?.Trim() },
-            { "timezone", TimeZoneInfo.Local.DisplayName ?? TimeZoneInfo.Local.StandardName },
-            { "device", new JsonObjectNode
-            {
-                { "arch", RuntimeInformation.ProcessArchitecture.ToString() },
-                { "form", Windows.System.Profile.AnalyticsInfo.DeviceForm },
-                { "family", Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily },
-                { "manufacturer", eas.SystemManufacturer },
-                { "productName", eas.SystemProductName },
-                { "productSku", eas.SystemSku }
-            } }
-        };
-        if (isDebug) hostInfo.SetValue("devEnv", true);
-        sb.Append(hostInfo.ToString(IndentStyles.Compact));
+        sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(manifest, isDebug).ToString(IndentStyles.Compact));
         sb.Append(", resources: ");
         var resourceReg = new JsonObjectNode();
         sb.Append(resourceReg.ToString(IndentStyles.Compact));
@@ -217,7 +180,7 @@ window.edgePlatform = {
     {
     }
 
-    private async void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
+    private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
     {
         if (sender == null) return;
         JsonObjectNode json = null;
@@ -245,37 +208,29 @@ window.edgePlatform = {
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
     {
         if (json == null) return;
-        var req = new LocalWebAppMessageRequest
+        var req = new LocalWebAppRequestMessage
         {
             Uri = sender.Source,
             TraceId = json.TryGetStringValue("trace")?.Trim(),
-            ActionName = json.TryGetStringValue("action")?.Trim(),
+            Command = json.TryGetStringValue("cmd")?.Trim(),
             MessageHandlerId = json.TryGetStringValue("handler")?.Trim(),
             Data = json.TryGetObjectValue("data"),
             AdditionalInfo = json.TryGetObjectValue("info"),
             Context = json.TryGetObjectValue("context")
         };
-        LocalWebAppMessageResponseBody resp = null;
-        if (string.IsNullOrEmpty(req.ActionName))
-            resp = new LocalWebAppMessageResponseBody
-            {
-                Message = string.Concat("Action name should not be null or empty."),
-                IsError = true
-            };
+        LocalWebAppResponseMessage resp = null;
+        if (string.IsNullOrEmpty(req.Command))
+            resp = new LocalWebAppResponseMessage(string.Concat("Command name should not be null or empty."));
         else if (string.IsNullOrEmpty(req.MessageHandlerId))
             resp = await OnLocalWebAppMessageRequestAsync(req);
         else if (proc.TryGetValue(req.MessageHandlerId, out var h) && h != null)
             resp = await h(req);
         else
-            resp = new LocalWebAppMessageResponseBody
-            {
-                Message = string.Concat("Not supported for this handler. ", req.MessageHandlerId),
-                IsError = true
-            };
+            resp = new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", req.MessageHandlerId));
         json = new JsonObjectNode
         {
             { "trace", req.TraceId },
-            { "action", req.ActionName },
+            { "cmd", req.Command },
             { "handler", req.MessageHandlerId },
             { "data", resp?.Data },
             { "info", resp?.AdditionalInfo },
@@ -290,25 +245,19 @@ window.edgePlatform = {
     {
     }
 
-    private async Task<LocalWebAppMessageResponseBody> OnLocalWebAppMessageRequestAsync(LocalWebAppMessageRequest request)
+    private async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request)
     {
-        if (string.IsNullOrEmpty(request?.ActionName)) return null;
-        switch (request.ActionName.ToLowerInvariant())
+        if (string.IsNullOrEmpty(request?.Command)) return null;
+        switch (request.Command.ToLowerInvariant())
         {
             case "list-file":
                 return LocalWebAppExtensions.ListFiles(request, options);
             case "get-file":
-                break;
-            case "read-file":
-                break;
+                return await LocalWebAppExtensions.GetFileAsync(request, options);
             case "write-file":
                 break;
         }
 
-        return await Task.FromResult(new LocalWebAppMessageResponseBody
-        {
-            Message = string.Concat("Not supported for this handler. ", request.MessageHandlerId),
-            IsError = true
-        });
+        return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));
     }
 }

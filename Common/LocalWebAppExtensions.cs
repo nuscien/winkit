@@ -47,12 +47,12 @@ internal static class LocalWebAppExtensions
             { "cmdLine", new JsonObjectNode
             {
                 { "value", Environment.CommandLine },
-                { "args", Environment.GetCommandLineArgs() },
+                { "args", Environment.GetCommandLineArgs().Skip(1) },
                 { "systemAccount", string.Concat(Environment.UserDomainName ?? Environment.MachineName, '\\', Environment.UserName) },
             } },
             { "mkt", new JsonObjectNode {
                 { "value", System.Globalization.CultureInfo.CurrentUICulture?.ToString() ?? System.Globalization.CultureInfo.CurrentCulture?.ToString() },
-                { "name", System.Globalization.CultureInfo.CurrentUICulture?.Name?.Trim() ?? System.Globalization.CultureInfo.CurrentCulture?.Name?.Trim() },
+                { "name", System.Globalization.CultureInfo.CurrentUICulture?.DisplayName ?? System.Globalization.CultureInfo.CurrentCulture?.DisplayName },
                 { "rtl", System.Globalization.CultureInfo.CurrentUICulture?.TextInfo?.IsRightToLeft },
                 { "timeZone", TimeZoneInfo.Local.Id },
                 { "timeZoneDisplayName", TimeZoneInfo.Local.DisplayName ?? TimeZoneInfo.Local.StandardName },

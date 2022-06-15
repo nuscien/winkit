@@ -84,7 +84,7 @@ public sealed partial class LocalWebAppPage : Page
         Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, host.ResourcePackageDirectory.FullName, CoreWebView2HostResourceAccessKind.Allow);
         var homepage = host.Manifest.HomepagePath?.Trim();
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
-        if (host.Options?.DebugMode ?? false)
+        if (host.Options?.IsDevEnvironmentEnabled ?? false)
         {
             // ToDo: Show debug notification prompt.
         }
@@ -108,7 +108,7 @@ public sealed partial class LocalWebAppPage : Page
     private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
     {
         var settings = Browser.CoreWebView2.Settings;
-        var isDebug = host.Options?.DebugMode ?? false;
+        var isDebug = host.Options?.IsDevEnvironmentEnabled ?? false;
         settings.AreDevToolsEnabled = isDebug;
         settings.AreDefaultContextMenusEnabled = false;
         Browser.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
@@ -218,46 +219,12 @@ public class LocalWebAppHost
         // Initialize and verify sub-folders.
         var dataDir = Directory.CreateDirectory(Path.Combine(rootDir.FullName, "data"));
         var cacheDir = Directory.CreateDirectory(Path.Combine(rootDir.FullName, "cache"));
-        var settingsFile = cacheDir.GetFiles("settings.json").FirstOrDefault();
-        if (appDir == null && settingsFile != null && settingsFile.Exists)
+        if (appDir == null)
         {
-            try
-            {
-                using var stream = settingsFile.OpenRead();
-                var settings = await JsonObjectNode.ParseAsync(stream, cancellationToken);
-                var v = settings.TryGetStringValue("v");
+            var settings = await TryGetSettingsAsync(cacheDir, cancellationToken);
+            var v = settings?.TryGetStringValue("version")?.Trim();
+            if (!string.IsNullOrEmpty(v))
                 appDir = appDir.GetDirectories(string.Concat('v', v)).FirstOrDefault();
-            }
-            catch (ArgumentException)
-            {
-            }
-            catch (IOException)
-            {
-            }
-            catch (SecurityException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-            catch (JsonException)
-            {
-            }
-            catch (FormatException)
-            {
-            }
-            catch (InvalidOperationException)
-            {
-            }
-            catch (NotSupportedException)
-            {
-            }
-            catch (AggregateException)
-            {
-            }
-            catch (ExternalException)
-            {
-            }
         }
 
         if (appDir == null || !appDir.Exists)
@@ -305,7 +272,7 @@ public class LocalWebAppHost
         };
 
         // Debug mode.
-        if (options.DebugMode)
+        if (options.IsDevEnvironmentEnabled)
         {
             return host;
         }
@@ -335,5 +302,169 @@ public class LocalWebAppHost
 
         // Return result.
         return host;
+    }
+
+    /// <summary>
+    /// Updates the resource package.
+    /// </summary>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The new version.</returns>
+    public async Task<string> UpdateAsync(CancellationToken cancellationToken = default)
+    {
+        var url = GetUrl(Options.Update?.Url, Options.Update?.VariableParameters);
+        if (string.IsNullOrEmpty(url)) return null;
+        var http = new JsonHttpClient<JsonObjectNode>();
+        var resp = await http.GetAsync(url, cancellationToken);
+        var respProp = Options.Update?.ResponseProperty?.Trim();
+        resp = resp?.TryGetObjectValue(string.IsNullOrEmpty(respProp) ? "data" : respProp) ?? resp;
+        if (resp == null) return null;
+        var ver = resp.TryGetStringValue("version")?.Trim();
+        if (string.IsNullOrEmpty(ver)) return null;
+        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, false) <= 0)
+            return null;
+        url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
+        var zip = await HttpClientExtensions.WriteFileAsync(new Uri(url), Path.Combine(CacheDirectory.FullName, "ResourcePackage.zip"));
+        if (zip == null) return null;
+        var path = Path.Combine(CacheDirectory.FullName, "ResourcePackage");
+        Directory.Delete(path, true);
+        System.IO.Compression.ZipFile.ExtractToDirectory(zip.FullName, path);
+        zip.Delete();
+        var root = CacheDirectory.Parent;
+        var dir = new DirectoryInfo(path);
+        var host = await LoadAsync(root, Options, dir, cancellationToken);
+        if (host?.Manifest?.Version != ver && resp.TryGetBooleanValue("force") != true)
+        {
+            dir.Delete(true);
+            return null;
+        }
+
+        path = Path.Combine(root.FullName, string.Concat('v', ver));
+        Directory.Delete(path, true);
+        dir.MoveTo(path);
+        var settings = await TryGetSettingsAsync(CacheDirectory) ?? new JsonObjectNode();
+        settings.SetValue("version", ver);
+        await TrySaveSettingsAsync(CacheDirectory, settings);
+        return ver;
+    }
+
+    private static string GetUrl(string url, Dictionary<string, string> parameters)
+    {
+        url = url?.Trim();
+        if (string.IsNullOrEmpty(url)) return null;
+        if (parameters == null) return url;
+        var q = new QueryData();
+        foreach (var kvp in parameters)
+        {
+            var k = kvp.Key?.Trim();
+            var v = kvp.Value?.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(k) || string.IsNullOrEmpty(v)) continue;
+            switch (v)
+            {
+                case "version":
+                    break;
+            }
+        }
+
+        return q.ToString(url);
+    }
+
+    private static string GetUrl(string url, JsonObjectNode parameters)
+    {
+        url = url?.Trim();
+        if (string.IsNullOrEmpty(url)) return null;
+        if (parameters == null) return url;
+        var q = new Dictionary<string, string>();
+        foreach (var kvp in parameters)
+        {
+            if (kvp.Value?.ValueKind != JsonValueKind.String || kvp.Value is not IJsonStringNode s) continue;
+            q[kvp.Key] = s.StringValue;
+        }
+
+        return GetUrl(url, q);
+    }
+
+    private static async Task<JsonObjectNode> TryGetSettingsAsync(DirectoryInfo cacheDir, CancellationToken cancellationToken = default)
+    {
+        var settingsFile = cacheDir?.GetFiles("settings.json")?.FirstOrDefault();
+        if (settingsFile == null || !settingsFile.Exists) return null;
+        try
+        {
+            using var stream = settingsFile.OpenRead();
+            return await JsonObjectNode.ParseAsync(stream, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (JsonException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    private static async Task<bool> TrySaveSettingsAsync(DirectoryInfo cacheDir, JsonObjectNode json, CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(cacheDir.FullName, "settings.json");
+        try
+        {
+            await File.WriteAllTextAsync(path, json?.ToString(IndentStyles.Compact) ?? "null", Encoding.UTF8, cancellationToken);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (JsonException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return false;
     }
 }

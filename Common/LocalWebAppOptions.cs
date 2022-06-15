@@ -53,7 +53,7 @@ public class LocalWebAppOptions
     /// <summary>
     /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
     /// </summary>
-    public bool DebugMode { get; set; }
+    public bool IsDevEnvironmentEnabled { get; set; }
 }
 
 /// <summary>
@@ -64,7 +64,7 @@ public class WebAppPackageUpdateInfo
     /// <summary>
     /// Gets or sets the URL of web app package update service.
     /// </summary>
-    [JsonPropertyName("src")]
+    [JsonPropertyName("url")]
     public string Url { get; set; }
 
     /// <summary>
@@ -72,4 +72,10 @@ public class WebAppPackageUpdateInfo
     /// </summary>
     [JsonPropertyName("params")]
     public Dictionary<string, string> VariableParameters { get; set; }
+
+    /// <summary>
+    /// Gets or sets the property name of response body.
+    /// </summary>
+    [JsonPropertyName("prop")]
+    public string ResponseProperty { get; set; }
 }

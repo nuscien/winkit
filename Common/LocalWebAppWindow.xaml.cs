@@ -67,6 +67,11 @@ public sealed partial class LocalWebAppWindow : Window
         => _ = MainElement.LoadAsync(options);
 
     /// <summary>
+    /// Gets the download list.
+    /// </summary>
+    public List<Microsoft.Web.WebView2.Core.CoreWebView2DownloadOperation> DownloadList => MainElement.DownloadList;
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>

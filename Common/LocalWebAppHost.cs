@@ -92,14 +92,21 @@ public class LocalWebAppHost
     /// Gets online path of a relative embedded path.
     /// </summary>
     /// <param name="localRelativePath">The relative path of embedded file.</param>
+    /// <param name="test">true if combine only when it tests passed; otherwise, false.</param>
     /// <returns>A online path mapped.</returns>
-    public string GetLocalPath(string localRelativePath)
+    public string GetLocalPath(string localRelativePath, bool test = false)
     {
         var host = ResourcePackageDirectory?.FullName;
-        if (string.IsNullOrEmpty(host)) return null;
-        if (localRelativePath.StartsWith('.')) localRelativePath = localRelativePath[1..];
+        if (localRelativePath.StartsWith("..")) localRelativePath = GetResourcePackageParentPath(localRelativePath);
         else if (localRelativePath.StartsWith('~')) localRelativePath = localRelativePath[1..];
-        return Path.Combine(host, localRelativePath);
+        else if (localRelativePath.StartsWith(".asset:")) localRelativePath = localRelativePath[7..];
+        else if (localRelativePath.StartsWith(".data:")) return Path.Combine(DataDirectory?.FullName ?? host, localRelativePath[6..]);
+        else if (localRelativePath.StartsWith("./")) localRelativePath = localRelativePath[2..];
+        else if (localRelativePath.StartsWith('.')) return null;
+        else if (localRelativePath.StartsWith('%')) localRelativePath = FileSystemInfoUtility.GetLocalPath(localRelativePath);
+        else if (localRelativePath.Contains("://")) return localRelativePath;
+        else if (test) return localRelativePath;
+        return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath);
     }
 
     /// <summary>
@@ -422,6 +429,12 @@ public class LocalWebAppHost
         settings.SetValue("version", ver);
         await TrySaveSettingsAsync(CacheDirectory, settings);
         return ver;
+    }
+
+    private string GetResourcePackageParentPath(string localRelativePath)
+    {
+        var host = ResourcePackageDirectory?.Parent?.FullName;
+        return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
     }
 
     private static void TryDeleteDirectory(string path)

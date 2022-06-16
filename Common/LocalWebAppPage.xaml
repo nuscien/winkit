@@ -14,5 +14,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <WebView2 x:Name="Browser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" Grid.Row="1" />
+        <ProgressRing x:Name="ProgressElement" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="40" Grid.Row="1" />
     </Grid>
 </Page>

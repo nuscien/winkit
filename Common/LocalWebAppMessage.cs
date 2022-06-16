@@ -84,11 +84,13 @@ public class LocalWebAppResponseMessage
     /// <param name="errorMessage">The error message.</param>
     /// <param name="data">The data.</param>
     /// <param name="isError">true if it is failed; otherwise, false.</param>
-    public LocalWebAppResponseMessage(string errorMessage, JsonObjectNode data = null, bool isError = true)
+    /// <param name="info">The additional information.</param>
+    public LocalWebAppResponseMessage(string errorMessage, JsonObjectNode data = null, bool isError = true, JsonObjectNode info = null)
     {
         Message = errorMessage;
         Data = data;
         IsError = isError;
+        AdditionalInfo = info;
     }
 
     /// <summary>
@@ -97,7 +99,7 @@ public class LocalWebAppResponseMessage
     /// <param name="data">The data.</param>
     /// <param name="info">The additional information.</param>
     /// <param name="isError">true if it is failed; otherwise, false.</param>
-    public LocalWebAppResponseMessage(JsonObjectNode data, JsonObjectNode info, bool isError = false)
+    public LocalWebAppResponseMessage(JsonObjectNode data, JsonObjectNode info = null, bool isError = false)
     {
         Data = data;
         AdditionalInfo = info;

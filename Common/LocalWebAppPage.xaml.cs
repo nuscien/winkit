@@ -46,9 +46,79 @@ public sealed partial class LocalWebAppPage : Page
     }
 
     /// <summary>
+    /// Occurs when the web view core processes failed.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2ProcessFailedEventArgs> CoreProcessFailed;
+
+    /// <summary>
+    /// Occurs when the web view core has initialized.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2InitializedEventArgs> CoreWebView2Initialized;
+
+    /// <summary>
+    /// Occurs when the navigation is completed.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationCompletedEventArgs> NavigationCompleted;
+
+    /// <summary>
+    /// Occurs when the navigation is starting.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationStartingEventArgs> NavigationStarting;
+
+    /// <summary>
+    /// Occurs when the web message core has received.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2WebMessageReceivedEventArgs> WebMessageReceived;
+
+    /// <summary>
+    /// Occurs when the new window request sent.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
+
+    /// <summary>
+    /// Occurs when the webpage send request to close itself.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, object> WindowCloseRequested;
+
+    /// <summary>
+    /// Occurs when the downloading is starting.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2DownloadStartingEventArgs> DownloadStarting;
+
+    /// <summary>
+    /// Occurs when the navigation of a frame in web page is created.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2FrameCreatedEventArgs> FrameCreated;
+
+    /// <summary>
+    /// Occurs when the navigation of a frame in web page is completed.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationCompletedEventArgs> FrameNavigationCompleted;
+
+    /// <summary>
+    /// Occurs when the navigation of a frame in web page is starting.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationStartingEventArgs> FrameNavigationStarting;
+
+    /// <summary>
+    /// Occurs when the history has changed.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, object> HistoryChanged;
+
+    /// <summary>
+    /// Occurs when fullscreen request sent including to enable and disable.
+    /// </summary>
+    public event DataEventHandler<bool> ContainsFullScreenElementChanged;
+
+    /// <summary>
     /// Adds or removes an event occured on title changed.
     /// </summary>
     public event DataEventHandler<string> TitleChanged;
+
+    /// <summary>
+    /// Gets the download list.
+    /// </summary>
+    public List<CoreWebView2DownloadOperation> DownloadList { get; } = new();
 
     /// <summary>
     /// Loads data.
@@ -111,7 +181,17 @@ public sealed partial class LocalWebAppPage : Page
         var isDebug = host.Options?.IsDevEnvironmentEnabled ?? false;
         settings.AreDevToolsEnabled = isDebug;
         settings.AreDefaultContextMenusEnabled = false;
-        Browser.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;
+        sender.CoreWebView2.DownloadStarting += OnDownloadStarting;
+        sender.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;
+        sender.CoreWebView2.DownloadStarting += OnDownloadStarting;
+        sender.CoreWebView2.FrameCreated += OnFrameCreated;
+        sender.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
+        sender.CoreWebView2.FrameNavigationCompleted += OnFrameNavigationCompleted;
+        sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
+        sender.CoreWebView2.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged;
+        sender.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
+        sender.CoreWebView2.WindowCloseRequested += OnWindowCloseRequested;
+        CoreWebView2Initialized?.Invoke(this, args);
         var sb = new StringBuilder();
         sb.Append(@"(function () { if (window.edgePlatform) return;
 let postMsg = window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function' ? function (data) { window.chrome.webview.postMessage(data); } : function (data) { };
@@ -189,14 +269,68 @@ window.edgePlatform = {
       }
     };
   },
+  getCookie: function (key) {
+    if (!key) return document.cookie;
+    key = key + '='; let ca = document.cookie.split(';');
+    for (let i in ca) {
+      let c = ca[i]; while (c.charAt(0) == ' ') { c = c.substring(1); } if (c.startsWith(key)) return c.substring(key.length);
+    }
+    return '';
+  },
   files: {
     list(dir, options) {
       if (!options) options = {};
+      else if (typeof options === 'string') options = { q: options }
+      if (options.appData && path) path = '.data:\\' + path;
       return sendRequest(null, 'list-file', { path: dir, q: options.q, showHidden: options.showHidden }, null, options.context);
     },
     get(path, options) {
       if (!options) options = {};
+      if (options.appData && path) path = '.data:\\' + path;
       return sendRequest(null, 'get-file', { path, read: options.read }, null, options.context);
+    },
+    write(path, value, options) {
+      if (!options) options = {};
+      if (options.appData && path) path = '.data:\\' + path;
+      return sendRequest(null, 'write-file', { path, value }, null, options.context);
+    },
+    open(path, options) {
+      if (!options) options = {};
+      else if (typeof options === 'string') options = { args: options }
+      if (options.appData && path) path = '.data:\\' + path;
+      return sendRequest(null, 'open', { path, args: options.args, type: options.type }, null, options.context);
+    }
+  },
+  cryptography: {
+    encrypt(alg, value, key, iv, options) {
+      if (!options) options = {};
+      return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: false }, null, options.context);
+    },
+    decrypt(alg, value, key, iv, options) {
+      if (!options) options = {};
+      return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: true }, null, options.context);
+    },
+    hash(alg, value, options) {
+      if (!options) options = {};
+      else if (typeof options === 'string') options = { test: options }
+      return sendRequest(null, 'hash', { value, alg, test: options.test, type: options.type }, null, options.context);
+    }
+  },
+  text: {
+    encodeBase64(s, url) {
+      if (!s) return s; if (typeof s !== 'string') return null;
+      s = window.btoa(s); return url ? s.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=/g, '') : s;
+    },
+    decodeBase64(s, url) {
+      if (!s) return s; if (typeof s !== 'string') return null;
+      if (url) s = s.replace(/\-/g, '+').replace(/_/g, '/').replace(/\=/g, '');
+      s = window.atob(s); return s;
+    },
+    encodeUri(s, parameter) {
+      return s ? (parameter ? encodeURIComponent(s) : encodeURI(s)) : s;
+    },
+    decodeUri(s, parameter) {
+      return s ? (parameter ? decodeURIComponent(s) : decodeURI(s)) : s;
     }
   },
   download: {
@@ -213,13 +347,40 @@ window.edgePlatform = {
         _ = Browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(sb.ToString());
     }
 
+    private void OnDownloadStarting(CoreWebView2 sender, CoreWebView2DownloadStartingEventArgs args)
+    {
+        DownloadList.Add(args.DownloadOperation);
+        DownloadStarting?.Invoke(this, args);
+    }
+    private void OnContainsFullScreenElementChanged(CoreWebView2 sender, object args)
+        => ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<bool>(Browser.CoreWebView2.ContainsFullScreenElement));
+
+    private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+        => NewWindowRequested?.Invoke(this, args);
+
+    private void OnWindowCloseRequested(CoreWebView2 sender, object args)
+        => WindowCloseRequested?.Invoke(this, args);
+
+    private void OnFrameCreated(CoreWebView2 sender, CoreWebView2FrameCreatedEventArgs args)
+        => FrameCreated?.Invoke(this, args);
+
+    private void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        => FrameNavigationStarting?.Invoke(this, args);
+
+    private void OnFrameNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        => FrameNavigationCompleted?.Invoke(this, args);
+
+    private void OnHistoryChanged(CoreWebView2 sender, object args)
+        => HistoryChanged?.Invoke(this, args);
+
     private void OnNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
     {
+        ProgressElement.IsActive = false;
+        NavigationCompleted?.Invoke(this, args);
     }
 
     private void OnNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
-    {
-    }
+        => NavigationStarting?.Invoke(this, args);
 
     private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
     {
@@ -244,6 +405,7 @@ window.edgePlatform = {
         }
 
         _ = OnWebMessageReceivedAsync(sender, json);
+        WebMessageReceived?.Invoke(this, args);
     }
 
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
@@ -255,5 +417,7 @@ window.edgePlatform = {
 
     private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)
     {
+        ProgressElement.IsActive = false;
+        CoreProcessFailed?.Invoke(this, args);
     }
 }

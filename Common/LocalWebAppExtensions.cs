@@ -30,7 +30,14 @@ internal static class LocalWebAppExtensions
         var hostInfo = new JsonObjectNode
         {
             { "version", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() },
-            { "appName", manifest?.Id },
+            { "appId", manifest?.Id },
+            { "intro", new JsonObjectNode
+            {
+                { "description", manifest?.Description },
+                { "url", manifest?.Website },
+                { "copyright", manifest?.Copyright },
+                { "publisher", manifest?.PublisherName },
+            } },
             { "runtime", new JsonObjectNode
             {
                 { "kind", "WindowsAppSdk" },
@@ -75,7 +82,7 @@ internal static class LocalWebAppExtensions
         return hostInfo;
     }
 
-    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers)
+    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers, LocalWebAppMessageProcessAsync browserHandler)
     {
         if (json == null) return null;
         var req = new LocalWebAppRequestMessage
@@ -97,7 +104,7 @@ internal static class LocalWebAppExtensions
             else if (string.IsNullOrEmpty(req.Command))
                 resp = new LocalWebAppResponseMessage(string.Concat("Command name should not be null or empty."));
             else if (string.IsNullOrEmpty(req.MessageHandlerId))
-                resp = await OnLocalWebAppMessageRequestAsync(req, host);
+                resp = await OnLocalWebAppMessageRequestAsync(req, host, browserHandler);
             else if (handlers.TryGetValue(req.MessageHandlerId, out var h) && h != null)
                 resp = await h(req);
             else
@@ -203,8 +210,8 @@ internal static class LocalWebAppExtensions
             { "trace", req.TraceId },
             { "cmd", req.Command },
             { "handler", req.MessageHandlerId },
-            { "data", resp?.Data },
-            { "info", resp?.AdditionalInfo },
+            { "data", resp?.Data ?? new() },
+            { "info", resp?.AdditionalInfo ?? new() },
             { "message", resp?.Message },
             { "error", resp?.IsError ?? true },
             { "context", req.Context },
@@ -640,7 +647,7 @@ internal static class LocalWebAppExtensions
         return resp;
     }
 
-    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, LocalWebAppMessageProcessAsync browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
         switch (request.Command.ToLowerInvariant())
@@ -657,6 +664,10 @@ internal static class LocalWebAppExtensions
                 return Symmetric(request);
             case "open":
                 return await OpenFileAsync(request, host);
+            default:
+                var resp = await browserHandler(request);
+                if (resp != null) return resp;
+                break;
         }
 
         return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));

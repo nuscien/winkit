@@ -299,6 +299,16 @@ window.edgePlatform = {
       else if (typeof options === 'string') options = { args: options }
       if (options.appData && path) path = '.data:\\' + path;
       return sendRequest(null, 'open', { path, args: options.args, type: options.type }, null, options.context);
+    },
+    downloadDialog(options) {
+      if (options === true) options = { open: true };
+      else if (options === false) options = { open: false };
+      else if (!options) options = {};
+      return sendRequest(null, 'dialog-download', { open: options.open }, null, options.context);
+    },
+    listDownload(options) {
+      if (!options) options = {};
+      return sendRequest(null, 'list-download', { q: options.q }, null, options.context);
     }
   },
   cryptography: {
@@ -332,8 +342,6 @@ window.edgePlatform = {
     decodeUri(s, parameter) {
       return s ? (parameter ? decodeURIComponent(s) : decodeURI(s)) : s;
     }
-  },
-  download: {
   },
   hostInfo: ");
         sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest, isDebug).ToString(IndentStyles.Compact));
@@ -416,8 +424,52 @@ window.edgePlatform = {
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
     {
         if (json == null) return;
-        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc);
+        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc, OnBrowserHandlerProcess);
         sender.CoreWebView2.PostWebMessageAsJson(json.ToString());
+    }
+
+    public async Task<LocalWebAppResponseMessage> OnBrowserHandlerProcess(LocalWebAppRequestMessage request)
+    {
+        switch (request.Command.ToLowerInvariant())
+        {
+            case "dialog-download":
+                {
+                    var toOpen = request.Data?.TryGetBooleanValue("open");
+                    if (toOpen == true) Browser.CoreWebView2.OpenDefaultDownloadDialog();
+                    else if (toOpen == false) Browser.CoreWebView2.CloseDefaultDownloadDialog();
+                    else toOpen = Browser.CoreWebView2.IsDefaultDownloadDialogOpen;
+                    return new(new JsonObjectNode
+                    {
+                        { "state", toOpen }
+                    });
+                }
+            case "list-download":
+                {
+                    var arr = new JsonArrayNode();
+                    if (DownloadList == null) return null;
+                    foreach (var item in DownloadList)
+                    {
+                        arr.Add(new JsonObjectNode
+                        {
+                            { "uri", item.Uri },
+                            { "file", item.ResultFilePath },
+                            { "state", item.State.ToString() },
+                            { "received", item.BytesReceived },
+                            { "length", item.TotalBytesToReceive },
+                            { "interrupt", item.InterruptReason.ToString() },
+                            { "mime", item.MimeType }
+                        });
+                    }
+
+                    return new(new JsonObjectNode
+                    {
+                        { "list", arr },
+                        { "enumerated", DateTime.Now }
+                    });
+                }
+        }
+
+        return null;
     }
 
     private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)

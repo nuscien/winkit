@@ -17,6 +17,8 @@ using Microsoft.UI.Xaml.Media;
 using Trivial.Data;
 using Trivial.Tasks;
 using Trivial.Text;
+using Windows.System;
+using Windows.UI;
 using Windows.UI.Text;
 
 namespace Trivial.UI;
@@ -1169,6 +1171,65 @@ public static partial class VisualUtility
         sb.Append(json.ToString());
         sb.Append("; })();");
         await webview.CoreWebView2.ExecuteScriptAsync(sb.ToString());
+    }
+
+
+    internal static Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController TryCreateAcrylicBackdrop()
+    {
+        try
+        {
+            if (!Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController.IsSupported()) return null;
+            return new();
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    internal static Microsoft.UI.Composition.SystemBackdrops.MicaController TryCreateMicaBackdrop()
+    {
+        try
+        {
+            if (!Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported()) return null;
+            return new();
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
     }
 
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)

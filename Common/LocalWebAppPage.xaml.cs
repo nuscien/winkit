@@ -36,6 +36,7 @@ public sealed partial class LocalWebAppPage : Page
 {
     private LocalWebAppHost host;
     private readonly Dictionary<string, LocalWebAppMessageProcessAsync> proc = new();
+    private TabbedWebViewWindow tabbedWebViewWindowInstance;
 
     /// <summary>
     /// Initializes a new instance of the LocalWebAppPage class.
@@ -181,7 +182,6 @@ public sealed partial class LocalWebAppPage : Page
         var isDebug = host.Options?.IsDevEnvironmentEnabled ?? false;
         settings.AreDevToolsEnabled = isDebug;
         settings.AreDefaultContextMenusEnabled = false;
-        sender.CoreWebView2.DownloadStarting += OnDownloadStarting;
         sender.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;
         sender.CoreWebView2.DownloadStarting += OnDownloadStarting;
         sender.CoreWebView2.FrameCreated += OnFrameCreated;
@@ -356,7 +356,12 @@ window.edgePlatform = {
         => ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<bool>(Browser.CoreWebView2.ContainsFullScreenElement));
 
     private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
-        => NewWindowRequested?.Invoke(this, args);
+    {
+        NewWindowRequested?.Invoke(this, args);
+        var uri = VisualUtility.TryCreateUri(args.Uri);
+        if (uri == null) return;
+        _ = OnNewWindowRequestedAsync(sender, args);
+    }
 
     private void OnWindowCloseRequested(CoreWebView2 sender, object args)
         => WindowCloseRequested?.Invoke(this, args);
@@ -419,5 +424,82 @@ window.edgePlatform = {
     {
         ProgressElement.IsActive = false;
         CoreProcessFailed?.Invoke(this, args);
+    }
+
+    private async Task OnNewWindowRequestedAsync(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+    {
+        var uri = VisualUtility.TryCreateUri(args.Uri);
+        if (uri == null) return;
+        args.Handled = true;
+        var deferral = args.GetDeferral();
+        var window = tabbedWebViewWindowInstance;
+        if (tabbedWebViewWindowInstance == null) window = new TabbedWebViewWindow
+        {
+            IsReadOnly = true
+        };
+        var webview = window.Add(uri);
+        await webview.EnsureCoreWebView2Async();
+        args.NewWindow = webview.CoreWebView2;
+        OnWebViewTabInitialized(webview.CoreWebView2);
+        deferral.Complete();
+        window.TabView.WebViewTabCreated += (sender2, args2) =>
+        {
+            _ = OnWebViewTabInitializedAsync(window, args2.WebView);
+        };
+        window.Closed += (sender2, args2) =>
+        {
+            tabbedWebViewWindowInstance = null;
+        };
+        try
+        {
+            window.TabView.RequestedTheme = Browser.RequestedTheme;
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ApplicationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        tabbedWebViewWindowInstance = window;
+        window.Activate();
+    }
+
+    /// <summary>
+    /// Occurs on web view is initialized.
+    /// </summary>
+    /// <param name="window">The window.</param>
+    /// <param name="webview">The web view.</param>
+    private async Task OnWebViewTabInitializedAsync(TabbedWebViewWindow window, SingleWebView webview)
+    {
+        await webview.EnsureCoreWebView2Async();
+        OnWebViewTabInitialized(webview.CoreWebView2);
+        webview.ContainsFullScreenElementChanged += (sender, e) =>
+        {
+            VisualUtility.SetFullScreenMode(webview.ContainsFullScreenElement, window);
+        };
+    }
+
+    private void OnWebViewTabInitialized(CoreWebView2 webview)
+    {
+        webview.DownloadStarting += OnDownloadStarting;
     }
 }

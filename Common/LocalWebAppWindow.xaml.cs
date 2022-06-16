@@ -19,9 +19,6 @@ using Trivial.Web;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Trivial.UI;
 
 /// <summary>
@@ -29,16 +26,18 @@ namespace Trivial.UI;
 /// </summary>
 public sealed partial class LocalWebAppWindow : Window
 {
+    private readonly SystemBackdropClient backdrop;
+
     /// <summary>
     /// Initializes a new instance of the LocalWebAppWindow class.
     /// </summary>
     public LocalWebAppWindow()
     {
         InitializeComponent();
-        var appWin = VisualUtility.TryGetAppWindow(this);
         try
         {
-            if (appWin.TitleBar != null) appWin.TitleBar.IconShowOptions = Microsoft.UI.Windowing.IconShowOptions.HideIconAndSystemMenu;
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(TitleBackground);
         }
         catch (ArgumentException)
         {
@@ -58,6 +57,10 @@ public sealed partial class LocalWebAppWindow : Window
         catch (ExternalException)
         {
         }
+
+        var theme = MainElement.RequestedTheme;
+        backdrop = new();
+        backdrop.UpdateWindowBackground(this, theme);
     }
 
     /// <summary>
@@ -93,8 +96,19 @@ public sealed partial class LocalWebAppWindow : Window
         => MainElement.LoadAsync(host);
 
     private void OnClosed(object sender, WindowEventArgs args)
-        => MainElement.Close();
+    {
+        if (backdrop != null) backdrop.Dispose();
+        MainElement.Close();
+    }
 
-    private void OnTitleChanged(object sender, Data.DataEventArgs<string> e)
-        => Title = e.Data;
+    private void OnTitleChanged(object sender, DataEventArgs<string> e)
+        => Title = TitleElement.Text = e.Data;
+
+    private void OnActivated(object sender, WindowActivatedEventArgs args)
+    {
+        if (backdrop == null) return;
+        var isActive = args.WindowActivationState != WindowActivationState.Deactivated;
+        backdrop.IsInputActive = isActive;
+        TitleElement.Opacity = isActive ? 1 : 0.6;
+    }
 }

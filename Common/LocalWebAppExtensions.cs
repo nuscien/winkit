@@ -595,7 +595,7 @@ internal static class LocalWebAppExtensions
                 case "uri":
                     {
                         resp.AdditionalInfo.SetValue("type", "url");
-                        resp.IsError = !await Windows.System.Launcher.LaunchUriAsync(new Uri(path));
+                        resp.IsError = !await Windows.System.Launcher.LaunchUriAsync(VisualUtility.TryCreateUri(path));
                         return resp;
                     }
                 case "exe":

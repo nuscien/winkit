@@ -154,6 +154,11 @@ public sealed partial class TabbedWebView : UserControl
     }
 
     /// <summary>
+    /// Gets the selected web view.
+    /// </summary>
+    public SingleWebView SelectedWebView => HostElement.SelectedItem as SingleWebView;
+
+    /// <summary>
     /// Gets or sets the selected index.
     /// </summary>
     public int SelectedIndex

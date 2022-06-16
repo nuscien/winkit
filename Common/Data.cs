@@ -147,18 +147,9 @@ namespace Trivial.Data
         /// <returns>The image URI.</returns>
         public Uri SetImage(string url)
         {
-            if (string.IsNullOrWhiteSpace(url)) return null;
-            try
-            {
-                var uri = new Uri(url);
-                ImageUri = uri;
-                return uri;
-            }
-            catch (FormatException)
-            {
-            }
-
-            return null;
+            var uri = UI.VisualUtility.TryCreateUri(url);
+            if (uri != null) ImageUri = uri;
+            return uri;
         }
 
         /// <summary>

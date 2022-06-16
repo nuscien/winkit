@@ -330,11 +330,13 @@ public class LocalWebAppHost
         if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, false) <= 0 && resp.TryGetBooleanValue("force") != true)
             return null;
         url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
+        var uri = UI.VisualUtility.TryCreateUri(url);
+        if (uri != null) return null;
         FileInfo zip = null;
         string path;
         try
         {
-            zip = await HttpClientExtensions.WriteFileAsync(new Uri(url), Path.Combine(CacheDirectory.FullName, "ResourcePackage.zip"), null, cancellationToken);
+            zip = await HttpClientExtensions.WriteFileAsync(uri, Path.Combine(CacheDirectory.FullName, "ResourcePackage.zip"), null, cancellationToken);
             if (zip == null) return null;
             path = Path.Combine(CacheDirectory.FullName, "ResourcePackage");
             TryDeleteDirectory(path);

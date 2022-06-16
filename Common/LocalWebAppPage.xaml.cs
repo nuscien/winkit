@@ -428,7 +428,7 @@ window.edgePlatform = {
         sender.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
-    public async Task<LocalWebAppResponseMessage> OnBrowserHandlerProcess(LocalWebAppRequestMessage request)
+    private async Task<LocalWebAppResponseMessage> OnBrowserHandlerProcess(LocalWebAppRequestMessage request)
     {
         switch (request.Command.ToLowerInvariant())
         {
@@ -469,7 +469,7 @@ window.edgePlatform = {
                 }
         }
 
-        return null;
+        return await Task.FromResult<LocalWebAppResponseMessage>(null);
     }
 
     private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)

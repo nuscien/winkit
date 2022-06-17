@@ -92,7 +92,11 @@ public sealed partial class TabbedWebViewWindow : Window
     /// <summary>
     /// Gets the download list.
     /// </summary>
-    public List<CoreWebView2DownloadOperation> DownloadList => HostElement.DownloadList;
+    public List<CoreWebView2DownloadOperation> DownloadList
+    {
+        get => HostElement.DownloadList;
+        internal set => HostElement.DownloadList = value;
+    }
 
     /// <summary>
     /// Gets or sets the source.

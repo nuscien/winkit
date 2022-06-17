@@ -295,21 +295,12 @@ public class LocalWebAppFileInfo
         try
         {
             if (string.IsNullOrWhiteSpace(signature)) return file.Length < 1;
-            using var rsa = RSA.Create();
-            rsa.ImportParameters(host.Options.PublicKey);
+            var signatureProvider = host.SignatureProvider;
+            if (signatureProvider == null) return false;
             var sign = WebFormat.Base64UrlDecode(signature);
-            try
-            {
-                using var stream = file.OpenRead();
-                if (stream == null) return false;
-                return rsa.VerifyData(stream, sign, host.Options.HashAlgorithmName, RSASignaturePadding.Pkcs1);
-            }
-            catch (IOException)
-            {
-                using var stream = host.ReadFile(file);
-                if (stream == null) return false;
-                return rsa.VerifyData(stream, sign, host.Options.HashAlgorithmName, RSASignaturePadding.Pkcs1);
-            }
+            using var stream = host.ReadFile(file);
+            if (stream == null) return false;
+            return signatureProvider.Verify(stream, sign);
         }
         catch (ArgumentException)
         {

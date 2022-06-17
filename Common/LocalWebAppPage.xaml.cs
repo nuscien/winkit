@@ -36,6 +36,7 @@ public sealed partial class LocalWebAppPage : Page
 {
     private LocalWebAppHost host;
     private readonly Dictionary<string, LocalWebAppMessageProcessAsync> proc = new();
+    private readonly LocalWebAppBrowserMessageHandler messageHandler;
     private TabbedWebViewWindow tabbedWebViewWindowInstance;
 
     /// <summary>
@@ -44,6 +45,7 @@ public sealed partial class LocalWebAppPage : Page
     public LocalWebAppPage()
     {
         InitializeComponent();
+        messageHandler = new(Browser);
     }
 
     /// <summary>
@@ -119,7 +121,7 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Gets the download list.
     /// </summary>
-    public List<CoreWebView2DownloadOperation> DownloadList { get; } = new();
+    public List<CoreWebView2DownloadOperation> DownloadList => messageHandler.DownloadList;
 
     /// <summary>
     /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
@@ -315,15 +317,12 @@ window.edgePlatform = {
       if (options.appData && path) path = '.data:\\' + path;
       return sendRequest(null, 'open', { path, args: options.args, type: options.type }, null, options.context);
     },
-    downloadDialog(options) {
+    listDownload(options) {
       if (options === true) options = { open: true };
       else if (options === false) options = { open: false };
+      else if (typeof options === 'number') options = { max: options };
       else if (!options) options = {};
-      return sendRequest(null, 'dialog-download', { open: options.open }, null, options.context);
-    },
-    listDownload(options) {
-      if (!options) options = {};
-      return sendRequest(null, 'list-download', { q: options.q }, null, options.context);
+      return sendRequest(null, 'download-list', { open: options.open, max: options.max }, null, options.context);
     }
   },
   cryptography: {
@@ -439,52 +438,8 @@ window.edgePlatform = {
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
     {
         if (json == null) return;
-        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc, OnBrowserHandlerProcess);
+        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc, messageHandler);
         sender.CoreWebView2.PostWebMessageAsJson(json.ToString());
-    }
-
-    private async Task<LocalWebAppResponseMessage> OnBrowserHandlerProcess(LocalWebAppRequestMessage request)
-    {
-        switch (request.Command.ToLowerInvariant())
-        {
-            case "dialog-download":
-                {
-                    var toOpen = request.Data?.TryGetBooleanValue("open");
-                    if (toOpen == true) Browser.CoreWebView2.OpenDefaultDownloadDialog();
-                    else if (toOpen == false) Browser.CoreWebView2.CloseDefaultDownloadDialog();
-                    else toOpen = Browser.CoreWebView2.IsDefaultDownloadDialogOpen;
-                    return new(new JsonObjectNode
-                    {
-                        { "state", toOpen }
-                    });
-                }
-            case "list-download":
-                {
-                    var arr = new JsonArrayNode();
-                    if (DownloadList == null) return null;
-                    foreach (var item in DownloadList)
-                    {
-                        arr.Add(new JsonObjectNode
-                        {
-                            { "uri", item.Uri },
-                            { "file", item.ResultFilePath },
-                            { "state", item.State.ToString() },
-                            { "received", item.BytesReceived },
-                            { "length", item.TotalBytesToReceive },
-                            { "interrupt", item.InterruptReason.ToString() },
-                            { "mime", item.MimeType }
-                        });
-                    }
-
-                    return new(new JsonObjectNode
-                    {
-                        { "list", arr },
-                        { "enumerated", DateTime.Now }
-                    });
-                }
-        }
-
-        return await Task.FromResult<LocalWebAppResponseMessage>(null);
     }
 
     private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)
@@ -502,7 +457,8 @@ window.edgePlatform = {
         var window = tabbedWebViewWindowInstance;
         if (tabbedWebViewWindowInstance == null) window = new TabbedWebViewWindow
         {
-            IsReadOnly = true
+            IsReadOnly = true,
+            DownloadList = DownloadList
         };
         var webview = window.Add(uri);
         await webview.EnsureCoreWebView2Async();

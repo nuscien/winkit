@@ -82,7 +82,7 @@ internal static class LocalWebAppExtensions
         return hostInfo;
     }
 
-    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers, LocalWebAppMessageProcessAsync browserHandler)
+    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (json == null) return null;
         var req = new LocalWebAppRequestMessage
@@ -647,7 +647,7 @@ internal static class LocalWebAppExtensions
         return resp;
     }
 
-    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, LocalWebAppMessageProcessAsync browserHandler)
+    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
         switch (request.Command.ToLowerInvariant())
@@ -664,10 +664,16 @@ internal static class LocalWebAppExtensions
                 return Symmetric(request);
             case "open":
                 return await OpenFileAsync(request, host);
-            default:
-                var resp = await browserHandler(request);
-                if (resp != null) return resp;
-                break;
+            case "download-list":
+                {
+                    var maxCount = request.Data?.TryGetInt32Value("max");
+                    var open = request.Data?.TryGetBooleanValue("open");
+                    return new(browserHandler?.DownloadListInfo(open, maxCount ?? 256), new()
+                    {
+                        { "open", open },
+                        { "max", maxCount }
+                    });
+                }
         }
 
         return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));

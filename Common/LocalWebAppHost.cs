@@ -59,6 +59,11 @@ public class LocalWebAppHost
     public LocalWebAppOptions Options { get; }
 
     /// <summary>
+    /// Gets the signature provider.
+    /// </summary>
+    public ISignatureProvider SignatureProvider { get; private set; }
+
+    /// <summary>
     /// Gets a value indicating whether the files are verified.
     /// </summary>
     public bool IsVerified { get; private set; }
@@ -306,15 +311,15 @@ public class LocalWebAppHost
     /// Computes the signature for files.
     /// </summary>
     /// <param name="dir">The app directory.</param>
-    /// <param name="privateKey">The private RSA key.</param>
-    /// <param name="hashAlgorithmName">The hash allgorithm name</param>
+    /// <param name="signatureProvider">The signature provider.</param>
     /// <param name="outputFileName">The file name to output.</param>
     /// <returns>The file collection.</returns>
-    /// <exception cref="ArgumentNullException">The directory was null.</exception>
+    /// <exception cref="ArgumentNullException">The directory or signatureProvider was null.</exception>
     /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
-    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, RSAParameters privateKey, HashAlgorithmName hashAlgorithmName, string outputFileName)
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName)
     {
         if (dir == null) throw new ArgumentNullException(nameof(dir));
+        if (signatureProvider == null) throw new ArgumentNullException(nameof(signatureProvider));
         if (!dir.Exists) throw new DirectoryNotFoundException("dir is not found");
         var files = GetSourceFiles(dir).ToList();
         var collection = new LocalWebAppFileCollection
@@ -325,11 +330,9 @@ public class LocalWebAppHost
         {
             try
             {
-                using var rsa = RSA.Create();
-                rsa.ImportParameters(privateKey);
                 using var stream = file.OpenRead();
                 if (stream == null) continue;
-                var sign = rsa.SignData(stream, hashAlgorithmName, RSASignaturePadding.Pkcs1);
+                var sign = signatureProvider.Sign(stream);
                 if (sign == null) continue;
                 var parent = file.Directory;
                 var path = file.Name;
@@ -410,16 +413,54 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="dir">The app directory.</param>
     /// <param name="options">The options of the local standalone web app.</param>
-    /// <param name="privateKey">The private RSA key.</param>
+    /// <param name="signatureProvider">The signature provider.</param>
     /// <returns>The file collection.</returns>
     /// <exception cref="ArgumentNullException">The directory was null.</exception>
     /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
-    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, RSAParameters? privateKey = null)
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, ISignatureProvider signatureProvider)
     {
         var fileName = options.ManifestFileName;
         if (string.IsNullOrWhiteSpace(fileName)) fileName = "edgeplatform.json";
         fileName = GetSubFileName(fileName, "files");
-        return Sign(dir, privateKey ?? options.PublicKey, options.HashAlgorithmName, fileName);
+        try
+        {
+            if (signatureProvider == null && options != null)
+                signatureProvider = options.GetPublicKey(string.Empty);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+
+        return Sign(dir, signatureProvider, fileName);
+    }
+
+    /// <summary>
+    /// Computes the signature for files.
+    /// </summary>
+    /// <param name="dir">The app directory.</param>
+    /// <param name="options">The options of the local standalone web app.</param>
+    /// <param name="signKey">The key of file signature mapping.</param>
+    /// <returns>The file collection.</returns>
+    /// <exception cref="ArgumentNullException">The directory was null.</exception>
+    /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, string signKey = null)
+    {
+        ISignatureProvider signatureProvider = null;
+        try
+        {
+            signatureProvider = options?.GetPublicKey(signKey ?? string.Empty);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+
+        return Sign(dir, options, signatureProvider);
     }
 
     /// <summary>
@@ -648,6 +689,17 @@ public class LocalWebAppHost
             {
                 if (skipVerificationException) return false;
                 throw new SecurityException("Miss file signature information.");
+            }
+
+            try
+            {
+                host.SignatureProvider = host.Options?.GetPublicKey(fileCol.SignKey ?? string.Empty);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (IOException)
+            {
             }
 
             var files = GetSourceFiles(appDir).Select(ele => ele.FullName).ToList();

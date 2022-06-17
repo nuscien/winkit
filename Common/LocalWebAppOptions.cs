@@ -25,30 +25,57 @@ namespace Trivial.Web;
 /// </summary>
 public class LocalWebAppOptions
 {
+    private readonly ISignatureProvider defaultSign;
+
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppOptions class.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier.</param>
+    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="update">The update service information.</param>
+    public LocalWebAppOptions(string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update = null)
+        : this(resourcePackageId, signatureProvider, update, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppOptions class.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier.</param>
+    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="update">The update service information.</param>
+    /// <param name="manifestFileName">The file name of the manifest.</param>
+    public LocalWebAppOptions(string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update, string manifestFileName)
+    {
+        ResourcePackageId = resourcePackageId;
+        defaultSign = signatureProvider;
+        Update = update;
+        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = "edgeplatform.json";
+        ManifestFileName = manifestFileName;
+    }
+
     /// <summary>
     /// Gets or sets the file name of the manifest.
     /// </summary>
-    public string ManifestFileName { get; set; } = "edgeplatform.json";
+    public string ManifestFileName { get; }
 
     /// <summary>
     /// Gets or sets the app resource package identifier.
     /// </summary>
-    public string ResourcePackageId { get; set; }
+    public string ResourcePackageId { get; }
 
     /// <summary>
-    /// Gets or sets the public key.
+    /// Gets or sets the update service information.
     /// </summary>
-    public RSAParameters PublicKey { get; set; }
+    public WebAppPackageUpdateInfo Update { get; }
 
     /// <summary>
-    /// Gets or sets the hash algorithm name.
+    /// Gets the public key.
     /// </summary>
-    public HashAlgorithmName HashAlgorithmName { get; set; } = HashAlgorithmName.SHA512;
-
-    /// <summary>
-    /// Gets or sets the update information.
-    /// </summary>
-    public WebAppPackageUpdateInfo Update { get; set; }
+    /// <param name="signKey">The key of file signature mapping.</param>
+    /// <returns>The RSA public key to verify file signature.</returns>
+    public virtual ISignatureProvider GetPublicKey(string signKey)
+        => defaultSign;
 }
 
 /// <summary>

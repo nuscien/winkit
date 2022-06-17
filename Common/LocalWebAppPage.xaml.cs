@@ -24,9 +24,6 @@ using Trivial.Web;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Trivial.UI;
 
 /// <summary>
@@ -143,10 +140,13 @@ public sealed partial class LocalWebAppPage : Page
     /// Loads data.
     /// </summary>
     /// <param name="host">The standalone web app host.</param>
-    public async Task LoadAsync(Task<LocalWebAppHost> host)
+    /// <param name="callback">The callback.</param>
+    public async Task LoadAsync(Task<LocalWebAppHost> host, Action<LocalWebAppHost> callback = null)
     {
         if (host == null) return;
-        await LoadAsync(await host);
+        var h = await host;
+        await LoadAsync(h);
+        callback?.Invoke(h);
     }
 
     /// <summary>
@@ -178,6 +178,36 @@ public sealed partial class LocalWebAppPage : Page
 
         Browser.Visibility = Visibility.Visible;
         Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+    }
+
+    /// <summary>
+    /// Updates the resource package.
+    /// </summary>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The new version.</returns>
+    public Task UpdateAsync(CancellationToken cancellationToken)
+        => host.UpdateAsync(cancellationToken);
+
+    /// <summary>
+    /// Sends a notification message to webpage.
+    /// </summary>
+    /// <param name="type">The message type.</param>
+    /// <param name="message">The message body to send.</param>
+    public void Notify(string type, LocalWebAppNotificationMessage message)
+    {
+        type = type?.Trim();
+        if (string.IsNullOrEmpty(type) || message == null || Browser.CoreWebView2 == null) return;
+        var json = new JsonObjectNode
+        {
+            { "type", type },
+            { "data", message.Data ?? new() },
+            { "info", message.AdditionalInfo ?? new() },
+            { "source", message.Source },
+            { "message", message.Message },
+            { "sent", DateTime.Now },
+            { "id", Guid.NewGuid() }
+        };
+        Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)
@@ -227,7 +257,7 @@ function sendRequest(handlerId, cmd, data, info, context, noResp) {
         handler.invalid = true;
         if (ev.data.error) reject(ev.data);
         else resolve(ev.data);
-    }; hs.push(handler);
+    }; hs.push({ h: handler, type: null });
   }); }
   postMsg(req); return promise;
 }
@@ -236,8 +266,8 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
     window.chrome.webview.addEventListener('message', function (ev) {
       let removing = [];
       for (let i in hs) {
-        let item = hs[i];
-        if (!item) continue;
+        let source = hs[i] ?? {}; if (!ev || !ev.data || source.type != ev.data.type) continue;
+        let item = source.h; if (!item) continue;
         if (typeof item.proc === 'function') {
           if (item.invalid != null) {
             let toRemove = false;
@@ -250,7 +280,7 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
               else item.invalid--;
             }
             if (toRemove && !item.keep) {
-              removing.push(item); continue;
+              removing.push(source); continue;
             }
           }
           item.proc(ev);
@@ -268,9 +298,10 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
   } catch (ex) { }
 }
 window.edgePlatform = { 
-  onMessage(callback) {
+  onMessage(type, callback, options) {
     if (!callback) return;
-    if (typeof callback === 'function' || typeof callback.proc === 'function') hs.push(callback);
+    if (typeof callback !== 'function' && typeof callback.proc !== 'function') return;
+    hs.push({ h: callback, type, options });
   },
   getCommandHandler(id) {
     if (!id || typeof id !== 'string') return null;

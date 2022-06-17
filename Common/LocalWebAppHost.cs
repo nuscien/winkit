@@ -19,6 +19,7 @@ using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
 using Trivial.Text;
+using System.IO.Compression;
 
 namespace Trivial.Web;
 
@@ -243,7 +244,7 @@ public class LocalWebAppHost
             var settings = await TryGetSettingsAsync(cacheDir, cancellationToken);
             var v = settings?.TryGetStringValue("version")?.Trim();
             if (!string.IsNullOrEmpty(v))
-                appDir = appDir.GetDirectories(string.Concat('v', v)).FirstOrDefault();
+                appDir = rootDir.GetDirectories(string.Concat('v', v)).FirstOrDefault();
         }
 
         if (appDir == null || !appDir.Exists)
@@ -310,8 +311,41 @@ public class LocalWebAppHost
     /// <summary>
     /// Computes the signature for files.
     /// </summary>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
+    /// <param name="output">true if write file; otherwise, false.</param>
+    /// <returns>The file collection.</returns>
+    /// <exception cref="ArgumentNullException">The directory or signatureProvider was null.</exception>
+    /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
+    public LocalWebAppFileCollection Sign(ISignatureProvider signatureProvider, bool output = true)
+    {
+        var fileName = Options?.ManifestFileName?.Trim();
+        if (output && !string.IsNullOrEmpty(fileName))
+            fileName = GetSubFileName(fileName, "files");
+        return Sign(ResourcePackageDirectory, signatureProvider, fileName);
+    }
+
+    /// <summary>
+    /// Creates a package.
+    /// </summary>
+    /// <param name="outputFileName">The file name of the zip.</param>
+    /// <returns>The file output.</returns>
+    public FileInfo Package(string outputFileName = null)
+    {
+        if (!IsVerified) return null;
+        if (string.IsNullOrWhiteSpace(outputFileName))
+            outputFileName = string.Concat(ResourcePackageId, '.', Manifest?.Version ?? "0", ".zip");
+        if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
+            outputFileName = Path.Combine((ResourcePackageDirectory.Parent ?? ResourcePackageDirectory).FullName, outputFileName);
+        File.Delete(outputFileName);
+        ZipFile.CreateFromDirectory(ResourcePackageDirectory.FullName, outputFileName);
+        return FileSystemInfoUtility.TryGetFileInfo(outputFileName);
+    }
+
+    /// <summary>
+    /// Computes the signature for files.
+    /// </summary>
     /// <param name="dir">The app directory.</param>
-    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
     /// <param name="outputFileName">The file name to output.</param>
     /// <returns>The file collection.</returns>
     /// <exception cref="ArgumentNullException">The directory or signatureProvider was null.</exception>
@@ -413,13 +447,13 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="dir">The app directory.</param>
     /// <param name="options">The options of the local standalone web app.</param>
-    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
     /// <returns>The file collection.</returns>
     /// <exception cref="ArgumentNullException">The directory was null.</exception>
     /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
     public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, ISignatureProvider signatureProvider)
     {
-        var fileName = options.ManifestFileName;
+        var fileName = options?.ManifestFileName;
         if (string.IsNullOrWhiteSpace(fileName)) fileName = "edgeplatform.json";
         fileName = GetSubFileName(fileName, "files");
         try
@@ -464,12 +498,204 @@ public class LocalWebAppHost
     }
 
     /// <summary>
+    /// Creates a package.
+    /// </summary>
+    /// <param name="dir"></param>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
+    /// <param name="outputFileName">The file name of the zip.</param>
+    /// <returns>The file output.</returns>
+    public static FileInfo Package(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName = null)
+    {
+        Sign(dir, signatureProvider, "edgeplatform.files.json");
+        if (string.IsNullOrWhiteSpace(outputFileName))
+            outputFileName = string.Concat(dir.FullName, ".zip");
+        if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
+            outputFileName = Path.Combine((dir.Parent ?? dir).FullName, outputFileName);
+        File.Delete(outputFileName);
+        ZipFile.CreateFromDirectory(dir.FullName, outputFileName);
+        return FileSystemInfoUtility.TryGetFileInfo(outputFileName);
+    }
+
+    /// <summary>
+    /// Updates the resource package.
+    /// </summary>
+    /// <param name="version">The expected version.</param>
+    /// <param name="zip">The zip file.</param>
+    /// <param name="deleteZip">true if delete the zip file after extracting.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The new version.</returns>
+    public async Task<string> UpdateAsync(string version, FileInfo zip, bool deleteZip, CancellationToken cancellationToken = default)
+    {
+        if (zip == null) return null;
+
+        // Extract zip.
+        string path;
+        try
+        {
+            path = Path.Combine(CacheDirectory.FullName, "TempResourcePackage");
+            TryDeleteDirectory(path);
+            ZipFile.ExtractToDirectory(zip.FullName, path);
+        }
+        catch (ArgumentException)
+        {
+            path = null;
+        }
+        catch (InvalidOperationException)
+        {
+            path = null;
+        }
+        catch (IOException)
+        {
+            path = null;
+        }
+        catch (FormatException)
+        {
+            path = null;
+        }
+        catch (SecurityException)
+        {
+            path = null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            path = null;
+        }
+        catch (NotSupportedException)
+        {
+            path = null;
+        }
+        catch (ExternalException)
+        {
+            path = null;
+        }
+
+        try
+        {
+            if (deleteZip) zip.Delete();
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+
+        if (path == null) return null;
+
+        // Test package.
+        var root = CacheDirectory.Parent;
+        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
+        if (dir == null || !dir.Exists) return null;
+        try
+        {
+            var host = await LoadAsync(root, Options, false, dir, cancellationToken);
+            if (host?.Manifest?.Version != version || host?.ResourcePackageId != ResourcePackageId)
+            {
+                dir.Delete(true);
+                return null;
+            }
+
+            path = Path.Combine(root.FullName, string.Concat('v', version));
+        }
+        catch (ArgumentException)
+        {
+            path = null;
+        }
+        catch (InvalidOperationException)
+        {
+            path = null;
+        }
+        catch (IOException)
+        {
+            path = null;
+        }
+        catch (FormatException)
+        {
+            path = null;
+        }
+        catch (SecurityException)
+        {
+            path = null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            path = null;
+        }
+        catch (NotSupportedException)
+        {
+            path = null;
+        }
+        catch (ExternalException)
+        {
+            path = null;
+        }
+
+        if (path == null) return null;
+
+        // Enable new version.
+        TryDeleteDirectory(path);
+        try
+        {
+            CopyTo(dir, path);
+        }
+        catch (SecurityException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        finally
+        {
+            try
+            {
+                TryDeleteDirectory(dir.FullName);
+            }
+            catch (SecurityException)
+            {
+            }
+        }
+
+        var settings = await TryGetSettingsAsync(CacheDirectory, cancellationToken) ?? new JsonObjectNode();
+        var oldVersion = settings.TryGetStringValue("version")?.Trim();
+        var installInfo = settings.TryGetObjectValue("install") ?? new();
+        var oldVersion2 = installInfo.TryGetStringValue("oldVersion")?.Trim();
+        settings.SetValue("version", version);
+        installInfo.SetValue("old", oldVersion);
+        installInfo.SetValue("done", DateTime.Now);
+        settings.SetValue("install", installInfo);
+        await TrySaveSettingsAsync(CacheDirectory, settings, cancellationToken);
+
+        // Clean up.
+        if (!string.IsNullOrEmpty(oldVersion2))
+        {
+            path = Path.Combine(root.FullName, string.Concat('v', oldVersion2));
+            TryDeleteDirectory(path);
+        }
+
+        // Return result.
+        return version;
+    }
+
+    /// <summary>
     /// Updates the resource package.
     /// </summary>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The new version.</returns>
     public async Task<string> UpdateAsync(CancellationToken cancellationToken = default)
     {
+        // Get update manifest.
         var url = GetUrl(Options.Update?.Url, Options.Update?.VariableParameters);
         if (string.IsNullOrEmpty(url)) return null;
         var http = new JsonHttpClient<JsonObjectNode>();
@@ -479,116 +705,71 @@ public class LocalWebAppHost
         if (resp == null) return null;
         var ver = resp.TryGetStringValue("version")?.Trim();
         if (string.IsNullOrEmpty(ver)) return null;
-        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, false) <= 0 && resp.TryGetBooleanValue("force") != true)
+        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, true) <= 0 && resp.TryGetBooleanValue("force") != true)
             return null;
+        
+        // Download zip.
         url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
         var uri = UI.VisualUtility.TryCreateUri(url);
-        if (uri != null) return null;
+        if (uri == null) return null;
         FileInfo zip = null;
-        string path;
         try
         {
-            zip = await HttpClientExtensions.WriteFileAsync(uri, Path.Combine(CacheDirectory.FullName, "ResourcePackage.zip"), null, cancellationToken);
-            if (zip == null) return null;
-            path = Path.Combine(CacheDirectory.FullName, "ResourcePackage");
-            TryDeleteDirectory(path);
-            System.IO.Compression.ZipFile.ExtractToDirectory(zip.FullName, path);
+            zip = await HttpClientExtensions.WriteFileAsync(uri, Path.Combine(CacheDirectory.FullName, "TempResourcePackage.zip"), null, cancellationToken);
         }
         catch (ArgumentException)
         {
-            path = null;
         }
         catch (InvalidOperationException)
         {
-            path = null;
         }
         catch (IOException)
         {
-            path = null;
         }
         catch (FormatException)
         {
-            path = null;
         }
         catch (SecurityException)
         {
-            path = null;
         }
         catch (UnauthorizedAccessException)
         {
-            path = null;
         }
         catch (NotSupportedException)
         {
-            path = null;
         }
         catch (ExternalException)
         {
-            path = null;
         }
 
-        zip.Delete();
-        if (path == null) return null;
-        var root = CacheDirectory.Parent;
-        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
-        if (dir == null || !dir.Exists) return null;
-        try
-        {
-            var host = await LoadAsync(root, Options, false, dir, cancellationToken);
-            if (host?.Manifest?.Version != ver)
-            {
-                dir.Delete(true);
-                return null;
-            }
-
-            path = Path.Combine(root.FullName, string.Concat('v', ver));
-        }
-        catch (ArgumentException)
-        {
-            path = null;
-        }
-        catch (InvalidOperationException)
-        {
-            path = null;
-        }
-        catch (IOException)
-        {
-            path = null;
-        }
-        catch (FormatException)
-        {
-            path = null;
-        }
-        catch (SecurityException)
-        {
-            path = null;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            path = null;
-        }
-        catch (NotSupportedException)
-        {
-            path = null;
-        }
-        catch (ExternalException)
-        {
-            path = null;
-        }
-
-        if (path == null) return null;
-        TryDeleteDirectory(path);
-        dir.MoveTo(path);
-        var settings = await TryGetSettingsAsync(CacheDirectory) ?? new JsonObjectNode();
-        settings.SetValue("version", ver);
-        await TrySaveSettingsAsync(CacheDirectory, settings);
-        return ver;
+        // Continue and return result.
+        if (zip == null) return null;
+        return await UpdateAsync(ver, zip, true, cancellationToken);
     }
 
     private string GetResourcePackageParentPath(string localRelativePath)
     {
         var host = ResourcePackageDirectory?.Parent?.FullName;
         return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
+    }
+
+    private static DirectoryInfo CopyTo(DirectoryInfo source, string destPath)
+    {
+        Directory.CreateDirectory(destPath);
+        FileInfo[] files = source.GetFiles();
+        foreach (FileInfo fileInfo in files)
+        {
+            fileInfo.CopyTo(Path.Combine(destPath, fileInfo.Name), overwrite: true);
+        }
+
+        DirectoryInfo[] directories = source.GetDirectories();
+        foreach (DirectoryInfo directoryInfo in directories)
+        {
+            source = directoryInfo;
+            CopyTo(directoryInfo, Path.Combine(destPath, directoryInfo.Name));
+        }
+
+        return new DirectoryInfo(destPath);
     }
 
     private static string GetSubFileName(string name, string sub)
@@ -635,7 +816,7 @@ public class LocalWebAppHost
         }
     }
 
-    private static string GetUrl(string url, Dictionary<string, string> parameters)
+    private string GetUrl(string url, Dictionary<string, string> parameters)
     {
         url = url?.Trim();
         if (string.IsNullOrEmpty(url)) return null;
@@ -649,6 +830,16 @@ public class LocalWebAppHost
             switch (v)
             {
                 case "version":
+                    q.Add(k, Manifest?.Version);
+                    break;
+                case "id":
+                    q.Add(k, ResourcePackageId);
+                    break;
+                case "kind":
+                    q.Add(k, "WindowsAppSdk");
+                    break;
+                case "guid":
+                    q.Add(k, Guid.NewGuid().ToString());
                     break;
             }
         }
@@ -656,7 +847,7 @@ public class LocalWebAppHost
         return q.ToString(url);
     }
 
-    private static string GetUrl(string url, JsonObjectNode parameters)
+    private string GetUrl(string url, JsonObjectNode parameters)
     {
         url = url?.Trim();
         if (string.IsNullOrEmpty(url)) return null;

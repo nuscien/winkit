@@ -67,7 +67,7 @@ public class LocalWebAppRequestMessage
 }
 
 /// <summary>
-/// The message response body for the local standalone web app.
+/// The response message for the local standalone web app.
 /// </summary>
 public class LocalWebAppResponseMessage
 {
@@ -125,4 +125,63 @@ public class LocalWebAppResponseMessage
     /// Gets or sets a value indicating whether the response is in error.
     /// </summary>
     public bool IsError { get; set; }
+}
+
+/// <summary>
+/// The notification message for the local standalone web app.
+/// </summary>
+public class LocalWebAppNotificationMessage
+{
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppNotificationMessage class.
+    /// </summary>
+    public LocalWebAppNotificationMessage()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppNotificationMessage class.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="source">The data provider source.</param>
+    /// <param name="info">The additional information.</param>
+    public LocalWebAppNotificationMessage(JsonObjectNode data, string source, JsonObjectNode info = null)
+    {
+        Data = data;
+        Source = source;
+        AdditionalInfo = info;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppNotificationMessage class.
+    /// </summary>
+    /// <param name="message">The error message.</param>
+    /// <param name="data">The data.</param>
+    /// <param name="source">The data provider source.</param>
+    /// <param name="info">The additional information.</param>
+    public LocalWebAppNotificationMessage(string message, JsonObjectNode data, string source, JsonObjectNode info = null)
+        : this(data, source, info)
+    {
+        Message = message;
+    }
+
+    /// <summary>
+    /// Gets or sets the data.
+    /// </summary>
+    public JsonObjectNode Data { get; set; }
+
+    /// <summary>
+    /// Gets or sets the additional information.
+    /// </summary>
+    public JsonObjectNode AdditionalInfo { get; set; }
+
+    /// <summary>
+    /// Gets or sets the state message.
+    /// </summary>
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Gets or sets the data provider source.
+    /// </summary>
+    public string Source { get; set; }
 }

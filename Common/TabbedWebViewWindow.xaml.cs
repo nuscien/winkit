@@ -65,29 +65,17 @@ public sealed partial class TabbedWebViewWindow : Window
     /// <summary>
     /// Occurs on the tab is closed.
     /// </summary>
-    public event TypedEventHandler<TabbedWebView, TabViewTabCloseRequestedEventArgs> TabCloseRequested
-    {
-        add => HostElement.TabCloseRequested += value;
-        remove => HostElement.TabCloseRequested -= value;
-    }
+    public event TypedEventHandler<TabbedWebViewWindow, TabViewTabCloseRequestedEventArgs> TabCloseRequested;
 
     /// <summary>
     /// Occurs on the web view tab has created.
     /// </summary>
-    public event EventHandler<TabbedWebView.WebViewTabEventArgs> WebViewTabCreated
-    {
-        add => HostElement.WebViewTabCreated += value;
-        remove => HostElement.WebViewTabCreated -= value;
-    }
+    public event EventHandler<TabbedWebView.WebViewTabEventArgs> WebViewTabCreated;
 
     /// <summary>
     /// Occurs on the selection has changed.
     /// </summary>
-    public event SelectionChangedEventHandler SelectionChanged
-    {
-        add => HostElement.SelectionChanged += value;
-        remove => HostElement.SelectionChanged -= value;
-    }
+    public event SelectionChangedEventHandler SelectionChanged;
 
     /// <summary>
     /// Gets the download list.
@@ -312,6 +300,7 @@ public sealed partial class TabbedWebViewWindow : Window
 
     private void OnTabCloseRequested(TabbedWebView sender, TabViewTabCloseRequestedEventArgs args)
     {
+        TabCloseRequested?.Invoke(this, args);
         if (HostElement.WebViews.Count < 1) Close();
     }
 
@@ -320,5 +309,12 @@ public sealed partial class TabbedWebViewWindow : Window
         if (backdrop == null) return;
         var isActive = args.WindowActivationState != WindowActivationState.Deactivated;
         backdrop.IsInputActive = isActive;
+        TitleElement.Opacity = isActive ? 1 : 0.6;
     }
+
+    private void OnWebViewTabCreated(object sender, TabbedWebView.WebViewTabEventArgs e)
+        => WebViewTabCreated?.Invoke(this, e);
+
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        => SelectionChanged?.Invoke(this, e);
 }

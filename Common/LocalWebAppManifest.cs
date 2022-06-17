@@ -32,6 +32,12 @@ public class LocalWebAppManifest
     public string Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon of the app.
+    /// </summary>
+    [JsonPropertyName("icon")]
+    public string Icon { get; set; }
+
+    /// <summary>
     /// Gets or sets the version of the app.
     /// </summary>
     [JsonPropertyName("version")]

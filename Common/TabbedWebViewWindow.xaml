@@ -14,10 +14,9 @@
             <RowDefinition Height="28" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--<Rectangle x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="#01808080" />-->
         <Border x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#01808080" >
             <TextBlock x:Name="TitleElement" FontSize="14" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0" />
         </Border>
-        <local:TabbedWebView x:Name="HostElement" TabCloseRequested="OnTabCloseRequested" Grid.Row="1" />
+        <local:TabbedWebView x:Name="HostElement" TabCloseRequested="OnTabCloseRequested" WebViewTabCreated="OnWebViewTabCreated" SelectionChanged="OnSelectionChanged"  Grid.Row="1" />
     </Grid>
 </Window>

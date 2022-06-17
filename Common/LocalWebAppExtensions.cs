@@ -33,6 +33,7 @@ internal static class LocalWebAppExtensions
             { "appId", manifest?.Id },
             { "intro", new JsonObjectNode
             {
+                { "icon", manifest?.Icon },
                 { "description", manifest?.Description },
                 { "url", manifest?.Website },
                 { "copyright", manifest?.Copyright },

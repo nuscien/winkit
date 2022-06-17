@@ -360,6 +360,9 @@ public class LocalWebAppHost
         {
             Files = new()
         };
+        var manifestPath = Path.Combine(dir.FullName, "edgeplatform.json");
+        var manifest = FileSystemInfoUtility.TryGetFileInfo(manifestPath);
+        files.Insert(0, manifest);
         foreach (var file in files)
         {
             try
@@ -414,7 +417,7 @@ public class LocalWebAppHost
                 if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
                     outputFileName = Path.Combine(dir.FullName, outputFileName);
                 var s = JsonSerializer.Serialize(collection);
-                File.WriteAllText(outputFileName, s);
+                File.WriteAllText(outputFileName, s, Encoding.UTF8);
             }
             catch (ArgumentException)
             {

@@ -68,22 +68,16 @@ public class LocalWebAppManifest
     public string HomepagePath { get; set; }
 
     /// <summary>
-    /// The file list of HTML, JavaScript, Type Script, JSON and CSS.
-    /// </summary>
-    [JsonPropertyName("files")]
-    public List<LocalWebAppFileInfo> Files { get; set; }
-
-    /// <summary>
     /// The JSON data file list.
     /// </summary>
     [JsonPropertyName("json")]
-    public Dictionary<string, LocalWebAppFileInfo> JsonBindings { get; set; }
+    public Dictionary<string, string> JsonBindings { get; set; }
 
     /// <summary>
     /// The text data file list.
     /// </summary>
     [JsonPropertyName("text")]
-    public Dictionary<string, LocalWebAppFileInfo> TextBindings { get; set; }
+    public Dictionary<string, string> TextBindings { get; set; }
 
     /// <summary>
     /// The host app binding information.

@@ -285,15 +285,13 @@ public class LocalWebAppHost
         }
 
         // Verify files.
-        if (manifest.Files == null) throw new SecurityException("Miss file signatures.");
-        var files = appDir.EnumerateFiles("*.html", SearchOption.AllDirectories)
-            .Union(appDir.EnumerateFiles("*.htm", SearchOption.AllDirectories))
-            .Union(appDir.EnumerateFiles("*.js", SearchOption.AllDirectories))
-            .Union(appDir.EnumerateFiles("*.ts", SearchOption.AllDirectories))
-            .Union(appDir.EnumerateFiles("*.css", SearchOption.AllDirectories))
-            .Union(appDir.EnumerateFiles("*.json", SearchOption.AllDirectories))
-            .ToList();
-        foreach (var item in manifest.Files)
+        manifestFileName = GetSubFileName(manifestFileName, "files");
+        file = appDir.EnumerateFiles(manifestFileName).FirstOrDefault();
+        if (file == null || !file.Exists) throw new FileNotFoundException("The file signature list is not found.");
+        var fileCol = await JsonSerializer.DeserializeAsync<LocalWebAppFileCollection>(file.OpenRead(), null as JsonSerializerOptions, cancellationToken);
+        if (fileCol.Files == null) throw new SecurityException("Miss file signatures.");
+        var files = GetSourceFiles(appDir).Select(ele => ele.FullName).ToList();
+        foreach (var item in fileCol.Files)
         {
             if (!item.Verify(host, out var fileInfo))
             {
@@ -301,14 +299,134 @@ public class LocalWebAppHost
                 throw new SecurityException("Incorrect signature.");
             }
 
-            if (fileInfo != null) files.Remove(fileInfo);
+            if (fileInfo?.FullName != null) files.Remove(fileInfo.FullName);
         }
 
         if (files.Count > 0)
-            throw new InvalidOperationException(files.Count == 1 ? "Miss signature for a file." : $"Miss signature for {files.Count} files."); // Maybe need throw a new signature missed exception.
+            throw new SecurityException(files.Count == 1 ? "Miss signature for a file." : $"Miss signature for {files.Count} files."); // Maybe need throw a new signature missed exception.
 
         // Return result.
         return host;
+    }
+
+    /// <summary>
+    /// Computes the signature for files.
+    /// </summary>
+    /// <param name="dir">The app directory.</param>
+    /// <param name="privateKey">The private RSA key.</param>
+    /// <param name="hashAlgorithmName">The hash allgorithm name</param>
+    /// <param name="outputFileName">The file name to output.</param>
+    /// <returns>The file collection.</returns>
+    /// <exception cref="ArgumentNullException">The directory was null.</exception>
+    /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, RSAParameters privateKey, HashAlgorithmName hashAlgorithmName, string outputFileName)
+    {
+        if (dir == null) throw new ArgumentNullException(nameof(dir));
+        if (!dir.Exists) throw new DirectoryNotFoundException("dir is not found");
+        var files = GetSourceFiles(dir).ToList();
+        var collection = new LocalWebAppFileCollection
+        {
+            Files = new()
+        };
+        foreach (var file in files)
+        {
+            try
+            {
+                using var rsa = RSA.Create();
+                rsa.ImportParameters(privateKey);
+                using var stream = file.OpenRead();
+                if (stream == null) continue;
+                var sign = rsa.SignData(stream, hashAlgorithmName, RSASignaturePadding.Pkcs1);
+                if (sign == null) continue;
+                var parent = file.Directory;
+                var path = file.Name;
+                while (parent != null && parent != dir && parent.FullName != dir.FullName)
+                {
+                    path = Path.Combine(parent.Name, path);
+                    if (parent == parent.Parent) break;
+                    parent = parent.Parent;
+                }
+
+                var item = new LocalWebAppFileInfo
+                {
+                    Signature = WebFormat.Base64UrlEncode(sign),
+                    Path = path
+                };
+                collection.Files.Add(item);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            catch (SecurityException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(outputFileName))
+        {
+            try
+            {
+                if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
+                    outputFileName = Path.Combine(dir.FullName, outputFileName);
+                var s = JsonSerializer.Serialize(collection);
+                File.WriteAllText(outputFileName, s);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            catch (SecurityException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+
+        return collection;
+    }
+
+    /// <summary>
+    /// Computes the signature for files.
+    /// </summary>
+    /// <param name="dir">The app directory.</param>
+    /// <param name="options">The options of the local standalone web app.</param>
+    /// <param name="privateKey">The private RSA key.</param>
+    /// <returns>The file collection.</returns>
+    /// <exception cref="ArgumentNullException">The directory was null.</exception>
+    /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, RSAParameters? privateKey = null)
+    {
+        var fileName = options.ManifestFileName;
+        if (string.IsNullOrWhiteSpace(fileName)) fileName = "edgeplatform.json";
+        fileName = GetSubFileName(fileName, "files");
+        return Sign(dir, privateKey ?? options.PublicKey, options.HashAlgorithmName, fileName);
     }
 
     /// <summary>
@@ -438,6 +556,21 @@ public class LocalWebAppHost
         var host = ResourcePackageDirectory?.Parent?.FullName;
         return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
     }
+
+    private static string GetSubFileName(string name, string sub)
+    {
+        var i = name.LastIndexOf('.');
+        var ext = name[i..];
+        return string.Concat(name[..i], '.', sub, ext);
+    }
+
+    private static IEnumerable<FileInfo> GetSourceFiles(DirectoryInfo dir)
+        => dir.EnumerateFiles("*.html", SearchOption.AllDirectories)
+            .Union(dir.EnumerateFiles("*.htm", SearchOption.AllDirectories))
+            .Union(dir.EnumerateFiles("*.js", SearchOption.AllDirectories))
+            .Union(dir.EnumerateFiles("*.ts", SearchOption.AllDirectories))
+            .Union(dir.EnumerateFiles("*.css", SearchOption.AllDirectories));
+            //.Union(dir.EnumerateFiles("*.json", SearchOption.AllDirectories));
 
     private static void TryDeleteDirectory(string path)
     {

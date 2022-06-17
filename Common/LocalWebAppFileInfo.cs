@@ -50,7 +50,6 @@ public enum LocalWebAppFileSourceType
 /// <summary>
 /// The file item information of standalone web app.
 /// </summary>
-[JsonConverter(typeof(LocalWebAppFileInfoJsonConverter))]
 public class LocalWebAppFileInfo
 {
     private string originalPath;
@@ -336,6 +335,24 @@ public class LocalWebAppFileInfo
 
         return false;
     }
+}
+
+/// <summary>
+/// The file collection of the local standalone web app.
+/// </summary>
+public class LocalWebAppFileCollection
+{
+    /// <summary>
+    /// Gets or sets the key in signature mapping.
+    /// </summary>
+    [JsonPropertyName("key")]
+    public string SignKey { get; set; }
+
+    /// <summary>
+    /// The file list of HTML, JavaScript, Type Script, JSON and CSS.
+    /// </summary>
+    [JsonPropertyName("files")]
+    public List<LocalWebAppFileInfo> Files { get; set; }
 }
 
 /// <summary>

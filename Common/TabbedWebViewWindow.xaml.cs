@@ -187,6 +187,13 @@ public sealed partial class TabbedWebViewWindow : Window
     }
 
     /// <summary>
+    /// Sets the window title.
+    /// </summary>
+    /// <param name="title">The new title.</param>
+    public void SetTitle(string title)
+        => Title = TitleElement.Text = title;
+
+    /// <summary>
     /// Gets the the web view in first tab.
     /// </summary>
     /// <returns>The web view instance.</returns>

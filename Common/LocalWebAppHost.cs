@@ -59,6 +59,11 @@ public class LocalWebAppHost
     public LocalWebAppOptions Options { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the files are verified.
+    /// </summary>
+    public bool IsVerified { get; private set; }
+
+    /// <summary>
     /// Gets or sets the virtual host.
     /// </summary>
     public string VirtualHost { get; private set; }
@@ -186,6 +191,7 @@ public class LocalWebAppHost
     /// Loads the standalone web app package information.
     /// </summary>
     /// <param name="options">The options to parse.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
@@ -193,7 +199,7 @@ public class LocalWebAppHost
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, CancellationToken cancellationToken = default)
+    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
@@ -201,7 +207,7 @@ public class LocalWebAppHost
         var appId = options.ResourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
         appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
-        return await LoadAsync(dir, options, null, cancellationToken);
+        return await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
     }
 
     /// <summary>
@@ -209,6 +215,7 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="rootDir">The root directory for local standalone web app.</param>
     /// <param name="options">The options to parse.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="appDir">The optional resource package directory to load the local standalone web app.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns></returns>
@@ -218,7 +225,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="SecurityException">Signature failed.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
+    public static async Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, bool skipVerificationException = false, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
     {
         if (rootDir == null || !rootDir.Exists) throw new ArgumentNullException(nameof(rootDir));
         if (options == null) throw new ArgumentNullException(nameof(options));
@@ -278,35 +285,21 @@ public class LocalWebAppHost
             CacheDirectory = cacheDir,
         };
 
-        // Debug mode.
-        if (options.IsDevEnvironmentEnabled)
-        {
-            return host;
-        }
-
-        // Verify files.
-        manifestFileName = GetSubFileName(manifestFileName, "files");
-        file = appDir.EnumerateFiles(manifestFileName).FirstOrDefault();
-        if (file == null || !file.Exists) throw new FileNotFoundException("The file signature list is not found.");
-        var fileCol = await JsonSerializer.DeserializeAsync<LocalWebAppFileCollection>(file.OpenRead(), null as JsonSerializerOptions, cancellationToken);
-        if (fileCol.Files == null) throw new SecurityException("Miss file signatures.");
-        var files = GetSourceFiles(appDir).Select(ele => ele.FullName).ToList();
-        foreach (var item in fileCol.Files)
-        {
-            if (!item.Verify(host, out var fileInfo))
-            {
-                if (fileInfo == null || !fileInfo.Exists) continue;
-                throw new SecurityException("Incorrect signature.");
-            }
-
-            if (fileInfo?.FullName != null) files.Remove(fileInfo.FullName);
-        }
-
-        if (files.Count > 0)
-            throw new SecurityException(files.Count == 1 ? "Miss signature for a file." : $"Miss signature for {files.Count} files."); // Maybe need throw a new signature missed exception.
-
-        // Return result.
+        // Verify files and return result.
+        host.IsVerified = await VerifyAsync(host, manifestFileName, skipVerificationException, cancellationToken);
         return host;
+    }
+
+    /// <summary>
+    /// Tests if the files are verified by signature.
+    /// </summary>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>true if verified; otherwise, false.</returns>
+    public async Task<bool> VerifyAsync(CancellationToken cancellationToken = default)
+    {
+        var state = await VerifyAsync(this, Options?.ManifestFileName, true, cancellationToken);
+        IsVerified = state;
+        return state;
     }
 
     /// <summary>
@@ -500,7 +493,7 @@ public class LocalWebAppHost
         if (dir == null || !dir.Exists) return null;
         try
         {
-            var host = await LoadAsync(root, Options, dir, cancellationToken);
+            var host = await LoadAsync(root, Options, false, dir, cancellationToken);
             if (host?.Manifest?.Version != ver)
             {
                 dir.Delete(true);
@@ -635,6 +628,69 @@ public class LocalWebAppHost
         }
 
         return GetUrl(url, q);
+    }
+
+    private static async Task<bool> VerifyAsync(LocalWebAppHost host, string manifestFileName, bool skipVerificationException, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var appDir = host.ResourcePackageDirectory;
+            manifestFileName = GetSubFileName(manifestFileName, "files");
+            var file = appDir.EnumerateFiles(manifestFileName).FirstOrDefault();
+            if (file == null || !file.Exists)
+            {
+                if (skipVerificationException) return false;
+                throw new SecurityException("The file signature list is not found.", new FileNotFoundException("The file signature list is not found."));
+            }
+
+            var fileCol = await JsonSerializer.DeserializeAsync<LocalWebAppFileCollection>(file.OpenRead(), null as JsonSerializerOptions, cancellationToken);
+            if (fileCol.Files == null)
+            {
+                if (skipVerificationException) return false;
+                throw new SecurityException("Miss file signature information.");
+            }
+
+            var files = GetSourceFiles(appDir).Select(ele => ele.FullName).ToList();
+            foreach (var item in fileCol.Files)
+            {
+                if (!item.Verify(host, out var fileInfo))
+                {
+                    if (fileInfo == null || !fileInfo.Exists) continue;
+                    if (skipVerificationException) return false;
+                    throw new SecurityException("Incorrect signature.");
+                }
+
+                if (fileInfo?.FullName != null) files.Remove(fileInfo.FullName);
+            }
+
+            if (files.Count > 0)
+            {
+                if (skipVerificationException) return false;
+                throw new SecurityException(files.Count == 1 ? "Miss signature for a file." : $"Miss signature for {files.Count} files.");
+            }
+
+            return true;
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (skipVerificationException) return false;
+            throw new SecurityException(string.Concat("Invalid operation during file signature verification. ", ex.Message), ex);
+        }
+        catch (NotSupportedException ex)
+        {
+            if (skipVerificationException) return false;
+            throw new SecurityException(string.Concat("Not supported during file signature verification.", ex.Message), ex);
+        }
+        catch (IOException ex)
+        {
+            if (skipVerificationException) return false;
+            throw new SecurityException(string.Concat("IO exception during file signature verification.", ex.Message), ex);
+        }
+        catch (ExternalException ex)
+        {
+            if (skipVerificationException) return false;
+            throw new SecurityException(string.Concat("External exception during file signature verification.", ex.Message), ex);
+        }
     }
 
     private static async Task<JsonObjectNode> TryGetSettingsAsync(DirectoryInfo cacheDir, CancellationToken cancellationToken = default)

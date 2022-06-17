@@ -75,6 +75,15 @@ public sealed partial class LocalWebAppWindow : Window
     public List<Microsoft.Web.WebView2.Core.CoreWebView2DownloadOperation> DownloadList => MainElement.DownloadList;
 
     /// <summary>
+    /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
+    /// </summary>
+    public bool IsDevEnvironmentEnabled
+    {
+        get => MainElement.IsDevEnvironmentEnabled;
+        set => MainElement.IsDevEnvironmentEnabled = value;
+    }
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>

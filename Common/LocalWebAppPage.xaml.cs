@@ -122,13 +122,18 @@ public sealed partial class LocalWebAppPage : Page
     public List<CoreWebView2DownloadOperation> DownloadList { get; } = new();
 
     /// <summary>
+    /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
+    /// </summary>
+    public bool IsDevEnvironmentEnabled { get; set; }
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
     public async Task LoadAsync(LocalWebAppOptions options)
     {
         if (options == null) return;
-        var host = await LocalWebAppHost.LoadAsync(options);
+        var host = await LocalWebAppHost.LoadAsync(options, true);
         await LoadAsync(host);
     }
 
@@ -155,11 +160,21 @@ public sealed partial class LocalWebAppPage : Page
         Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, host.ResourcePackageDirectory.FullName, CoreWebView2HostResourceAccessKind.Allow);
         var homepage = host.Manifest.HomepagePath?.Trim();
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
-        if (host.Options?.IsDevEnvironmentEnabled ?? false)
+        if (!host.IsVerified)
         {
-            // ToDo: Show debug notification prompt.
+            NotificationBar.Title = "Error";
+            NotificationBar.Message = "Invalid file signatures.";
+            NotificationBar.Severity = InfoBarSeverity.Error;
+            NotificationBar.IsOpen = true;
+            if (!IsDevEnvironmentEnabled)
+            {
+                ProgressElement.IsActive = false;
+                Browser.Visibility = Visibility.Collapsed;
+                return;
+            }
         }
 
+        Browser.Visibility = Visibility.Visible;
         Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
     }
 
@@ -179,7 +194,7 @@ public sealed partial class LocalWebAppPage : Page
     private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
     {
         var settings = Browser.CoreWebView2.Settings;
-        var isDebug = host.Options?.IsDevEnvironmentEnabled ?? false;
+        var isDebug = IsDevEnvironmentEnabled;
         settings.AreDevToolsEnabled = isDebug;
         settings.AreDefaultContextMenusEnabled = false;
         sender.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;

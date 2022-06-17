@@ -49,11 +49,6 @@ public class LocalWebAppOptions
     /// Gets or sets the update information.
     /// </summary>
     public WebAppPackageUpdateInfo Update { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
-    /// </summary>
-    public bool IsDevEnvironmentEnabled { get; set; }
 }
 
 /// <summary>

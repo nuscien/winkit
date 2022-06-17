@@ -19,6 +19,6 @@
         <Border x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#01808080" >
             <TextBlock x:Name="TitleElement" FontSize="14" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0" />
         </Border>
-        <controls:LocalWebAppPage x:Name="MainElement" TitleChanged="OnTitleChanged" Grid.Row="1" />
+        <controls:LocalWebAppPage x:Name="MainElement" TitleChanged="OnTitleChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" />
     </Grid>
 </Window>

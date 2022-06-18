@@ -24,13 +24,23 @@ namespace Trivial.UI;
 
 internal static class LocalWebAppExtensions
 {
+    internal const string DefaultManifestFileName = "edgeplatform.json";
+    internal const string DefaultManifestGeneratedFileName = "edgeplatform.files.json";
+    internal const string VirtualRootDomain = "edgeplatform.localhost";
+
     public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest, bool isDebug = false)
     {
         var eas = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
+        var entryAssembly = Assembly.GetEntryAssembly().GetName();
         var hostInfo = new JsonObjectNode
         {
-            { "version", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() },
             { "appId", manifest?.Id },
+            { "hostApp", new JsonObjectNode
+            {
+                { "version", entryAssembly?.Version?.ToString() },
+                { "name", entryAssembly?.Name },
+                { "value", entryAssembly?.FullName }
+            } },
             { "intro", new JsonObjectNode
             {
                 { "icon", manifest?.Icon },
@@ -38,16 +48,16 @@ internal static class LocalWebAppExtensions
                 { "url", manifest?.Website },
                 { "copyright", manifest?.Copyright },
                 { "publisher", manifest?.PublisherName },
+                { "version", manifest?.Version }
             } },
             { "runtime", new JsonObjectNode
             {
                 { "kind", "WindowsAppSdk" },
-                { "version", "0.1" },
+                { "version", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() },
                 { "netfx", RuntimeInformation.FrameworkDescription },
                 { "id", RuntimeInformation.RuntimeIdentifier },
                 { "webview2", CoreWebView2Environment.GetAvailableBrowserVersionString() },
-                { "arch", RuntimeInformation.ProcessArchitecture.ToString() },
-                { "winkit", typeof(LocalWebAppFileInfo).Assembly.GetName()?.Version?.ToString() }
+                { "arch", RuntimeInformation.ProcessArchitecture.ToString() }
             } },
             { "os", new JsonObjectNode
             {
@@ -58,7 +68,7 @@ internal static class LocalWebAppExtensions
             } },
             { "cmdLine", new JsonObjectNode
             {
-                { "value", Environment.CommandLine },
+                //{ "value", Environment.CommandLine },
                 { "args", Environment.GetCommandLineArgs().Skip(1) },
                 { "systemAccount", string.Concat(Environment.UserDomainName ?? Environment.MachineName, '\\', Environment.UserName) },
             } },

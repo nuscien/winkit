@@ -18,6 +18,10 @@ using Trivial.UI;
 - `FileListView` is a lite file browser.
 - `TabbedWebView` is a lite web browser powered by Microsoft Edge WebView2.
 
+## Local web app
+
+- A way to launch H5 app locally with native capability and auto-update.
+
 ## Utilities
 
 - `DependencyObjectProxy` is a helper for implementing custom control or user control.

@@ -34,9 +34,16 @@ public class LocalWebAppHost
         Options = options;
         ResourcePackageId = options?.ResourcePackageId?.Trim();
         if (string.IsNullOrEmpty(ResourcePackageId)) return;
-        VirtualHost = string.IsNullOrEmpty(ResourcePackageId) ? "privateapp.edgeplatform.localhost" : string.Concat(
-            ResourcePackageId.Split(new[] { '.', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault().Replace("@", string.Empty).Trim().ToLowerInvariant(),
-            ".edgeplatform.localhost");
+        string appDomain = null;
+        if (!string.IsNullOrEmpty(ResourcePackageId))
+        {
+            var appDomainArr = ResourcePackageId.Split(new[] { '.', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            if (appDomainArr.Length > 1) appDomain = string.Concat(appDomainArr[1], appDomainArr[0]);
+            else appDomain = appDomainArr.FirstOrDefault();
+        }
+
+        if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
+        VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
     }
 
     /// <summary>
@@ -277,7 +284,7 @@ public class LocalWebAppHost
 
         // Load manifest.
         var manifestFileName = options.ManifestFileName;
-        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = "edgeplatform.json";
+        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
         var file = appDir.EnumerateFiles(manifestFileName).FirstOrDefault();
         if (file == null || !file.Exists) throw new FileNotFoundException("The resource manifest is not found.");
         var manifest = await JsonSerializer.DeserializeAsync<LocalWebAppManifest>(file.OpenRead(), null as JsonSerializerOptions, cancellationToken);
@@ -360,7 +367,7 @@ public class LocalWebAppHost
         {
             Files = new()
         };
-        var manifestPath = Path.Combine(dir.FullName, "edgeplatform.json");
+        var manifestPath = Path.Combine(dir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
         var manifest = FileSystemInfoUtility.TryGetFileInfo(manifestPath);
         files.Insert(0, manifest);
         foreach (var file in files)
@@ -457,7 +464,7 @@ public class LocalWebAppHost
     public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, ISignatureProvider signatureProvider)
     {
         var fileName = options?.ManifestFileName;
-        if (string.IsNullOrWhiteSpace(fileName)) fileName = "edgeplatform.json";
+        if (string.IsNullOrWhiteSpace(fileName)) fileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
         fileName = GetSubFileName(fileName, "files");
         try
         {
@@ -509,7 +516,7 @@ public class LocalWebAppHost
     /// <returns>The file output.</returns>
     public static FileInfo Package(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName = null)
     {
-        Sign(dir, signatureProvider, "edgeplatform.files.json");
+        Sign(dir, signatureProvider, UI.LocalWebAppExtensions.DefaultManifestGeneratedFileName);
         if (string.IsNullOrWhiteSpace(outputFileName))
             outputFileName = string.Concat(dir.FullName, ".zip");
         if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))

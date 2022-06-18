@@ -50,7 +50,7 @@ public class LocalWebAppOptions
         ResourcePackageId = resourcePackageId;
         defaultSign = signatureProvider;
         Update = update;
-        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = "edgeplatform.json";
+        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
         ManifestFileName = manifestFileName;
     }
 

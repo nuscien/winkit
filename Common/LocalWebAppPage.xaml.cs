@@ -240,7 +240,7 @@ public sealed partial class LocalWebAppPage : Page
         sender.CoreWebView2.WindowCloseRequested += OnWindowCloseRequested;
         CoreWebView2Initialized?.Invoke(this, args);
         var sb = new StringBuilder();
-        sb.Append(@"(function () { if (window.edgePlatform) return;
+        sb.Append(@"(function () { if (window.localWebApp) return;
 let postMsg = window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function' ? function (data) { window.chrome.webview.postMessage(data); } : function (data) { };
 let hs = []; let stepNumber = 0;
 function genRandomStr() {
@@ -297,7 +297,7 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
     });
   } catch (ex) { }
 }
-window.edgePlatform = { 
+window.localWebApp = { 
   onMessage(type, callback, options) {
     if (!callback) return;
     if (typeof callback !== 'function' && typeof callback.proc !== 'function') return;

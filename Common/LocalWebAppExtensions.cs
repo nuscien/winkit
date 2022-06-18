@@ -24,9 +24,9 @@ namespace Trivial.UI;
 
 internal static class LocalWebAppExtensions
 {
-    internal const string DefaultManifestFileName = "edgeplatform.json";
-    internal const string DefaultManifestGeneratedFileName = "edgeplatform.files.json";
-    internal const string VirtualRootDomain = "edgeplatform.localhost";
+    internal const string DefaultManifestFileName = "localwebapp.json";
+    internal const string DefaultManifestGeneratedFileName = "localwebapp.files.json";
+    internal const string VirtualRootDomain = "localwebapp.localhost";
 
     public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest, bool isDebug = false)
     {

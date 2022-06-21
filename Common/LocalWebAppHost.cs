@@ -92,6 +92,16 @@ public class LocalWebAppHost
     public DirectoryInfo DataDirectory { get; private set; }
 
     /// <summary>
+    /// Gets the static data resources.
+    /// </summary>
+    public JsonObjectNode DataResources { get; } = new();
+
+    /// <summary>
+    /// Gets the static data strings.
+    /// </summary>
+    public IDictionary<string, string> DataStrings { get; } = new Dictionary<string, string>();
+
+    /// <summary>
     /// Gets online path of a relative embedded path.
     /// </summary>
     /// <param name="localRelativePath">The relative path of embedded file.</param>
@@ -277,27 +287,30 @@ public class LocalWebAppHost
     /// Reads the file.
     /// </summary>
     /// <param name="file">The file to read.</param>
-    /// <returns>The file stream.</returns>
-    public JsonObjectNode TryReadFileJson(FileInfo file)
-    {
-        using var stream = TryReadFile(file);
-        if (stream == null) return null;
-        var json = JsonObjectNode.Parse(stream);
-        return json;
-    }
-
-    /// <summary>
-    /// Reads the file.
-    /// </summary>
-    /// <param name="file">The file to read.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The file stream.</returns>
     public async Task<JsonObjectNode> TryReadFileJsonAsync(FileInfo file, CancellationToken cancellationToken = default)
     {
         using var stream = TryReadFile(file);
         if (stream == null) return null;
-        var json = await JsonObjectNode.ParseAsync(stream, cancellationToken);
-        return json;
+        try
+        {
+            return await JsonObjectNode.ParseAsync(stream, cancellationToken);
+        }
+        catch (JsonException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -397,6 +410,51 @@ public class LocalWebAppHost
             DataDirectory = dataDir,
             CacheDirectory = cacheDir,
         };
+
+        // Bind static resources from given files.
+        var filesToBind = host?.Manifest?.JsonBindings;
+        if (filesToBind != null)
+        {
+            foreach (var kvp in filesToBind)
+            {
+                if (string.IsNullOrWhiteSpace(kvp.Key) || string.IsNullOrWhiteSpace(kvp.Value)) continue;
+                try
+                {
+                    var path = host.GetLocalPath(kvp.Value);
+                    if (string.IsNullOrEmpty(path)) continue;
+                    var fileToBind = FileSystemInfoUtility.TryGetFileInfo(path);
+                    if (fileToBind == null) continue;
+                    var v = await host.TryReadFileJsonAsync(fileToBind, cancellationToken);
+                    if (v == null) continue;
+                    host.DataResources.SetValue(kvp.Key, v);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
+        filesToBind = host?.Manifest?.TextBindings;
+        if (filesToBind != null)
+        {
+            foreach (var kvp in filesToBind)
+            {
+                if (string.IsNullOrWhiteSpace(kvp.Key) || string.IsNullOrWhiteSpace(kvp.Value)) continue;
+                try
+                {
+                    var path = host.GetLocalPath(kvp.Value);
+                    if (string.IsNullOrEmpty(path)) continue;
+                    var fileToBind = FileSystemInfoUtility.TryGetFileInfo(path);
+                    if (fileToBind == null) continue;
+                    var v = host.TryReadFileText(fileToBind);
+                    if (v == null) continue;
+                    host.DataStrings[kvp.Key] = v;
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
 
         // Verify files and return result.
         host.IsVerified = await VerifyAsync(host, manifestFileName, skipVerificationException, cancellationToken);

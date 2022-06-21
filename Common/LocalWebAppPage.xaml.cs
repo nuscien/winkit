@@ -391,10 +391,10 @@ window.localWebApp = {
   hostInfo: ");
         sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest, isDebug).ToString(IndentStyles.Compact));
         sb.Append(", dataRes: ");
-        var resourceReg = LocalWebAppExtensions.GetJsonResources(host) ?? new();
-        sb.Append(resourceReg.ToString(IndentStyles.Compact));
+        sb.Append(host.DataResources.ToString(IndentStyles.Compact));
         sb.Append(", strRes: ");
-        resourceReg = LocalWebAppExtensions.GetTextResources(host) ?? new();
+        var resourceReg = new JsonObjectNode();
+        resourceReg.SetRange(host.DataStrings);
         sb.Append(resourceReg.ToString(IndentStyles.Compact));
         sb.AppendLine(" }; })();");
         _ = Browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(sb.ToString());

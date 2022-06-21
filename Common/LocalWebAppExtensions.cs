@@ -236,36 +236,6 @@ internal static class LocalWebAppExtensions
         };
     }
 
-    public static JsonObjectNode GetJsonResources(LocalWebAppHost host)
-    {
-        var col = host?.Manifest?.JsonBindings;
-        if (col == null) return null;
-        var result = new JsonObjectNode();
-        foreach (var kvp in col)
-        {
-            var file = FileSystemInfoUtility.TryGetFileInfo(kvp.Value);
-            var v = host.TryReadFileJson(file);
-            result.SetValue(kvp.Key, v);
-        }
-
-        return result;
-    }
-
-    public static JsonObjectNode GetTextResources(LocalWebAppHost host)
-    {
-        var col = host?.Manifest?.JsonBindings;
-        if (col == null) return null;
-        var result = new JsonObjectNode();
-        foreach (var kvp in col)
-        {
-            var file = FileSystemInfoUtility.TryGetFileInfo(kvp.Value);
-            var v = host.TryReadFileText(file);
-            result.SetValue(kvp.Key, v);
-        }
-
-        return result;
-    }
-
     public static LocalWebAppResponseMessage ListFiles(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
         var path = request?.Data?.TryGetStringValue("path");

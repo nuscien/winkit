@@ -577,12 +577,12 @@ public class LocalWebAppHost
 
         if (!string.IsNullOrWhiteSpace(outputFileName))
         {
+            string s = null;
             try
             {
                 if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
                     outputFileName = Path.Combine(dir.FullName, outputFileName);
-                var s = JsonSerializer.Serialize(collection);
-                File.WriteAllText(outputFileName, s, Encoding.UTF8);
+                s = JsonSerializer.Serialize(collection);
             }
             catch (ArgumentException)
             {
@@ -604,6 +604,58 @@ public class LocalWebAppHost
             }
             catch (ExternalException)
             {
+            }
+
+            if (!string.IsNullOrEmpty(s))
+            {
+                try
+                {
+                    File.WriteAllText(outputFileName, s, Encoding.UTF8);
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (IOException)
+                {
+                    try
+                    {
+                        File.Delete(outputFileName);
+                        File.WriteAllText(outputFileName, s, Encoding.UTF8);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (SecurityException)
+                    {
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
+                    catch (NotSupportedException)
+                    {
+                    }
+                    catch (ExternalException)
+                    {
+                    }
+                }
+                catch (SecurityException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+                catch (NotSupportedException)
+                {
+                }
+                catch (ExternalException)
+                {
+                }
             }
         }
 

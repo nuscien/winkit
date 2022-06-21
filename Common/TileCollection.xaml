@@ -59,10 +59,10 @@
             >
             <local:BlockHeader.RightChildren>
                 <Border x:Name="BeforePaging"></Border>
-                <Button Click="OnPreviousButtonClick" Width="24" Height="20" CornerRadius="10,0,0,10" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,1,0" IsTabStop="False" >
+                <Button x:Name="PreviousButton" Click="OnPreviousButtonClick" Width="24" Height="20" CornerRadius="10,0,0,10" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,1,0" IsTabStop="False" >
                     <Path Data="M0,0 M10,10 M8,0 L2,5 L8,10" Stroke="{x:Bind Foreground}" StrokeThickness="1" Width="11" Height="11" />
                 </Button>
-                <Button Click="OnNextButtonClick" Width="24" Height="20" CornerRadius="0,10,10,0" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsTabStop="False" >
+                <Button x:Name="NextButton" Click="OnNextButtonClick" Width="24" Height="20" CornerRadius="0,10,10,0" BorderThickness="0" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsTabStop="False" >
                     <Path Data="M0,0 M10,10 M2,0 L8,5 L2,10" Stroke="{x:Bind Foreground}" StrokeThickness="1" Width="11" Height="11" />
                 </Button>
                 <Border x:Name="AfterPaging"></Border>
@@ -70,7 +70,7 @@
         </local:BlockHeader>
         <Border x:Name="Middle" ></Border>
         <Grid>
-            <ScrollViewer x:Name="ListScrollView" VerticalScrollMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden" PointerEntered="ScrollViewer_PointerEntered" PointerExited="ScrollViewer_PointerExited" >
+            <ScrollViewer x:Name="ListScrollView" VerticalScrollMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden" PointerEntered="ScrollViewer_PointerEntered" PointerExited="ScrollViewer_PointerExited" ViewChanged="ScrollView_ViewChanged" >
                 <StackPanel x:Name="ListPanel" Orientation="Horizontal" Spacing="{x:Bind ListItemSpacing}" >
                 </StackPanel>
                 <!--<ItemsRepeater x:Name="ListPanel" >

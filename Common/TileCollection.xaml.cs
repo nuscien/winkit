@@ -740,4 +740,13 @@ public sealed partial class TileCollection : UserControl
     {
         if (args?.Item is TileCollection c) c.UsePrepareImageUri();
     }
+
+    private void ScrollView_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        => UpdateScrollViewButtons();
+
+    private void UpdateScrollViewButtons()
+    {
+        PreviousButton.IsEnabled = ListScrollView.HorizontalOffset >= 1;
+        NextButton.IsEnabled = ListScrollView.ExtentWidth - ListScrollView.HorizontalOffset - 1 >= ListScrollView.ViewportWidth;
+    }
 }

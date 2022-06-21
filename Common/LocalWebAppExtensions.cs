@@ -48,7 +48,8 @@ internal static class LocalWebAppExtensions
                 { "url", manifest?.Website },
                 { "copyright", manifest?.Copyright },
                 { "publisher", manifest?.PublisherName },
-                { "version", manifest?.Version }
+                { "version", manifest?.Version },
+                { "tags", manifest?.Tags ?? new() }
             } },
             { "runtime", new JsonObjectNode
             {
@@ -76,9 +77,9 @@ internal static class LocalWebAppExtensions
                 { "value", System.Globalization.CultureInfo.CurrentUICulture?.ToString() ?? System.Globalization.CultureInfo.CurrentCulture?.ToString() },
                 { "name", System.Globalization.CultureInfo.CurrentUICulture?.DisplayName ?? System.Globalization.CultureInfo.CurrentCulture?.DisplayName },
                 { "rtl", System.Globalization.CultureInfo.CurrentUICulture?.TextInfo?.IsRightToLeft },
-                { "timeZone", TimeZoneInfo.Local.Id },
-                { "timeZoneDisplayName", TimeZoneInfo.Local.DisplayName ?? TimeZoneInfo.Local.StandardName },
-                { "baseOffset", TimeZoneInfo.Local.BaseUtcOffset.ToString() },
+                { "timeZone", TimeZoneInfo.Local?.Id },
+                { "timeZoneDisplayName", TimeZoneInfo.Local?.DisplayName ?? TimeZoneInfo.Local?.StandardName },
+                { "baseOffset", TimeZoneInfo.Local?.BaseUtcOffset.ToString() },
             } },
             { "device", new JsonObjectNode
             {

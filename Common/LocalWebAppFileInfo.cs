@@ -298,7 +298,7 @@ public class LocalWebAppFileInfo
             var signatureProvider = host.SignatureProvider;
             if (signatureProvider == null) return false;
             var sign = WebFormat.Base64UrlDecode(signature);
-            using var stream = host.ReadFile(file);
+            using var stream = host.TryReadFile(file);
             if (stream == null) return false;
             return signatureProvider.Verify(stream, sign);
         }

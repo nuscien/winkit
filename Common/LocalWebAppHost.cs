@@ -132,11 +132,9 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="file">The file to read.</param>
     /// <returns>The file stream.</returns>
-    public FileStream ReadFile(FileInfo file)
+    public FileStream TryReadFile(FileInfo file)
     {
         if (file == null || !file.Exists) return null;
-        var temp = Directory.CreateDirectory(Path.Combine(CacheDirectory.FullName, "read"));
-        if (temp == null || !temp.Exists) return file.OpenRead();
         try
         {
             return file.OpenRead();
@@ -166,6 +164,8 @@ public class LocalWebAppHost
         {
         }
 
+        var temp = Directory.CreateDirectory(Path.Combine(CacheDirectory.FullName, "read"));
+        if (temp == null || !temp.Exists) return null;
         try
         {
             var path = Path.Combine(temp.FullName, file.Name);
@@ -198,6 +198,106 @@ public class LocalWebAppHost
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Reads the file.
+    /// </summary>
+    /// <param name="file">The file to read.</param>
+    /// <returns>The file stream.</returns>
+    public string TryReadFileText(FileInfo file)
+    {
+        if (file == null || !file.Exists) return null;
+        try
+        {
+            return File.ReadAllText(file.FullName);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        var temp = Directory.CreateDirectory(Path.Combine(CacheDirectory.FullName, "read"));
+        if (temp == null || !temp.Exists) return null;
+        try
+        {
+            var path = Path.Combine(temp.FullName, file.Name);
+            file = file.CopyTo(path, true);
+            return File.ReadAllText(file.FullName);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads the file.
+    /// </summary>
+    /// <param name="file">The file to read.</param>
+    /// <returns>The file stream.</returns>
+    public JsonObjectNode TryReadFileJson(FileInfo file)
+    {
+        using var stream = TryReadFile(file);
+        if (stream == null) return null;
+        var json = JsonObjectNode.Parse(stream);
+        return json;
+    }
+
+    /// <summary>
+    /// Reads the file.
+    /// </summary>
+    /// <param name="file">The file to read.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The file stream.</returns>
+    public async Task<JsonObjectNode> TryReadFileJsonAsync(FileInfo file, CancellationToken cancellationToken = default)
+    {
+        using var stream = TryReadFile(file);
+        if (stream == null) return null;
+        var json = await JsonObjectNode.ParseAsync(stream, cancellationToken);
+        return json;
     }
 
     /// <summary>

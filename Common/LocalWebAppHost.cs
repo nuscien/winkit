@@ -329,6 +329,7 @@ public class LocalWebAppHost
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
@@ -354,6 +355,7 @@ public class LocalWebAppHost
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="SecurityException">Signature failed.</exception>
     public static Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, bool skipVerificationException = false, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
@@ -372,6 +374,7 @@ public class LocalWebAppHost
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="SecurityException">Signature failed.</exception>
     public static async Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, LocalWebAppVerificationOptions verifyOptions = LocalWebAppVerificationOptions.Regular, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
@@ -423,7 +426,8 @@ public class LocalWebAppHost
         if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
         var file = appDir.EnumerateFiles(manifestFileName).FirstOrDefault();
         if (file == null || !file.Exists) throw new FileNotFoundException("The resource manifest is not found.");
-        var manifest = await JsonSerializer.DeserializeAsync<LocalWebAppManifest>(file.OpenRead(), null as JsonSerializerOptions, cancellationToken);
+        using var stream = file.OpenRead();
+        var manifest = await JsonSerializer.DeserializeAsync<LocalWebAppManifest>(stream, null as JsonSerializerOptions, cancellationToken);
         if (string.IsNullOrWhiteSpace(manifest?.Id)) throw new FormatException("The format of the package manifest is not correct.");
         if (manifest.Id.Trim().ToLowerInvariant() != options.ResourcePackageId?.Trim()?.ToLowerInvariant())
             throw new InvalidOperationException("The app is not the specific one.");
@@ -920,6 +924,10 @@ public class LocalWebAppHost
             path = null;
         }
         catch (IOException)
+        {
+            path = null;
+        }
+        catch (JsonException)
         {
             path = null;
         }

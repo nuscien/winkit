@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Trivial.Collection;
@@ -142,122 +143,66 @@ public sealed partial class LocalWebAppPage : Page
     /// <param name="options">The options of the standalone web app.</param>
     public async Task LoadAsync(LocalWebAppOptions options)
     {
-        if (options == null) return;
-        LocalWebAppHost host = null;
-        string errorMessage = null;
+        if (options == null)
+        {
+            OnLoadError(new ArgumentNullException(nameof(options)));
+            return;
+        }
+
+        LocalWebAppHost host;
         try
         {
             host = await LocalWebAppHost.LoadAsync(options, true);
         }
-        catch (ArgumentException ex)
+        catch (OutOfMemoryException)
         {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (InvalidOperationException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (IOException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (FormatException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (SecurityException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+            throw;
         }
         catch (Exception ex)
         {
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+            OnLoadError(ex);
             throw;
         }
 
-        if (!string.IsNullOrWhiteSpace(errorMessage))
-        {
-            NotificationBar.Title = "Error";
-            NotificationBar.Message = errorMessage;
-            NotificationBar.Severity = InfoBarSeverity.Error;
-            NotificationBar.IsOpen = true;
-            ProgressElement.IsActive = false;
-        }
-
-        if (host != null) await LoadAsync(host);
+        if (host == null)
+            OnLoadError(new InvalidOperationException("Failed to load app."));
+        else
+            await LoadAsync(host);
     }
 
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="host">The standalone web app host.</param>
+    /// <param name="hostTask">The standalone web app host.</param>
     /// <param name="callback">The callback.</param>
-    public async Task LoadAsync(Task<LocalWebAppHost> host, Action<LocalWebAppHost> callback = null)
+    public async Task LoadAsync(Task<LocalWebAppHost> hostTask, Action<LocalWebAppHost> callback = null)
     {
-        if (host == null) return;
-        LocalWebAppHost h = null;
-        string errorMessage = null;
+        if (hostTask == null)
+        {
+            OnLoadError(new ArgumentNullException(nameof(hostTask)));
+            return;
+        }
+
+        LocalWebAppHost host;
         try
         {
-            h = await host;
+            host = await hostTask;
         }
-        catch (ArgumentException ex)
+        catch (OutOfMemoryException)
         {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (InvalidOperationException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (IOException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (FormatException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (SecurityException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            errorMessage = ex.Message;
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+            throw;
         }
         catch (Exception ex)
         {
-            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+            OnLoadError(ex);
             throw;
         }
 
-        if (!string.IsNullOrWhiteSpace(errorMessage))
-        {
-            NotificationBar.Title = "Error";
-            NotificationBar.Message = errorMessage;
-            NotificationBar.Severity = InfoBarSeverity.Error;
-            NotificationBar.IsOpen = true;
-            ProgressElement.IsActive = false;
-        }
-
-        if (host != null) await LoadAsync(h);
-        callback?.Invoke(h);
+        if (host == null)
+            OnLoadError(new InvalidOperationException("Failed to load app."));
+        else
+            await LoadAsync(host);
+        callback?.Invoke(host);
     }
 
     /// <summary>
@@ -267,7 +212,12 @@ public sealed partial class LocalWebAppPage : Page
     public async Task LoadAsync(LocalWebAppHost host)
     {
         //Browser.NavigateToString(@"<html><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" ><base target=""_blank"" /></head><body></body></html>");
-        if (host == null) return;
+        if (host == null)
+        {
+            OnLoadError(new ArgumentNullException(nameof(host)));
+            return;
+        }
+
         this.host = host;
         await Browser.EnsureCoreWebView2Async();
         Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, host.ResourcePackageDirectory.FullName, CoreWebView2HostResourceAccessKind.Allow);
@@ -322,6 +272,17 @@ public sealed partial class LocalWebAppPage : Page
             { "id", Guid.NewGuid() }
         };
         Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
+    }
+
+    private void OnLoadError(Exception ex)
+    {
+        if (ex == null) return;
+        NotificationBar.Title = "Error";
+        NotificationBar.Message = ex.Message;
+        NotificationBar.Severity = InfoBarSeverity.Error;
+        NotificationBar.IsOpen = true;
+        ProgressElement.IsActive = false;
+        LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
     }
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)

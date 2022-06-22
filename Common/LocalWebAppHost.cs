@@ -438,6 +438,29 @@ public class LocalWebAppHost
             CacheDirectory = cacheDir,
         };
 
+        // Test the host app binding information.
+        if (verifyOptions != LocalWebAppVerificationOptions.Disabled)
+        {
+            var hostBinding = manifest.HostBinding;
+            if (hostBinding != null && hostBinding.Count > 0)
+            {
+                var verifiedHost = false;
+                foreach (var bindingInfo in hostBinding)
+                {
+                    if (bindingInfo?.HostId != options.HostId) continue;
+                    if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
+                        if (VersionComparer.Compare(bindingInfo.MinimumVersion, manifest.Version, false) > 0) continue;
+                    if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
+                        if (VersionComparer.Compare(bindingInfo.MaximumVersion, manifest.Version, false) < 0) continue;
+                    verifiedHost = true;
+                    break;
+                }
+
+                if (!verifiedHost)
+                    throw new InvalidOperationException("Does not match the current host app.");
+            }
+        }
+
         // Bind static resources from given files.
         var filesToBind = host?.Manifest?.JsonBindings;
         if (filesToBind != null)
@@ -485,27 +508,7 @@ public class LocalWebAppHost
 
         // Verify files and return result.
         if (verifyOptions != LocalWebAppVerificationOptions.Disabled)
-        {
-            var hostBinding = manifest.HostBinding;
-            if (hostBinding != null && hostBinding.Count > 0)
-            {
-                var verifiedHost = false;
-                foreach (var bindingInfo in hostBinding)
-                {
-                    if (bindingInfo?.HostId != options.HostId) continue;
-                    if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
-                        if (VersionComparer.Compare(bindingInfo.MinimumVersion, manifest.Version, false) > 0) continue;
-                    if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
-                        if (VersionComparer.Compare(bindingInfo.MaximumVersion, manifest.Version, false) < 0) continue;
-                    verifiedHost = true;
-                    break;
-                }
-
-                if (!verifiedHost) return null;
-            }
-
             host.IsVerified = await VerifyAsync(host, manifestFileName, verifyOptions == LocalWebAppVerificationOptions.SkipException, cancellationToken);
-        }
 
         // Return result.
         return host;

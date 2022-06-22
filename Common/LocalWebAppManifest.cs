@@ -76,13 +76,13 @@ public class LocalWebAppManifest
     /// <summary>
     /// The JSON data file list.
     /// </summary>
-    [JsonPropertyName("json")]
+    [JsonPropertyName("dataRes")]
     public Dictionary<string, string> JsonBindings { get; set; }
 
     /// <summary>
     /// The text data file list.
     /// </summary>
-    [JsonPropertyName("text")]
+    [JsonPropertyName("strRes")]
     public Dictionary<string, string> TextBindings { get; set; }
 
     /// <summary>
@@ -107,7 +107,7 @@ public class LocalWebAppHostBindingInfo
     /// Gets or sets the app identifier in store.
     /// </summary>
     [JsonPropertyName("id")]
-    public string AppId { get; set; }
+    public string HostId { get; set; }
 
     /// <summary>
     /// Gets or sets the kind of the app framework.

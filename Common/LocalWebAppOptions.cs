@@ -21,6 +21,27 @@ using Trivial.Text;
 namespace Trivial.Web;
 
 /// <summary>
+/// The options to verify.
+/// </summary>
+public enum LocalWebAppVerificationOptions : byte
+{
+    /// <summary>
+    /// Verify.
+    /// </summary>
+    Regular = 0,
+
+    /// <summary>
+    /// Do NOT verifiy.
+    /// </summary>
+    Disabled = 1,
+
+    /// <summary>
+    /// Verify but skip exception.
+    /// </summary>
+    SkipException = 2,
+}
+
+/// <summary>
 /// The options of the standalone web app resource package.
 /// </summary>
 public class LocalWebAppOptions
@@ -30,23 +51,26 @@ public class LocalWebAppOptions
     /// <summary>
     /// Initializes a new instance of the LocalWebAppOptions class.
     /// </summary>
+    /// <param name="hostId">The host app identifier.</param>
     /// <param name="resourcePackageId">The resource package identifier.</param>
     /// <param name="signatureProvider">The signature provider.</param>
     /// <param name="update">The update service information.</param>
-    public LocalWebAppOptions(string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update = null)
-        : this(resourcePackageId, signatureProvider, update, null)
+    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update = null)
+        : this(hostId, resourcePackageId, signatureProvider, update, null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the LocalWebAppOptions class.
     /// </summary>
+    /// <param name="hostId">The host app identifier.</param>
     /// <param name="resourcePackageId">The resource package identifier.</param>
     /// <param name="signatureProvider">The signature provider.</param>
     /// <param name="update">The update service information.</param>
     /// <param name="manifestFileName">The file name of the manifest.</param>
-    public LocalWebAppOptions(string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update, string manifestFileName)
+    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update, string manifestFileName)
     {
+        HostId = hostId;
         ResourcePackageId = resourcePackageId;
         defaultSign = signatureProvider;
         Update = update;
@@ -55,17 +79,22 @@ public class LocalWebAppOptions
     }
 
     /// <summary>
-    /// Gets or sets the file name of the manifest.
+    /// Gets host app identifier.
+    /// </summary>
+    public string HostId { get; }
+
+    /// <summary>
+    /// Gets the file name of the manifest.
     /// </summary>
     public string ManifestFileName { get; }
 
     /// <summary>
-    /// Gets or sets the app resource package identifier.
+    /// Gets the app resource package identifier.
     /// </summary>
     public string ResourcePackageId { get; }
 
     /// <summary>
-    /// Gets or sets the update service information.
+    /// Gets the update service information.
     /// </summary>
     public WebAppPackageUpdateInfo Update { get; }
 

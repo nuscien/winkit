@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,6 +117,11 @@ public sealed partial class LocalWebAppPage : Page
     public event DataEventHandler<string> TitleChanged;
 
     /// <summary>
+    /// Adds or removes an event occured on load failed.
+    /// </summary>
+    public event DataEventHandler<Exception> LoadFailed;
+
+    /// <summary>
     /// Gets the download list.
     /// </summary>
     public List<CoreWebView2DownloadOperation> DownloadList => messageHandler.DownloadList;
@@ -132,8 +138,58 @@ public sealed partial class LocalWebAppPage : Page
     public async Task LoadAsync(LocalWebAppOptions options)
     {
         if (options == null) return;
-        var host = await LocalWebAppHost.LoadAsync(options, true);
-        await LoadAsync(host);
+        LocalWebAppHost host = null;
+        string errorMessage = null;
+        try
+        {
+            host = await LocalWebAppHost.LoadAsync(options, true);
+        }
+        catch (ArgumentException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (IOException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (FormatException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (SecurityException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (Exception ex)
+        {
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+            throw;
+        }
+
+        if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            NotificationBar.Title = "Error";
+            NotificationBar.Message = errorMessage;
+            NotificationBar.Severity = InfoBarSeverity.Error;
+            NotificationBar.IsOpen = true;
+            ProgressElement.IsActive = false;
+        }
+
+        if (host != null) await LoadAsync(host);
     }
 
     /// <summary>
@@ -144,8 +200,58 @@ public sealed partial class LocalWebAppPage : Page
     public async Task LoadAsync(Task<LocalWebAppHost> host, Action<LocalWebAppHost> callback = null)
     {
         if (host == null) return;
-        var h = await host;
-        await LoadAsync(h);
+        LocalWebAppHost h = null;
+        string errorMessage = null;
+        try
+        {
+            h = await host;
+        }
+        catch (ArgumentException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (IOException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (FormatException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (SecurityException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            errorMessage = ex.Message;
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        }
+        catch (Exception ex)
+        {
+            LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+            throw;
+        }
+
+        if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            NotificationBar.Title = "Error";
+            NotificationBar.Message = errorMessage;
+            NotificationBar.Severity = InfoBarSeverity.Error;
+            NotificationBar.IsOpen = true;
+            ProgressElement.IsActive = false;
+        }
+
+        if (host != null) await LoadAsync(h);
         callback?.Invoke(h);
     }
 
@@ -168,9 +274,9 @@ public sealed partial class LocalWebAppPage : Page
             NotificationBar.Message = "Invalid file signatures.";
             NotificationBar.Severity = InfoBarSeverity.Error;
             NotificationBar.IsOpen = true;
+            ProgressElement.IsActive = false;
             if (!IsDevEnvironmentEnabled)
             {
-                ProgressElement.IsActive = false;
                 Browser.Visibility = Visibility.Collapsed;
                 return;
             }
@@ -185,8 +291,11 @@ public sealed partial class LocalWebAppPage : Page
     /// </summary>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The new version.</returns>
-    public Task UpdateAsync(CancellationToken cancellationToken)
-        => host.UpdateAsync(cancellationToken);
+    public Task<string> UpdateAsync(CancellationToken cancellationToken)
+    {
+        if (host == null) return Task.FromResult<string>(null);
+        return host.UpdateAsync(cancellationToken);
+    }
 
     /// <summary>
     /// Sends a notification message to webpage.

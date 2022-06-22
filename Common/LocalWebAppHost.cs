@@ -351,7 +351,25 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="SecurityException">Signature failed.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, bool skipVerificationException = false, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
+    public static Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, bool skipVerificationException = false, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
+        => LoadAsync(rootDir, options, skipVerificationException ? LocalWebAppVerificationOptions.SkipException : LocalWebAppVerificationOptions.Regular, appDir, cancellationToken);
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="rootDir">The root directory for local standalone web app.</param>
+    /// <param name="options">The options to parse.</param>
+    /// <param name="verifyOptions">The verification options.</param>
+    /// <param name="appDir">The optional resource package directory to load the local standalone web app.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="SecurityException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, LocalWebAppVerificationOptions verifyOptions = LocalWebAppVerificationOptions.Regular, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
     {
         if (rootDir == null || !rootDir.Exists) throw new ArgumentNullException(nameof(rootDir));
         if (options == null) throw new ArgumentNullException(nameof(options));
@@ -457,7 +475,30 @@ public class LocalWebAppHost
         }
 
         // Verify files and return result.
-        host.IsVerified = await VerifyAsync(host, manifestFileName, skipVerificationException, cancellationToken);
+        if (verifyOptions != LocalWebAppVerificationOptions.Disabled)
+        {
+            var hostBinding = manifest.HostBinding;
+            if (hostBinding != null && hostBinding.Count > 0)
+            {
+                var verifiedHost = false;
+                foreach (var bindingInfo in hostBinding)
+                {
+                    if (bindingInfo?.HostId != options.HostId) continue;
+                    if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
+                        if (VersionComparer.Compare(bindingInfo.MinimumVersion, manifest.Version, false) > 0) continue;
+                    if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
+                        if (VersionComparer.Compare(bindingInfo.MaximumVersion, manifest.Version, false) < 0) continue;
+                    verifiedHost = true;
+                    break;
+                }
+
+                if (!verifiedHost) return null;
+            }
+
+            host.IsVerified = await VerifyAsync(host, manifestFileName, verifyOptions == LocalWebAppVerificationOptions.SkipException, cancellationToken);
+        }
+
+        // Return result.
         return host;
     }
 
@@ -515,7 +556,20 @@ public class LocalWebAppHost
     /// <returns>The file collection.</returns>
     /// <exception cref="ArgumentNullException">The directory or signatureProvider was null.</exception>
     /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
-    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName)
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName = null)
+        => Sign(dir, signatureProvider, outputFileName, out _);
+
+    /// <summary>
+    /// Computes the signature for files.
+    /// </summary>
+    /// <param name="dir">The app directory.</param>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
+    /// <param name="outputFileName">The file name to output.</param>
+    /// <param name="hasWritenFile">true if write file succeeded; otherwise, false.</param>
+    /// <returns>The file collection.</returns>
+    /// <exception cref="ArgumentNullException">The directory or signatureProvider was null.</exception>
+    /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName, out bool hasWritenFile)
     {
         if (dir == null) throw new ArgumentNullException(nameof(dir));
         if (signatureProvider == null) throw new ArgumentNullException(nameof(signatureProvider));
@@ -575,6 +629,7 @@ public class LocalWebAppHost
             }
         }
 
+        var written = false;
         if (!string.IsNullOrWhiteSpace(outputFileName))
         {
             string s = null;
@@ -611,6 +666,7 @@ public class LocalWebAppHost
                 try
                 {
                     File.WriteAllText(outputFileName, s, Encoding.UTF8);
+                    written = true;
                 }
                 catch (ArgumentException)
                 {
@@ -624,6 +680,7 @@ public class LocalWebAppHost
                     {
                         File.Delete(outputFileName);
                         File.WriteAllText(outputFileName, s, Encoding.UTF8);
+                        written = true;
                     }
                     catch (InvalidOperationException)
                     {
@@ -659,6 +716,7 @@ public class LocalWebAppHost
             }
         }
 
+        hasWritenFile = written;
         return collection;
     }
 

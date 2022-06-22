@@ -102,6 +102,11 @@ public class LocalWebAppHost
     public IDictionary<string, string> DataStrings { get; } = new Dictionary<string, string>();
 
     /// <summary>
+    /// Gets the available new version to update.
+    /// </summary>
+    public string NewVersionAvailable { get; private set; }
+
+    /// <summary>
     /// Gets online path of a relative embedded path.
     /// </summary>
     /// <param name="localRelativePath">The relative path of embedded file.</param>
@@ -988,7 +993,7 @@ public class LocalWebAppHost
         }
 
         // Return result.
-        return version;
+        return NewVersionAvailable = version;
     }
 
     /// <summary>

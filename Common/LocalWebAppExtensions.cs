@@ -659,6 +659,20 @@ internal static class LocalWebAppExtensions
         return resp;
     }
 
+    public static async Task<LocalWebAppResponseMessage> CheckUpdateAsync(LocalWebAppRequestMessage request, LocalWebAppHost host = null)
+    {
+        var needCheck = request?.Data?.TryGetBooleanValue("check") == true;
+        if (needCheck) await host.UpdateAsync();
+        return new(new JsonObjectNode()
+        {
+            { "version", host.NewVersionAvailable ?? host.Manifest?.Version },
+            { "has", !string.IsNullOrWhiteSpace(host.NewVersionAvailable) }
+        }, new()
+        {
+            { "check", needCheck }
+        });
+    }
+
     private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
@@ -686,6 +700,13 @@ internal static class LocalWebAppExtensions
                         { "max", maxCount }
                     });
                 }
+            case "theme":
+                {
+                    var theme = browserHandler?.GetTheme();
+                    return theme != null ? new(theme) : new("Failed to load theme information.");
+                }
+            case "check-update":
+                return await CheckUpdateAsync(request, host);
         }
 
         return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));

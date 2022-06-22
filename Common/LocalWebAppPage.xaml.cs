@@ -132,6 +132,11 @@ public sealed partial class LocalWebAppPage : Page
     public bool IsDevEnvironmentEnabled { get; set; }
 
     /// <summary>
+    /// Gets the available new version to update.
+    /// </summary>
+    public string NewVersionAvailable => host?.NewVersionAvailable;
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
@@ -497,6 +502,17 @@ window.localWebApp = {
       return s ? (parameter ? decodeURIComponent(s) : decodeURI(s)) : s;
     }
   },
+  hostApp: {
+    theme() {
+      return sendRequest(null, 'theme', {}, null, null);
+    },
+    checkUpdate(options) {
+      if (options === true) options = { check: true };
+      else if (options === false) options = { check: false };
+      else if (!options) options = {};
+      return sendRequest(null, 'check-update', { check: options.check }, null, options.context);
+    }
+  },
   hostInfo: ");
         sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest, isDebug).ToString(IndentStyles.Compact));
         sb.Append(", dataRes: ");
@@ -665,4 +681,7 @@ window.localWebApp = {
     {
         webview.DownloadStarting += OnDownloadStarting;
     }
+
+    private void OnActualThemeChanged(FrameworkElement sender, object args)
+        => Notify("themeChanged", new(messageHandler?.GetTheme(), "system"));
 }

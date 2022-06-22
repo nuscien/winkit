@@ -1,8 +1,10 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trivial.Collection;
@@ -22,7 +24,14 @@ public interface ILocalWebAppBrowserMessageHandler
     /// </summary>
     /// <param name="open">true if open the default dialog; false if hide; or null, no action.</param>
     /// <param name="maxCount">The maximum count of download item to return.</param>
+    /// <returns>The result.</returns>
     JsonObjectNode DownloadListInfo(bool? open, int maxCount = 256);
+
+    /// <summary>
+    /// Gets light or dark information.
+    /// </summary>
+    /// <returns>The result.</returns>
+    JsonObjectNode GetTheme();
 }
 
 internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHandler
@@ -75,5 +84,34 @@ internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHand
             { "list", arr },
             { "enumerated", DateTime.Now }
         };
+    }
+
+    /// <summary>
+    /// Gets light or dark information.
+    /// </summary>
+    /// <returns>The result.</returns>
+    public JsonObjectNode GetTheme()
+    {
+        try
+        {
+            return new JsonObjectNode
+            {
+                { "brightness", Application.Current.RequestedTheme.ToString().ToLowerInvariant() }
+            };
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+
+        return null;
     }
 }

@@ -524,10 +524,35 @@ public class LocalWebAppHost
     /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
     public LocalWebAppFileCollection Sign(ISignatureProvider signatureProvider, bool output = true)
     {
-        var fileName = Options?.ManifestFileName?.Trim();
-        if (output && !string.IsNullOrEmpty(fileName))
+        string fileName = null;
+        if (output)
+        {
+            fileName = Options?.ManifestFileName?.Trim();
+            if (string.IsNullOrEmpty(fileName)) fileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
             fileName = GetSubFileName(fileName, "files");
-        return Sign(ResourcePackageDirectory, signatureProvider, fileName);
+        }
+
+        var col = Sign(ResourcePackageDirectory, signatureProvider, fileName);
+        if (col != null) IsVerified = true;
+        return col;
+    }
+
+    /// <summary>
+    /// Computes the signature for files.
+    /// </summary>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
+    /// <param name="hasWritenFile">true if write file succeeded; otherwise, false.</param>
+    /// <returns>The file collection.</returns>
+    /// <exception cref="ArgumentNullException">The directory or signatureProvider was null.</exception>
+    /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
+    public LocalWebAppFileCollection Sign(ISignatureProvider signatureProvider, out bool hasWritenFile)
+    {
+        var fileName = Options?.ManifestFileName?.Trim();
+        if (string.IsNullOrEmpty(fileName)) fileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
+        fileName = GetSubFileName(fileName, "files");
+        var col = Sign(ResourcePackageDirectory, signatureProvider, fileName, out hasWritenFile);
+        if (col != null) IsVerified = true;
+        return col;
     }
 
     /// <summary>
@@ -1153,7 +1178,8 @@ public class LocalWebAppHost
                 throw new SecurityException("The file signature list is not found.", new FileNotFoundException("The file signature list is not found."));
             }
 
-            var fileCol = await JsonSerializer.DeserializeAsync<LocalWebAppFileCollection>(file.OpenRead(), null as JsonSerializerOptions, cancellationToken);
+            using var stream = file.OpenRead();
+            var fileCol = await JsonSerializer.DeserializeAsync<LocalWebAppFileCollection>(stream, null as JsonSerializerOptions, cancellationToken);
             if (fileCol.Files == null)
             {
                 if (skipVerificationException) return false;

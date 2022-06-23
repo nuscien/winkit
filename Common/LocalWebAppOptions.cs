@@ -79,7 +79,7 @@ public class LocalWebAppOptions
     }
 
     /// <summary>
-    /// Gets host app identifier.
+    /// Gets the host app identifier.
     /// </summary>
     public string HostId { get; }
 

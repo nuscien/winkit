@@ -961,7 +961,7 @@ public class LocalWebAppHost
         TryDeleteDirectory(path);
         try
         {
-            CopyTo(dir, path);
+            FileSystemInfoUtility.CopyTo(dir, path);
         }
         catch (SecurityException)
         {
@@ -1070,25 +1070,6 @@ public class LocalWebAppHost
     {
         var host = ResourcePackageDirectory?.Parent?.FullName;
         return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
-    }
-
-    private static DirectoryInfo CopyTo(DirectoryInfo source, string destPath)
-    {
-        Directory.CreateDirectory(destPath);
-        FileInfo[] files = source.GetFiles();
-        foreach (FileInfo fileInfo in files)
-        {
-            fileInfo.CopyTo(Path.Combine(destPath, fileInfo.Name), overwrite: true);
-        }
-
-        DirectoryInfo[] directories = source.GetDirectories();
-        foreach (DirectoryInfo directoryInfo in directories)
-        {
-            source = directoryInfo;
-            CopyTo(directoryInfo, Path.Combine(destPath, directoryInfo.Name));
-        }
-
-        return new DirectoryInfo(destPath);
     }
 
     private static string GetSubFileName(string name, string sub)

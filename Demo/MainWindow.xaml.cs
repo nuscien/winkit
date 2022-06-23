@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Trivial.UI;
@@ -26,6 +27,30 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         Title = "Demo - WindowsKit - Trivial";
+        try
+        {
+            var appWindow = VisualUtility.TryGetAppWindow(this);
+            if (appWindow == null) return;
+            appWindow.SetIcon("logo.png");
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
     }
 
     private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

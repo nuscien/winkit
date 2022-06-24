@@ -325,12 +325,12 @@ public sealed partial class TabbedWebViewWindow : Window
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         => SelectionChanged?.Invoke(this, e);
 
-    private void HostElement_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
+    private void HostElement_TabDragStarting(TabbedWebView sender, TabViewTabDragStartingEventArgs args)
         => TabDragStarting?.Invoke(this, args);
 
-    private void HostElement_TabDragCompleted(TabView sender, TabViewTabDragCompletedEventArgs args)
+    private void HostElement_TabDragCompleted(TabbedWebView sender, TabViewTabDragCompletedEventArgs args)
         => TabDragCompleted?.Invoke(this, args);
 
-    private void HostElement_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
+    private void HostElement_TabDroppedOutside(TabbedWebView sender, TabViewTabDroppedOutsideEventArgs args)
         => TabDroppedOutside?.Invoke(this, args);
 }

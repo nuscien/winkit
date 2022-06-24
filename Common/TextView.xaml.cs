@@ -132,6 +132,11 @@ public sealed partial class TextView : UserControl
     public static readonly DependencyProperty LineNumberWidthProperty = DependencyObjectProxy.RegisterProperty(nameof(LineNumberWidth), new GridLength(50));
 
     /// <summary>
+    /// The dependency property of text selection state.
+    /// </summary>
+    public static readonly DependencyProperty IsTextSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty<bool>(nameof(IsTextSelectionEnabled));
+
+    /// <summary>
     /// The dependency property of selection mode.
     /// </summary>
     public static readonly DependencyProperty SelectionModeProperty = DependencyObjectProxy.RegisterProperty(nameof(SelectionMode), ListViewSelectionMode.Extended);
@@ -199,6 +204,15 @@ public sealed partial class TextView : UserControl
     {
         get => (GridLength)GetValue(LineNumberWidthProperty);
         set => SetValue(LineNumberWidthProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether text selection is enabled in each line.
+    /// </summary>
+    public bool IsTextSelectionEnabled
+    {
+        get => (bool)GetValue(IsTextSelectionEnabledProperty);
+        set => SetValue(IsTextSelectionEnabledProperty, value);
     }
 
     /// <summary>

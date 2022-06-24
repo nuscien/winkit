@@ -9,14 +9,9 @@
     Activated="OnActivated"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="28" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Border x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#01808080" >
-            <TextBlock x:Name="TitleElement" FontSize="14" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0" />
-        </Border>
-        <local:TabbedWebView x:Name="HostElement" TabCloseRequested="OnTabCloseRequested" WebViewTabCreated="OnWebViewTabCreated" SelectionChanged="OnSelectionChanged"  Grid.Row="1" />
-    </Grid>
+    <local:TabbedWebView x:Name="HostElement" TabCloseRequested="OnTabCloseRequested" WebViewTabCreated="OnWebViewTabCreated" SelectionChanged="OnSelectionChanged"  Grid.Row="1" >
+        <local:TabbedWebView.TabStripFooter>
+            <Border x:Name="CustomDragRegion" Background="#01808080" MinWidth="160" />
+        </local:TabbedWebView.TabStripFooter>
+    </local:TabbedWebView>
 </Window>

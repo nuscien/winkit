@@ -36,7 +36,7 @@ public sealed partial class TabbedWebViewWindow : Window
         try
         {
             ExtendsContentIntoTitleBar = true;
-            SetTitleBar(TitleBackground);
+            SetTitleBar(CustomDragRegion);
         }
         catch (ArgumentException)
         {
@@ -179,13 +179,6 @@ public sealed partial class TabbedWebViewWindow : Window
     }
 
     /// <summary>
-    /// Sets the window title.
-    /// </summary>
-    /// <param name="title">The new title.</param>
-    public void SetTitle(string title)
-        => Title = TitleElement.Text = title;
-
-    /// <summary>
     /// Gets the the web view in first tab.
     /// </summary>
     /// <returns>The web view instance.</returns>
@@ -309,7 +302,6 @@ public sealed partial class TabbedWebViewWindow : Window
         if (backdrop == null) return;
         var isActive = args.WindowActivationState != WindowActivationState.Deactivated;
         backdrop.IsInputActive = isActive;
-        TitleElement.Opacity = isActive ? 1 : 0.6;
     }
 
     private void OnWebViewTabCreated(object sender, TabbedWebView.WebViewTabEventArgs e)

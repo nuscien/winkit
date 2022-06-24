@@ -60,7 +60,7 @@
                         <TextBlock Text="{x:Bind LineNumber}" Style="{Binding Path=LineNumberStyle, ElementName=CurrentControl}" />
                     </Border>
                     <Border Background="{x:Bind Background}" Grid.Column="1" >
-                        <TextBlock Text="{x:Bind Text}" Style="{Binding Path=TextStyle, ElementName=CurrentControl}" />
+                        <TextBlock Text="{x:Bind Text}" Style="{Binding Path=TextStyle, ElementName=CurrentControl}" IsTextSelectionEnabled="{Binding Path=IsTextSelectionEnabled, ElementName=CurrentControl}" />
                     </Border>
                 </Grid>
             </DataTemplate>

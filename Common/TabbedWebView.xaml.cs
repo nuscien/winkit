@@ -93,6 +93,21 @@ public sealed partial class TabbedWebView : UserControl
     public event TypedEventHandler<TabbedWebView, TabViewTabCloseRequestedEventArgs> TabCloseRequested;
 
     /// <summary>
+    /// Occurs on the tab drags starting.
+    /// </summary>
+    public event TypedEventHandler<TabbedWebView, TabViewTabDragStartingEventArgs> TabDragStarting;
+
+    /// <summary>
+    /// Occurs on the tab drags completed.
+    /// </summary>
+    public event TypedEventHandler<TabbedWebView, TabViewTabDragCompletedEventArgs> TabDragCompleted;
+
+    /// <summary>
+    /// Occurs on the tab is dropped outside.
+    /// </summary>
+    public event TypedEventHandler<TabbedWebView, TabViewTabDroppedOutsideEventArgs> TabDroppedOutside;
+
+    /// <summary>
     /// Occurs on the web view tab has created.
     /// </summary>
     public event EventHandler<WebViewTabEventArgs> WebViewTabCreated;
@@ -488,4 +503,13 @@ public sealed partial class TabbedWebView : UserControl
     /// <returns>The web view contained by the tab view item; or null, if non-exists.</returns>
     private static SingleWebView GetWebView(TabViewItem tab)
         => tab?.Content as SingleWebView;
+
+    private void HostElement_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
+        => TabDragStarting?.Invoke(this, args);
+
+    private void HostElement_TabDragCompleted(TabView sender, TabViewTabDragCompletedEventArgs args)
+        => TabDragCompleted?.Invoke(this, args);
+
+    private void HostElement_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
+        => TabDroppedOutside?.Invoke(this, args);
 }

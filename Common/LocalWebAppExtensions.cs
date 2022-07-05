@@ -83,7 +83,7 @@ internal static class LocalWebAppExtensions
             } },
             { "device", new JsonObjectNode
             {
-                { "form", Windows.System.Profile.AnalyticsInfo.DeviceForm },
+                { "form", Windows.System.Profile.AnalyticsInfo.DeviceForm }, // https://docs.microsoft.com/zh-cn/windows-hardware/customize/desktop/unattend/microsoft-windows-deployment-deviceform
                 { "family", Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily },
                 { "manufacturer", eas.SystemManufacturer },
                 { "productName", eas.SystemProductName },

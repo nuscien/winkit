@@ -330,6 +330,7 @@ function sendRequest(handlerId, cmd, data, info, context, noResp) {
       handler.proc = function (ev) {
         if (!ev || !ev.data || ev.data.trace != req.trace) return;
         handler.invalid = true;
+        if (context) ev.context = context;
         if (ev.data.error) reject(ev.data);
         else resolve(ev.data);
     }; hs.push({ h: handler, type: null });
@@ -349,7 +350,7 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
             if (item.invalid === true) {
               toRemove = true;
             } else if (typeof item.invalid === 'function') {
-              if (item.test(ev)) toRemove = true;
+              if (item.invalid(ev)) toRemove = true;
             } else if (typeof item.invalid === 'number') {
               if (item.invalid <= 0) toRemove = true;
               else item.invalid--;
@@ -358,8 +359,7 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
               removing.push(source); continue;
             }
           }
-          item.proc(ev);
-          continue;
+          item.proc(ev); continue;
         }
         if (typeof item === 'function') item(ev);
       }
@@ -373,10 +373,10 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
   } catch (ex) { }
 }
 window.localWebApp = { 
-  onMessage(type, callback, options) {
+  onMessage(type, callback) {
     if (!callback) return;
     if (typeof callback !== 'function' && typeof callback.proc !== 'function') return;
-    hs.push({ h: callback, type, options });
+    hs.push({ h: callback, type });
   },
   getCommandHandler(id) {
     if (!id || typeof id !== 'string') return null;
@@ -388,7 +388,7 @@ window.localWebApp = {
         sendRequest(id, cmd, data, info, context, false)
       },
       request(cmd, data, context, info) {
-        sendRequest(id, cmd, data, info, context, true)
+        return sendRequest(id, cmd, data, info, context, true)
       }
     };
   },

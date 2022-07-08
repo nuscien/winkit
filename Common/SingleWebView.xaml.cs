@@ -688,7 +688,7 @@ public sealed partial class SingleWebView : UserControl
     private void OnHistoryChanged(CoreWebView2 sender, object args)
     {
         BackButton.IsEnabled = Browser.CanGoBack;
-        ForwardButton.IsEnabled = Browser.CanGoForward;
+        ForwardButton.Visibility = Browser.CanGoForward ? Visibility.Visible : Visibility.Collapsed;
         HistoryChanged?.Invoke(this, args);
     }
 

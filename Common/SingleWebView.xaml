@@ -66,23 +66,25 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <RelativePanel Background="{x:Bind NavigationBarBackground}" Padding="{x:Bind NavigationBarPadding}" Margin="{x:Bind NavigationBarMargin}" CornerRadius="{x:Bind NavigationBarCornerRadius}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <local:TextButton x:Name="BackButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" IsEnabled="False" RelativePanel.AlignVerticalCenterWithPanel="True" Click="BackButton_Click" Style="{ThemeResource WinKit.BarButton}" >
-                <local:TextButton.IconSource>
-                    <FontIconSource Glyph="&#xE0A6;"/>
-                </local:TextButton.IconSource>
-            </local:TextButton>
-            <local:TextButton x:Name="ForwardButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" IsEnabled="False" RelativePanel.RightOf="BackButton" RelativePanel.AlignVerticalCenterWithPanel="True" Click="ForwardButton_Click" Style="{ThemeResource WinKit.BarButton}" >
-                <local:TextButton.IconSource>
-                    <FontIconSource Glyph="&#xE0AB;"/>
-                </local:TextButton.IconSource>
-            </local:TextButton>
-            <local:TextButton x:Name="RefreshButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" RelativePanel.RightOf="ForwardButton" RelativePanel.AlignVerticalCenterWithPanel="True" Click="RefreshButton_Click" Style="{ThemeResource WinKit.BarButton}" >
-                <local:TextButton.IconSource>
-                    <FontIconSource Glyph="&#xE149;"/>
-                </local:TextButton.IconSource>
-            </local:TextButton>
-            <TextBox Visibility="Collapsed" x:Name="UrlElement" IsReadOnly="True" IsSpellCheckEnabled="False" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="RefreshButton" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" />
-            <AutoSuggestBox TextBoxStyle="{ThemeResource WinKit.UrlTextBox}" x:Name="UrlInput" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="RefreshButton" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" QuerySubmitted="OnUrlQuerySubmitted" TextChanged="OnUrlTextChanged" SuggestionChosen="OnUrlSuggestionChosen" />
+            <StackPanel x:Name="ButtonPanel" Orientation="Horizontal" RelativePanel.AlignVerticalCenterWithPanel="True" >
+                <local:TextButton x:Name="BackButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" IsEnabled="False" Click="BackButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                    <local:TextButton.IconSource>
+                        <FontIconSource Glyph="&#xE0A6;" />
+                    </local:TextButton.IconSource>
+                </local:TextButton>
+                <local:TextButton x:Name="ForwardButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" Visibility="Collapsed" Click="ForwardButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                    <local:TextButton.IconSource>
+                        <FontIconSource Glyph="&#xE0AB;" />
+                    </local:TextButton.IconSource>
+                </local:TextButton>
+                <local:TextButton x:Name="RefreshButton" FontSize="{x:Bind ButtonFontSize}" Padding="{x:Bind ButtonPadding}" Margin="{x:Bind ButtonMargin}" Click="RefreshButton_Click" Style="{ThemeResource WinKit.BarButton}" >
+                    <local:TextButton.IconSource>
+                        <FontIconSource Glyph="&#xE149;" />
+                    </local:TextButton.IconSource>
+                </local:TextButton>
+            </StackPanel>
+            <TextBox Visibility="Collapsed" x:Name="UrlElement" IsReadOnly="True" IsSpellCheckEnabled="False" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="ButtonPanel" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" />
+            <AutoSuggestBox TextBoxStyle="{ThemeResource WinKit.UrlTextBox}" x:Name="UrlInput" FontSize="{x:Bind UrlInputFontSize}" Padding="{x:Bind UrlInputPadding}" Margin="{x:Bind UrlInputMargin}" RelativePanel.RightOf="ButtonPanel" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" QuerySubmitted="OnUrlQuerySubmitted" TextChanged="OnUrlTextChanged" SuggestionChosen="OnUrlSuggestionChosen" />
         </RelativePanel>
         <ProgressRing x:Name="LoadingElement" IsActive="False" Style="{x:Bind LoadingStyle}" />
         <WebView2 x:Name="Browser" DefaultBackgroundColor="{x:Bind DefaultWebViewBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" Grid.Row="1" />

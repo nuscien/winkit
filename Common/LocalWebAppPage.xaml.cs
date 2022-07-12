@@ -29,6 +29,33 @@ using Windows.Foundation.Collections;
 namespace Trivial.UI;
 
 /// <summary>
+/// The monitor of the local web app page.
+/// </summary>
+public interface ILocalWebAppPageMonitor
+{
+    /// <summary>
+    /// Occurs on creating.
+    /// </summary>
+    /// <param name="page">The page.</param>
+    /// <param name="webview">The WebView2 instance.</param>
+    public void OnCreate(LocalWebAppPage page, WebView2 webview);
+
+    /// <summary>
+    /// Occurs on navigating to.
+    /// </summary>
+    /// <param name="page">The page.</param>
+    /// <param name="e">The navigation event arguments.</param>
+    public void OnNavigatedTo(LocalWebAppPage page, NavigationEventArgs e);
+
+    /// <summary>
+    /// Occurs on navigating from.
+    /// </summary>
+    /// <param name="page">The page.</param>
+    /// <param name="e">The navigation event arguments.</param>
+    public void OnNavigatedFrom(LocalWebAppPage page, NavigationEventArgs e);
+}
+
+/// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class LocalWebAppPage : Page
@@ -39,12 +66,18 @@ public sealed partial class LocalWebAppPage : Page
     private TabbedWebViewWindow tabbedWebViewWindowInstance;
 
     /// <summary>
+    /// Gets or sets the monitor.
+    /// </summary>
+    public static ILocalWebAppPageMonitor MonitorSingleton { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the LocalWebAppPage class.
     /// </summary>
     public LocalWebAppPage()
     {
         InitializeComponent();
         messageHandler = new(Browser);
+        MonitorSingleton?.OnCreate(this, Browser);
     }
 
     /// <summary>
@@ -274,6 +307,67 @@ public sealed partial class LocalWebAppPage : Page
         Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
+    /// <summary>
+    /// Stops navigating.
+    /// </summary>
+    public void Close()
+    {
+        var webview2 = Browser.CoreWebView2;
+        if (webview2 == null) return;
+        Browser.Close();
+    }
+
+    /// <summary>
+    /// Tests if there is the message handler of given identifier..
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <returns>true if exists; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public bool ContainsMessageHandler(string id)
+        => proc.ContainsKey(id);
+
+    /// <summary>
+    /// Tests if there is the message handler of given identifier..
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <param name="callback">The process handler.</param>
+    /// <returns>true if exists; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public bool TryGetMessageHandler(string id, out LocalWebAppMessageProcessAsync callback)
+        => proc.TryGetValue(id, out callback);
+
+    /// <summary>
+    /// Registers a message handler. It will override the existed one.
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <param name="callback">The process handler.</param>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public void RegisterMessageHandler(string id, LocalWebAppMessageProcessAsync callback)
+        => proc[id] = callback;
+
+    /// <summary>
+    /// Removes the message handler.
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    public bool RemoveMessageHandler(string id)
+        => proc.Remove(id);
+
+    /// <inheritdoc />
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+        => MonitorSingleton?.OnNavigatedFrom(this, e);
+
+    /// <inheritdoc />
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        if (e.Parameter is LocalWebAppHost host)
+            _ = LoadAsync(host);
+        else if (e.Parameter is LocalWebAppOptions options)
+            _ = LoadAsync(options);
+        MonitorSingleton?.OnNavigatedTo(this, e);
+    }
+
     private void OnLoadError(Exception ex)
     {
         if (ex == null) return;
@@ -287,16 +381,6 @@ public sealed partial class LocalWebAppPage : Page
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)
         => TitleChanged?.Invoke(this, new DataEventArgs<string>(sender.DocumentTitle));
-
-    /// <summary>
-    /// Stops navigating.
-    /// </summary>
-    public void Close()
-    {
-        var webview2 = Browser.CoreWebView2;
-        if (webview2 == null) return;
-        Browser.Close();
-    }
 
     private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
     {

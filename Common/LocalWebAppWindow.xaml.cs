@@ -158,6 +158,42 @@ public sealed partial class LocalWebAppWindow : Window
     public void Notify(string type, LocalWebAppNotificationMessage message)
         => MainElement.Notify(type, message);
 
+    /// <summary>
+    /// Tests if there is the message handler of given identifier..
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <returns>true if exists; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public bool ContainsMessageHandler(string id)
+        => MainElement.ContainsMessageHandler(id);
+
+    /// <summary>
+    /// Tests if there is the message handler of given identifier..
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <param name="callback">The process handler.</param>
+    /// <returns>true if exists; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public bool TryGetMessageHandler(string id, out LocalWebAppMessageProcessAsync callback)
+        => MainElement.TryGetMessageHandler(id, out callback);
+
+    /// <summary>
+    /// Registers a message handler. It will override the existed one.
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <param name="callback">The process handler.</param>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public void RegisterMessageHandler(string id, LocalWebAppMessageProcessAsync callback)
+        => MainElement.RegisterMessageHandler(id, callback);
+
+    /// <summary>
+    /// Removes the message handler.
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    public bool RemoveMessageHandler(string id)
+        => MainElement.RemoveMessageHandler(id);
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         if (backdrop != null) backdrop.Dispose();

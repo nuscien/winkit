@@ -166,6 +166,11 @@ public sealed partial class LocalWebAppPage : Page
     public bool IsDevEnvironmentEnabled { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether disable to create a default tabbed browser for new window request.
+    /// </summary>
+    public bool DisableNewWindowRequestHandling { get; set; }
+
+    /// <summary>
     /// Gets the available new version to update.
     /// </summary>
     public string NewVersionAvailable => host?.NewVersionAvailable;
@@ -581,6 +586,7 @@ window.localWebApp = {
     private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
     {
         NewWindowRequested?.Invoke(this, args);
+        if (DisableNewWindowRequestHandling) return;
         var uri = VisualUtility.TryCreateUri(args.Uri);
         if (uri == null) return;
         _ = OnNewWindowRequestedAsync(sender, args);

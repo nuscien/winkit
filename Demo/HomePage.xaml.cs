@@ -27,7 +27,7 @@ namespace Trivial.Demo;
 /// </summary>
 public sealed partial class HomePage : Page
 {
-    private readonly LocalWebAppHost webAppHost;
+    private LocalWebAppHost webAppHost;
 
     /// <summary>
     /// Initializes a new instance of the HomePage class.
@@ -53,7 +53,8 @@ public sealed partial class HomePage : Page
     }
 
     private async Task<LocalWebAppHost> CreateWebAppHostAsync(LocalWebAppVerificationOptions verifyOptions = LocalWebAppVerificationOptions.SkipException)
-        => webAppHost ?? webAppHost = await LocalWebAppHost.LoadAsync(
+    {
+        if (webAppHost == null) webAppHost = await LocalWebAppHost.LoadAsync(
             new DirectoryInfo("LocalWebApp"),
             new LocalWebAppOptions("filebrowser", "filebrowser", RSASignatureProvider.CreateRS256(@"-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz5GmwlD/BMX2Pix4Vkv9
@@ -68,6 +69,8 @@ yQIDAQAB
                 Url = "http://localhost/test/LocalWebApp.json"
             }),
             verifyOptions);
+        return webAppHost;
+    }
 
     private void LaunchWebAppClick(object sender, RoutedEventArgs e)
     {

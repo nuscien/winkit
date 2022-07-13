@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "outFile": "../dist/index.js",
+        "noImplicitAny": true,
+        "target": "es5",
+        "declaration": true,
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "lib": [
+            "es2015",
+            "dom"
+        ]
+    },
+    "exclude": [
+        "../dist",
+        "../test"
+    ]
+}

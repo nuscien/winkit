@@ -81,6 +81,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\FileBrowser\src\localWebApp.d.ts" Link="localWebApp.d.ts" />
     <None Include="README.md" Pack="true" PackagePath="README.md" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />

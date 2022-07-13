@@ -1,0 +1,8 @@
+{
+  "name": "@nuscien/filebrowserdemo",
+  "version": "0.1.0",
+  "description": "The demo for local web app.",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  }
+}

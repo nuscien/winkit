@@ -3,7 +3,7 @@ body {
     font-family: 'Segoe UI', 'Microsoft Yahei', 'Microsoft JhengHei', Tahoma, "Helvetica Neue", Arial, Geneva, Verdana, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 14px;
     background-color: #222;
-    padding: 0;
+    padding: 60px 0 0 0;
     margin: 0;
 }
 a, a:visited {
@@ -23,7 +23,6 @@ code, code a, code span {
     font-family: "Cascadia Code", "Consolas", "Segoe UI", "Microsoft Yahei", "Microsoft JhengHei", "Tahoma", "Helvetica Neue", "Arial", "Geneva", "Verdana", sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
 }
 body > header > section, body > footer > section {
-    max-width: 1000px;
     margin: 0 auto;
     box-sizing: content-box;
     position: relative;
@@ -46,6 +45,11 @@ body > header:first-child {
     background-position: center top;
     background-repeat: no-repeat;
     white-space: nowrap;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1024;
 }
 body > header:first-child > section:first-child {
     height: 60px;
@@ -194,7 +198,6 @@ body > section > h1,
 body > section > h2,
 body > section > h3 {
     font-weight: normal;
-    max-width: 1000px;
     padding: 0;
     margin: 20px auto;
     position: relative;
@@ -376,6 +379,9 @@ a.link-tile-folder, a.link-tile-folder:visited {
     border: 1px solid transparent;
     border-radius: 4px;
     display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    user-select: none;
 }
 a.link-tile-folder:hover {
     color: #EEE;
@@ -433,6 +439,9 @@ a.link-long-file, a.link-long-file:visited {
     border: 1px solid transparent;
     border-radius: 4px;
     display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    user-select: none;
 }
 a.link-long-file:hover {
     color: #EEE;
@@ -502,4 +511,19 @@ a.x-file-back:hover {
 }
 a.x-file-back:active {
     background-color: #444;
+}
+
+/* Others */
+#mainElement {
+    min-height: 640px;
+    margin-bottom: 60px; 
+}
+.x-style-label {
+    user-select: none;
+    cursor: default;
+}
+.x-image-fit {
+    max-width: 100%;
+    user-select: none;
+    cursor: default;
 }

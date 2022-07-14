@@ -117,6 +117,20 @@
         path?: string | null;
     }
 
+    interface DriveInfoContract {
+        name: string;
+        ready: boolean;
+        length: number;
+        freespace: {
+            total: number;
+            available: number;
+        };
+        label: string | null;
+        format: "NTFS" | "FAT32" | "exFAT" | string | null;
+        type: "Unknown" | "NoRootDirectory" | "Removable" | "Fixed" | "Network" | "CDRom" | "Ram" | string;
+        dir: FileInfoContract;
+    }
+
     type EventCallback = EventCallbackContract | ((ev: any) => void);
 
     type HandlerResponse<T> = Promise<HandlerResponseContract<T>>;
@@ -168,21 +182,11 @@
          * Lists drives.
          * @param options The options.
          */
-         listDrives(dir: string, options?: {
+         listDrives(options?: {
             fixed?: boolean | null;
             context?: HandlerInfoContract;
         } | string | undefined | null): HandlerResponse<{
-            name: string;
-            ready: boolean;
-            length: number;
-            freespace: {
-                total: number;
-                available: number;
-            };
-            label: string | null;
-            format: "NTFS" | "FAT32" | "exFAT" | string | null;
-            type: "Unknown" | "NoRootDirectory" | "Removable" | "Fixed" | "Network" | "CDRom" | "Ram" | string;
-            dir: FileInfoContract;
+            drives: DriveInfoContract[]
         }>;
 
         /**
@@ -198,6 +202,7 @@
             info: FileInfoContract;
             value?: any;
             valueType?: "text" | "json" | "jsonArray" | null;
+            parent?: FileInfoContract | null;
         }>;
 
         /**

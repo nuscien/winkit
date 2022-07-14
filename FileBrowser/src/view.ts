@@ -5,6 +5,128 @@ namespace FileBrowserDemo {
         iconPath: "./images/icons/"
     };
 
+    export class Viewer {
+        private _inner = null as {
+            dom: HTMLElement;
+        };
+
+        onrender: ((file: localWebApp.FileInfoContract) => void);
+
+        constructor(dom: HTMLElement) {
+            this._inner = {
+                dom: dom || document.getElementById("div")
+            };
+        }
+
+        element() {
+            return this._inner.dom;
+        }
+
+        renderFolder(path: string) {
+            if (!path) return this.renderDrives();
+            let promise = localWebApp.files.list(path);
+            promise.then(r => {
+                if (!r.data) return;
+                renderDetails(r.data.info, r.data.dirs, r.data.files, r.data.parent, this._inner.dom, item => {
+                    if (!item) {
+                        this.renderDrives();
+                        if (typeof this.onrender === "function") this.onrender(item);
+                        return "drive";
+                    }
+    
+                    if (item.path) {
+                        path = item.path;
+                    } else {
+                        if (item == r.data.parent) {
+                            let pathArr = path.split('\\');
+                            if (pathArr.length < 2) return null;
+                            path = pathArr.slice(0, pathArr.length - (pathArr[pathArr.length - 1] ? 1 : 2)).join('\\');
+                            this.renderFolder(path);
+                            return "dir";
+                        }
+    
+                        path += "\\" + item.name;
+                    }
+    
+                    if (item.type === "dir") {
+                        this.renderFolder(path);
+                        if (typeof this.onrender === "function") this.onrender(item);
+                        return "dir";
+                    }
+    
+                    let type = getIconName(item.name);
+                    if (!type) return item.type;
+                    switch (type.toLowerCase().replace("file_", "")) {
+                        case "text":
+                        case "json":
+                        case "markdown":
+                            this.renderTextFile(path);
+                            break;
+                        case "image":
+                        case "doc":
+                        case "slide":
+                        case "pdf":
+                            localWebApp.files.open(path);
+                            break;
+                    }
+    
+                    return item.type;
+                });
+            });
+            return promise;
+        }
+
+        renderDrives() {
+            localWebApp.files.listDrives().then(r => {
+                if (!r.data || !r.data.drives) return;
+                let dom = this._inner.dom;
+                dom.innerHTML = "";
+                let arr = r.data.drives.filter(drive => {
+                    if (!drive || typeof drive.type !== "string" || drive.type.toLowerCase() !== "fixed") return false;
+                    return true;
+                });
+                if (arr.length > 0) dom.appendChild(createElement("h2", "Local drives (" + arr.length + ")", { styleRef: "x-style-label" }));
+                arr.forEach(drive => {
+                    let driveEle = document.createElement("a");
+                    renderDrive(drive, driveEle, ev => {
+                        this.renderFolder(drive.name);
+                    });                
+                    dom.appendChild(driveEle);
+                });
+                arr = r.data.drives.filter(drive => {
+                    if (!drive || (typeof drive.type === "string" && drive.type.toLowerCase() === "fixed")) return false;
+                    return true;
+                });
+                if (arr.length > 0) dom.appendChild(createElement("h2", "Other drives (" + arr.length + ")", { styleRef: "x-style-label" }));
+                arr.forEach(drive => {
+                    let driveEle = document.createElement("a");
+                    renderDrive(drive, driveEle, ev => {
+                        this.renderFolder(drive.name);
+                    });                
+                    dom.appendChild(driveEle);
+                });
+                if (typeof this.onrender === "function") this.onrender(null);
+            });
+        }
+
+        renderTextFile(path: string) {
+            localWebApp.files.get(path, { read: "text" }).then(r => {
+                if (!r.data || !r.data.info) return;
+                let dom = this._inner.dom;
+                dom.innerHTML = "";
+                let section = document.createElement("section");
+                renderHeader(r.data.info.path || r.data.info.name, ev => {
+                    this.renderFolder(r.data.parent.path);
+                }, section);
+                dom.appendChild(section);
+                section = document.createElement("section");
+                section.appendChild(createSpanElement(r.data.value));
+                dom.appendChild(section);
+                if (typeof this.onrender === "function") this.onrender(null);
+            })
+        }
+    }
+
     export function renderItem(item: localWebApp.FileInfoContract, dom: HTMLElement, callback?: ((file: localWebApp.FileInfoContract) => void)) {
         if (!item) return null;
         if (!dom) dom = document.createElement("div");
@@ -46,30 +168,36 @@ namespace FileBrowserDemo {
         return i;
     }
 
-    export function renderFolder(path: string, dom: HTMLElement) {
-        let promise = localWebApp.files.list(path);
-        promise.then(r => {
-            if (!r.data) return;
-            renderDetails(r.data.info, r.data.dirs, r.data.files, r.data.parent, dom, item => {
-                if (!item) return null;
-                if (item == r.data.parent) {
-                    let pathArr = path.split('\\');
-                    if (pathArr.length < 2) return null;
-                    path = pathArr.slice(0, pathArr.length - (pathArr[pathArr.length - 1] ? 1 : 2)).join('\\');
-                    renderFolder(path, dom);
-                    return "dir";
-                }
-
-                if (item.type !== "dir") {
-                    return item.type;
-                }
-
-                path += "\\" + item.name;
-                renderFolder(path, dom);
-                return "dir";
-            });
+    function renderDrive(drive: localWebApp.DriveInfoContract, dom: HTMLElement, callback: ((data: localWebApp.DriveInfoContract) => void)) {
+        if (!drive) return;
+        if (!dom) dom = document.createElement("div");
+        dom.innerHTML = "";
+        let driveEle = document.createElement("a");
+        driveEle.className = "link-long-file";
+        driveEle.appendChild(createImageElement(settings.iconPath + "Folder_Drive.png", drive.name));
+        let name = drive.name;
+        if (drive.label) name = drive.label + " (" + name.replace('\\', '') + ")";
+        driveEle.appendChild(createSpanElement(name, { title: true }));
+        driveEle.appendChild(createSpanElement(drive.type));
+        if (drive.freespace) {
+            let space = getFileLengthStr(drive.freespace.available || drive.freespace.total) + "/" + getFileLengthStr(drive.length);
+            driveEle.appendChild(createSpanElement(space));
+        }
+        
+        if (typeof callback === "function") driveEle.addEventListener("click", ev => {
+            callback(drive);
         });
-        return promise;
+        dom.appendChild(driveEle);
+    }
+
+    function renderHeader(title: string, back: ((this: HTMLAnchorElement, ev: MouseEvent) => void) | null, dom: HTMLElement) {
+        if (!dom) dom = document.createElement("div");
+        let backEle = document.createElement("a");
+        backEle.className = "x-file-back";
+        backEle.innerHTML = "&lt;";
+        if (back) backEle.addEventListener("click", back);
+        dom.appendChild(backEle);
+        dom.appendChild(createSpanElement(title, { styleRef: "x-file-name" }));
     }
 
     function renderDetails(info: localWebApp.FileInfoContract, dirs: localWebApp.FileInfoContract[], files: localWebApp.FileInfoContract[], parent: localWebApp.FileInfoContract | null, dom: HTMLElement, callback: ((item: localWebApp.FileInfoContract) => string | null)) {
@@ -77,17 +205,10 @@ namespace FileBrowserDemo {
         dom.innerHTML = "";
         let section = document.createElement("section");
         if (info) {
-            if (parent && parent != info) {
-                let back = document.createElement("a");
-                back.className = "x-file-back";
-                back.innerHTML = "&lt;";
-                if (callback) back.addEventListener("click", ev => {
-                    callback(parent);
-                });
-                section.appendChild(back);
-            }
-
-            section.appendChild(createSpanElement(info.path || info.name, { styleRef: "x-file-name" }));
+            if (parent == info) parent = null;
+            renderHeader(info.path || info.name, callback ? ev => {
+                callback(parent);
+            } : null, section);
             dom.appendChild(section);
             section = document.createElement("section");
         }
@@ -95,14 +216,14 @@ namespace FileBrowserDemo {
         section = document.createElement("section");
         let i = renderItems(dirs, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Sub-folders"));
+            dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label" }));
             dom.appendChild(section);
         }
 
         section = document.createElement("section");
         i = renderItems(files, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Files"));
+            dom.appendChild(createElement("h2", "Files (" + i + ")", { styleRef: "x-style-label" }));
             dom.appendChild(section);
         }
     }
@@ -131,6 +252,8 @@ namespace FileBrowserDemo {
             case "xml":
             case "yml":
                 return "File_Json";
+            case "md":
+                return "File_Markdown";
             case "exe":
             case "msix":
             case "msi":
@@ -147,7 +270,26 @@ namespace FileBrowserDemo {
             case "rar":
             case "tar":
             case "gzip":
-                return "File_Dll";
+                return "File_Zip";
+            case "docx":
+            case "dotx":
+            case "doc":
+            case "xlsx":
+            case "xlmx":
+            case "xls":
+            case "123":
+            case "one":
+            case "rtf":
+                return "File_Document";
+            case "pptx":
+            case "potx":
+            case "ppt":
+                return "File_Slide";
+            case "pdf":
+            case "xps":
+                return "File_Pdf";
+            case "psd":
+                return "File_Psd";
             default:
                 return "File";
         }
@@ -190,7 +332,7 @@ namespace FileBrowserDemo {
             return length.toFixed(1) + "KB";
         }
 
-        if (length / 1048576000) {
+        if (length < 1048576000) {
             length /= 1048576;
             return length.toFixed(1) + "MB";
         }

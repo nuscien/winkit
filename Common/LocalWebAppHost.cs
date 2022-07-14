@@ -134,6 +134,7 @@ public class LocalWebAppHost
         else if (localRelativePath.StartsWith('~')) localRelativePath = localRelativePath[1..];
         else if (localRelativePath.StartsWith(".asset:")) localRelativePath = localRelativePath[7..];
         else if (localRelativePath.StartsWith(".data:")) return Path.Combine(DataDirectory?.FullName ?? host, localRelativePath[6..]);
+        else if (localRelativePath.StartsWith(".doc:")) return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), localRelativePath[6..]);
         else if (localRelativePath.StartsWith("./")) localRelativePath = localRelativePath[2..];
         else if (localRelativePath.StartsWith('.')) return null;
         else if (localRelativePath.StartsWith('%')) localRelativePath = FileSystemInfoUtility.GetLocalPath(localRelativePath);

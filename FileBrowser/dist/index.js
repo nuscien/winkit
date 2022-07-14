@@ -6,6 +6,133 @@ var FileBrowserDemo;
     FileBrowserDemo.settings = {
         iconPath: "./images/icons/"
     };
+    var Viewer = /** @class */ (function () {
+        function Viewer(dom) {
+            this._inner = null;
+            this._inner = {
+                dom: dom || document.getElementById("div")
+            };
+        }
+        Viewer.prototype.element = function () {
+            return this._inner.dom;
+        };
+        Viewer.prototype.renderFolder = function (path) {
+            var _this = this;
+            if (!path)
+                return this.renderDrives();
+            var promise = localWebApp.files.list(path);
+            promise.then(function (r) {
+                if (!r.data)
+                    return;
+                renderDetails(r.data.info, r.data.dirs, r.data.files, r.data.parent, _this._inner.dom, function (item) {
+                    if (!item) {
+                        _this.renderDrives();
+                        if (typeof _this.onrender === "function")
+                            _this.onrender(item);
+                        return "drive";
+                    }
+                    if (item.path) {
+                        path = item.path;
+                    }
+                    else {
+                        if (item == r.data.parent) {
+                            var pathArr = path.split('\\');
+                            if (pathArr.length < 2)
+                                return null;
+                            path = pathArr.slice(0, pathArr.length - (pathArr[pathArr.length - 1] ? 1 : 2)).join('\\');
+                            _this.renderFolder(path);
+                            return "dir";
+                        }
+                        path += "\\" + item.name;
+                    }
+                    if (item.type === "dir") {
+                        _this.renderFolder(path);
+                        if (typeof _this.onrender === "function")
+                            _this.onrender(item);
+                        return "dir";
+                    }
+                    var type = getIconName(item.name);
+                    if (!type)
+                        return item.type;
+                    switch (type.toLowerCase().replace("file_", "")) {
+                        case "text":
+                        case "json":
+                        case "markdown":
+                            _this.renderTextFile(path);
+                            break;
+                        case "image":
+                        case "doc":
+                        case "slide":
+                        case "pdf":
+                            localWebApp.files.open(path);
+                            break;
+                    }
+                    return item.type;
+                });
+            });
+            return promise;
+        };
+        Viewer.prototype.renderDrives = function () {
+            var _this = this;
+            localWebApp.files.listDrives().then(function (r) {
+                if (!r.data || !r.data.drives)
+                    return;
+                var dom = _this._inner.dom;
+                dom.innerHTML = "";
+                var arr = r.data.drives.filter(function (drive) {
+                    if (!drive || typeof drive.type !== "string" || drive.type.toLowerCase() !== "fixed")
+                        return false;
+                    return true;
+                });
+                if (arr.length > 0)
+                    dom.appendChild(createElement("h2", "Local drives (" + arr.length + ")", { styleRef: "x-style-label" }));
+                arr.forEach(function (drive) {
+                    var driveEle = document.createElement("a");
+                    renderDrive(drive, driveEle, function (ev) {
+                        _this.renderFolder(drive.name);
+                    });
+                    dom.appendChild(driveEle);
+                });
+                arr = r.data.drives.filter(function (drive) {
+                    if (!drive || (typeof drive.type === "string" && drive.type.toLowerCase() === "fixed"))
+                        return false;
+                    return true;
+                });
+                if (arr.length > 0)
+                    dom.appendChild(createElement("h2", "Other drives (" + arr.length + ")", { styleRef: "x-style-label" }));
+                arr.forEach(function (drive) {
+                    var driveEle = document.createElement("a");
+                    renderDrive(drive, driveEle, function (ev) {
+                        _this.renderFolder(drive.name);
+                    });
+                    dom.appendChild(driveEle);
+                });
+                if (typeof _this.onrender === "function")
+                    _this.onrender(null);
+            });
+        };
+        Viewer.prototype.renderTextFile = function (path) {
+            var _this = this;
+            localWebApp.files.get(path, { read: "text" }).then(function (r) {
+                if (!r.data || !r.data.info)
+                    return;
+                var dom = _this._inner.dom;
+                dom.innerHTML = "";
+                var section = document.createElement("section");
+                renderHeader(r.data.info.path || r.data.info.name, function (ev) {
+                    _this.renderFolder(r.data.parent.path);
+                }, section);
+                dom.appendChild(section);
+                section = document.createElement("section");
+                section.appendChild(createSpanElement(r.data.value));
+                dom.appendChild(section);
+                if (typeof _this.onrender === "function")
+                    _this.onrender(null);
+            });
+        };
+        return Viewer;
+    }());
+    FileBrowserDemo.Viewer = Viewer;
     function renderItem(item, dom, callback) {
         if (!item)
             return null;
@@ -50,63 +177,65 @@ var FileBrowserDemo;
         return i;
     }
     FileBrowserDemo.renderItems = renderItems;
-    function renderFolder(path, dom) {
-        var promise = localWebApp.files.list(path);
-        promise.then(function (r) {
-            if (!r.data)
-                return;
-            renderDetails(r.data.info, r.data.dirs, r.data.files, r.data.parent, dom, function (item) {
-                if (!item)
-                    return null;
-                if (item == r.data.parent) {
-                    var pathArr = path.split('\\');
-                    if (pathArr.length < 2)
-                        return null;
-                    path = pathArr.slice(0, pathArr.length - (pathArr[pathArr.length - 1] ? 1 : 2)).join('\\');
-                    renderFolder(path, dom);
-                    return "dir";
-                }
-                if (item.type !== "dir") {
-                    return item.type;
-                }
-                path += "\\" + item.name;
-                renderFolder(path, dom);
-                return "dir";
+    function renderDrive(drive, dom, callback) {
+        if (!drive)
+            return;
+        if (!dom)
+            dom = document.createElement("div");
+        dom.innerHTML = "";
+        var driveEle = document.createElement("a");
+        driveEle.className = "link-long-file";
+        driveEle.appendChild(createImageElement(FileBrowserDemo.settings.iconPath + "Folder_Drive.png", drive.name));
+        var name = drive.name;
+        if (drive.label)
+            name = drive.label + " (" + name.replace('\\', '') + ")";
+        driveEle.appendChild(createSpanElement(name, { title: true }));
+        driveEle.appendChild(createSpanElement(drive.type));
+        if (drive.freespace) {
+            var space = getFileLengthStr(drive.freespace.available || drive.freespace.total) + "/" + getFileLengthStr(drive.length);
+            driveEle.appendChild(createSpanElement(space));
+        }
+        if (typeof callback === "function")
+            driveEle.addEventListener("click", function (ev) {
+                callback(drive);
             });
-        });
-        return promise;
+        dom.appendChild(driveEle);
     }
-    FileBrowserDemo.renderFolder = renderFolder;
+    function renderHeader(title, back, dom) {
+        if (!dom)
+            dom = document.createElement("div");
+        var backEle = document.createElement("a");
+        backEle.className = "x-file-back";
+        backEle.innerHTML = "&lt;";
+        if (back)
+            backEle.addEventListener("click", back);
+        dom.appendChild(backEle);
+        dom.appendChild(createSpanElement(title, { styleRef: "x-file-name" }));
+    }
     function renderDetails(info, dirs, files, parent, dom, callback) {
         if (!dom)
             dom = document.createElement("div");
         dom.innerHTML = "";
         var section = document.createElement("section");
         if (info) {
-            if (parent && parent != info) {
-                var back = document.createElement("a");
-                back.className = "x-file-back";
-                back.innerHTML = "&lt;";
-                if (callback)
-                    back.addEventListener("click", function (ev) {
-                        callback(parent);
-                    });
-                section.appendChild(back);
-            }
-            section.appendChild(createSpanElement(info.path || info.name, { styleRef: "x-file-name" }));
+            if (parent == info)
+                parent = null;
+            renderHeader(info.path || info.name, callback ? function (ev) {
+                callback(parent);
+            } : null, section);
             dom.appendChild(section);
             section = document.createElement("section");
         }
         section = document.createElement("section");
         var i = renderItems(dirs, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Sub-folders"));
+            dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label" }));
             dom.appendChild(section);
         }
         section = document.createElement("section");
         i = renderItems(files, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Files"));
+            dom.appendChild(createElement("h2", "Files (" + i + ")", { styleRef: "x-style-label" }));
             dom.appendChild(section);
         }
     }
@@ -136,6 +265,8 @@ var FileBrowserDemo;
             case "xml":
             case "yml":
                 return "File_Json";
+            case "md":
+                return "File_Markdown";
             case "exe":
             case "msix":
             case "msi":
@@ -152,7 +283,26 @@ var FileBrowserDemo;
             case "rar":
             case "tar":
             case "gzip":
-                return "File_Dll";
+                return "File_Zip";
+            case "docx":
+            case "dotx":
+            case "doc":
+            case "xlsx":
+            case "xlmx":
+            case "xls":
+            case "123":
+            case "one":
+            case "rtf":
+                return "File_Document";
+            case "pptx":
+            case "potx":
+            case "ppt":
+                return "File_Slide";
+            case "pdf":
+            case "xps":
+                return "File_Pdf";
+            case "psd":
+                return "File_Psd";
             default:
                 return "File";
         }
@@ -194,7 +344,7 @@ var FileBrowserDemo;
             length /= 1024;
             return length.toFixed(1) + "KB";
         }
-        if (length / 1048576000) {
+        if (length < 1048576000) {
             length /= 1048576;
             return length.toFixed(1) + "MB";
         }

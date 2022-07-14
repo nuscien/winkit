@@ -300,6 +300,48 @@ internal static class LocalWebAppExtensions
         return resp;
     }
 
+    public static LocalWebAppResponseMessage ListDrives(LocalWebAppRequestMessage request)
+    {
+        var drives = DriveInfo.GetDrives();
+        var fixedOnly = request?.Data?.TryGetBooleanValue("fixed") ?? false;
+        if (drives == null) return new(new JsonObjectNode
+        {
+            { "drives", new JsonArrayNode() }
+        }, new JsonObjectNode
+        {
+            { "fixed", fixedOnly }
+        });
+        var arr = drives.Select(drive =>
+        {
+            if (drive == null) return null;
+            if (fixedOnly && drive.DriveType != DriveType.Fixed) return null;
+            var dir = ToJson(drive.RootDirectory);
+            var json = new JsonObjectNode
+            {
+                { "name", drive.Name },
+                { "ready", drive.IsReady },
+                { "length", drive.TotalSize },
+                { "freespace", new JsonObjectNode
+                {
+                    { "total", drive.TotalFreeSpace },
+                    { "available", drive.AvailableFreeSpace }
+                } },
+                { "label", drive.VolumeLabel },
+                { "format", drive.DriveFormat },
+                { "type", drive.DriveType.ToString() },
+                { "dir", dir }
+            };
+            return json;
+        }).Where(ele => ele != null);
+        return new(new JsonObjectNode
+        {
+            { "drives", arr }
+        }, new JsonObjectNode
+        {
+            { "fixed", fixedOnly }
+        });
+    }
+
     public static async Task<LocalWebAppResponseMessage> GetFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
         var path = request?.Data?.TryGetStringValue("path");
@@ -448,10 +490,6 @@ internal static class LocalWebAppExtensions
         {
             { "path", path }
         };
-        if (!File.Exists(path)) return new("Not found.")
-        {
-            AdditionalInfo = info
-        };
         var json = request.Data.TryGetObjectValue("value");
         if (json != null)
         {
@@ -471,6 +509,101 @@ internal static class LocalWebAppExtensions
         var s = request.Data.TryGetStringValue("value");
         info.SetValue("inputType", "text");
         await File.WriteAllTextAsync(path, s);
+        return new(new JsonObjectNode(), info);
+    }
+
+    public static LocalWebAppResponseMessage CreateDirectory(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    {
+        var path = request?.Data?.TryGetStringValue("path") ?? request?.Data?.TryGetStringValue("source");
+        if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        var info = new JsonObjectNode
+        {
+            { "path", path }
+        };
+        if (host != null) path = host.GetLocalPath(path, true);
+        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
+        if (dir?.Exists == true) return new(new JsonObjectNode
+        {
+            { "existed", true },
+            { "info", ToJson(dir) }
+        }, info);
+        dir = Directory.CreateDirectory(path);
+        return new(new JsonObjectNode
+        {
+            { "existed", false },
+            { "info", ToJson(dir) }
+        }, info);
+    }
+
+    public static LocalWebAppResponseMessage MoveFile(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    {
+        var path = request?.Data?.TryGetStringValue("path") ?? request?.Data?.TryGetStringValue("source");
+        if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        var dest = request.Data.TryGetStringValue("dest") ?? request.Data.TryGetStringValue("destination");
+        var isToCopy = request.Data.TryGetBooleanValue("copy") ?? false;
+        var isDir = request.Data.TryGetBooleanValue("dir") ?? false;
+        if (host != null) path = host.GetLocalPath(path, true);
+        if (dest == null)
+        {
+            if (isToCopy) return new(new JsonObjectNode(), new JsonObjectNode
+            {
+                { "action", "none" },
+                { "sourceType", isDir ? "dir" : "file" },
+                { "source", path },
+                { "dest", dest }
+            });
+            if (isDir)
+                Directory.Delete(path, true);
+            else
+                File.Delete(path);
+            return new(new JsonObjectNode(), new JsonObjectNode
+            {
+                { "action", "delete" },
+                { "sourceType", isDir ? "dir" : "file" },
+                { "source", path },
+                { "dest", dest }
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(path)) return new("The destination path should not be null or empty.");
+        if (host != null) dest = host.GetLocalPath(dest, true);
+        if (path == dest) return new(new JsonObjectNode(), new JsonObjectNode
+        {
+            { "action", "none" },
+            { "sourceType", isDir ? "dir" : "file" },
+            { "source", path },
+            { "dest", dest }
+        });
+        var info = new JsonObjectNode
+        {
+            { "action", isToCopy ? "copy" : "move" },
+            { "sourceType", isDir ? "dir" : "file" },
+            { "source", path },
+            { "dest", dest }
+        };
+        if (isDir)
+        {
+            if (!Directory.Exists(path)) return new("The source directory does not exist.")
+            {
+                AdditionalInfo = info
+            };
+            if (isToCopy)
+                Directory.Move(path, dest);
+            else
+                FileSystemInfoUtility.CopyTo(FileSystemInfoUtility.TryGetDirectoryInfo(path), dest);
+        }
+        else
+        {
+            if (!File.Exists(path)) return new("The source file does not exist.")
+            {
+                AdditionalInfo = info
+            };
+            if (isToCopy)
+                File.Move(path, dest, request.Data.TryGetBooleanValue("override") ?? false);
+            else
+                File.Copy(path, dest, request.Data.TryGetBooleanValue("override") ?? false);
+        }
+
         return new(new JsonObjectNode(), info);
     }
 
@@ -680,10 +813,16 @@ internal static class LocalWebAppExtensions
         {
             case "list-file":
                 return ListFiles(request, host);
+            case "list-drives":
+                return ListDrives(request);
             case "get-file":
                 return await GetFileAsync(request, host);
             case "write-file":
                 return await WriteFileAsync(request, host);
+            case "move-file":
+                return MoveFile(request, host);
+            case "make-dir":
+                return CreateDirectory(request, host);
             case "hash":
                 return Hash(request, host);
             case "symmetric":
@@ -805,6 +944,29 @@ internal static class LocalWebAppExtensions
             {
                 if (!string.IsNullOrWhiteSpace(item.LinkTarget))
                     json.SetValue("link", item.LinkTarget);
+            }
+            catch (SecurityException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+
+            try
+            {
+                json.SetValue("path", item.FullName);
             }
             catch (SecurityException)
             {

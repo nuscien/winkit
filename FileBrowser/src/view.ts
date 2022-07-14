@@ -87,7 +87,7 @@ namespace FileBrowserDemo {
                 section.appendChild(back);
             }
 
-            section.appendChild(createSpanElement(info.name, { styleRef: "x-file-name" }));
+            section.appendChild(createSpanElement(info.path || info.name, { styleRef: "x-file-name" }));
             dom.appendChild(section);
             section = document.createElement("section");
         }

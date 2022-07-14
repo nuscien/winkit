@@ -497,9 +497,15 @@ window.localWebApp = {
   files: {
     list(dir, options) {
       if (!options) options = {};
-      else if (typeof options === 'string') options = { q: options }
+      else if (typeof options === 'string') options = { q: options };
       if (options.appData && path) path = '.data:\\' + path;
       return sendRequest(null, 'list-file', { path: dir, q: options.q, showHidden: options.showHidden }, null, options.context);
+    },
+    listDrives(options) {
+      if (options === true) options = { fixed: true };
+      else if (options === false) options = { fixed: false };
+      else if (!options) options = {};
+      return sendRequest(null, 'list-drives', { fixed: options.fixed }, null, options.context);
     },
     get(path, options) {
       if (!options) options = {};
@@ -510,6 +516,31 @@ window.localWebApp = {
       if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
       return sendRequest(null, 'write-file', { path, value }, null, options.context);
+    },
+    move(path, dest, options) {
+      if (options === true) options = { override: true };
+      else if (options === false) options = { override: false };
+      else if (!options) options = {};
+      if (!dest) dest = '';
+      if (options.appData && path) path = '.data:\\' + path;
+      return sendRequest(null, 'move-file', { path, dest, override: options.override, dir: options.dir, copy: false }, null, options.context);
+    },
+    copy(path, dest, options) {
+      if (options === true) options = { override: true };
+      else if (options === false) options = { override: false };
+      else if (!options) options = {};
+      if (options.appData && path) path = '.data:\\' + path;
+      return sendRequest(null, 'move-file', { path, dest, override: options.override, dir: options.dir, copy: true }, null, options.context);
+    },
+    delete(path, options) {
+      if (!options) options = {};
+      if (options.appData && path) path = '.data:\\' + path;
+      return sendRequest(null, 'move-file', { path, dir: options.dir, copy: false }, null, options.context);
+    },
+    md(path, options) {
+      if (!options) options = {};
+      if (options.appData && path) path = '.data:\\' + path;
+      return sendRequest(null, 'make-dir', { path }, null, options.context);
     },
     open(path, options) {
       if (!options) options = {};

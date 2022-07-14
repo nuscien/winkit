@@ -114,6 +114,7 @@
         type?: "file" | "dir" | null;
         length?: number | null;
         link?: string | null;
+        path?: string | null;
     }
 
     type EventCallback = EventCallbackContract | ((ev: any) => void);
@@ -164,6 +165,27 @@
         }>;
 
         /**
+         * Lists drives.
+         * @param options The options.
+         */
+         listDrives(dir: string, options?: {
+            fixed?: boolean | null;
+            context?: HandlerInfoContract;
+        } | string | undefined | null): HandlerResponse<{
+            name: string;
+            ready: boolean;
+            length: number;
+            freespace: {
+                total: number;
+                available: number;
+            };
+            label: string | null;
+            format: "NTFS" | "FAT32" | "exFAT" | string | null;
+            type: "Unknown" | "NoRootDirectory" | "Removable" | "Fixed" | "Network" | "CDRom" | "Ram" | string;
+            dir: FileInfoContract;
+        }>;
+
+        /**
          * Gets the file information.
          * @param path The path of the file to get information.
          * @param options The options.
@@ -188,6 +210,51 @@
             appData?: boolean;
             context?: HandlerInfoContract;
         }): HandlerResponse<{}>;
+
+        /**
+         * Moves a file or a directory.
+         * @param path The source path of the file to move.
+         * @param dest The destination path.
+         * @param options The options.
+         */
+        move(path: string, dest: string, options?: {
+            override?: boolean;
+            dir?: boolean;
+            context?: HandlerInfoContract;
+        } | boolean): HandlerResponse<{}>;
+
+        /**
+         * Copies a file or a directory.
+         * @param path The source path of the file to copy.
+         * @param dest The destination path.
+         * @param options The options.
+         */
+        copy(path: string, dest: string, options?: {
+            override?: boolean;
+            dir?: boolean;
+            context?: HandlerInfoContract;
+        } | boolean): HandlerResponse<{}>;
+
+        /**
+         * Deletes a file or a directory.
+         * @param path The source path of the file to delete.
+         * @param options The options.
+         */
+        delete(path: string, options?: {
+            dir?: boolean;
+        } | boolean): HandlerResponse<{}>;
+
+        /**
+         * Makes a directory.
+         * @param path The source path of the file to move.
+         * @param options The options.
+         */
+        md(path: string, options?: {
+            context?: HandlerInfoContract;
+        } | boolean): HandlerResponse<{
+            existed: boolean;
+            info: FileInfoContract;
+        }>;
 
         /**
          * Opens a file by the default app; or opens the folder; or runs an app.

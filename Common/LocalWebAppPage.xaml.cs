@@ -166,14 +166,19 @@ public sealed partial class LocalWebAppPage : Page
     public bool IsDevEnvironmentEnabled { get; set; }
 
     /// <summary>
+    /// Gets the available new version to update.
+    /// </summary>
+    public string NewVersionAvailable => host?.NewVersionAvailable;
+
+    /// <summary>
     /// Gets or sets a value indicating whether disable to create a default tabbed browser for new window request.
     /// </summary>
     public bool DisableNewWindowRequestHandling { get; set; }
 
     /// <summary>
-    /// Gets the available new version to update.
+    /// Gets or sets the handler occuring on the default browser window is created.
     /// </summary>
-    public string NewVersionAvailable => host?.NewVersionAvailable;
+    public Action<TabbedWebViewWindow> OnWindowCreate { get; set; }
 
     /// <summary>
     /// Loads data.
@@ -662,11 +667,16 @@ window.localWebApp = {
         args.Handled = true;
         var deferral = args.GetDeferral();
         var window = tabbedWebViewWindowInstance;
-        if (tabbedWebViewWindowInstance == null) window = new TabbedWebViewWindow
+        if (tabbedWebViewWindowInstance == null)
         {
-            IsReadOnly = true,
-            DownloadList = DownloadList
-        };
+            window = new TabbedWebViewWindow
+            {
+                IsReadOnly = true,
+                DownloadList = DownloadList
+            };
+            OnWindowCreate?.Invoke(window);
+        }
+
         var webview = window.Add(uri);
         await webview.EnsureCoreWebView2Async();
         args.NewWindow = webview.CoreWebView2;

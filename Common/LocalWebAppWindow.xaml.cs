@@ -121,6 +121,29 @@ public sealed partial class LocalWebAppWindow : Window
     }
 
     /// <summary>
+    /// Gets the available new version to update.
+    /// </summary>
+    public string NewVersionAvailable => MainElement.NewVersionAvailable;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether disable to create a default tabbed browser for new window request.
+    /// </summary>
+    public bool DisableNewWindowRequestHandling
+    {
+        get => MainElement.DisableNewWindowRequestHandling;
+        set => MainElement.DisableNewWindowRequestHandling = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the handler occuring on the default browser window is created.
+    /// </summary>
+    public Action<TabbedWebViewWindow> OnWindowCreate
+    {
+        get => MainElement.OnWindowCreate;
+        set => MainElement.OnWindowCreate = value;
+    }
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>

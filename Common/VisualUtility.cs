@@ -1173,7 +1173,6 @@ public static partial class VisualUtility
         await webview.CoreWebView2.ExecuteScriptAsync(sb.ToString());
     }
 
-
     internal static Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController TryCreateAcrylicBackdrop()
     {
         try

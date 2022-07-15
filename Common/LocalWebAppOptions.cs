@@ -42,6 +42,52 @@ public enum LocalWebAppVerificationOptions : byte
 }
 
 /// <summary>
+/// The states of window.
+/// </summary>
+public enum CommonWindowStates : byte
+{
+    /// <summary>
+    /// Restored (normal).
+    /// </summary>
+    Restored = 0,
+
+    /// <summary>
+    /// Maximized.
+    /// </summary>
+    Maximized = 1,
+
+    /// <summary>
+    /// Minimized.
+    /// </summary>
+    Minimized = 2,
+
+    /// <summary>
+    /// Fullscreen.
+    /// </summary>
+    Fullscreen = 3,
+
+    /// <summary>
+    /// Compact overlay (picture-in-picture).
+    /// </summary>
+    Compact = 4,
+
+    /// <summary>
+    /// Pops up the dialog.
+    /// </summary>
+    Dialog = 5,
+
+    /// <summary>
+    /// Flyout.
+    /// </summary>
+    Flyout = 6,
+
+    /// <summary>
+    /// Unknown.
+    /// </summary>
+    Unknown = 7,
+}
+
+/// <summary>
 /// The options of the standalone web app resource package.
 /// </summary>
 public class LocalWebAppOptions

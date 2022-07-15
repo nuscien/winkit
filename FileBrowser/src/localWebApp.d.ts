@@ -137,6 +137,8 @@
 
     type ArchValue = "X86" | "X64" | "ARM" | "ARM64" | "WASM" | "S390x" | string | null;
 
+    type WindowStates = "Maximize" | "maximize" | "MAXIMIZE" | "Restore" | "restore" | "RESTORE" | "Minimize" | "minimize" | "MINIMIZE" | "Fullscreen" | "fullscreen" | "FULLSCREEN" | "Enter Full Screen" | "enter full screen" | "ENTER FULL SCREEN" | "Exit Full screen" | "exit full screen" | "EXIT FULL SCREEN";
+
     /**
      * Adds an event handler on message.
      * @param type The message type.
@@ -403,6 +405,24 @@
         }): HandlerResponse<{
             version: string;
             has: boolean;
+        }>;
+
+        window(value?: WindowStates | {
+            state?: WindowStates;
+            width?: number;
+            height?: number;
+            top?: number;
+            left?: number;
+            focus?: boolean;
+            physical?: boolean;
+            context?: HandlerInfoContract;
+        } | null): HandlerResponse<{
+            width: number;
+            height: number;
+            top: number;
+            left: number;
+            state: "Maximized" | "Restored" | "Minimized" | "Fullscreen" | "Compact";
+            title: string;
         }>;
     };
 

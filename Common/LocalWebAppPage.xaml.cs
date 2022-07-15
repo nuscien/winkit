@@ -154,6 +154,11 @@ public sealed partial class LocalWebAppPage : Page
     public Action<TabbedWebViewWindow> OnWindowCreate { get; set; }
 
     /// <summary>
+    /// Gets or sets the window controller.
+    /// </summary>
+    public IBasicWindowStateController WindowController { get; set; }
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
@@ -300,6 +305,13 @@ public sealed partial class LocalWebAppPage : Page
         if (webview2 == null) return;
         Browser.Close();
     }
+
+    /// <summary>
+    /// Focuses the browser.
+    /// </summary>
+    /// <param name="value">The focus state.</param>
+    public void FocusBrowser(FocusState value)
+        => Browser.Focus(value);
 
     /// <summary>
     /// Tests if there is the message handler of given identifier..
@@ -583,6 +595,11 @@ window.localWebApp = {
       else if (options === false) options = { check: false };
       else if (!options) options = {};
       return sendRequest(null, 'check-update', { check: options.check }, null, options.context);
+    },
+    window(value) {
+      if (!value) value = {};
+      else if (typeof value === 'string') value = { state: value };
+      return sendRequest(null, 'window', { state: value.state, width: value.width || value.w, height: value.height || value.h, top: value.top || value.y, left: value.left || value.x, focus: value.focus, physical: value.physical }, null, value.context);
     }
   },
   hostInfo: ");
@@ -609,8 +626,6 @@ window.localWebApp = {
     {
         NewWindowRequested?.Invoke(this, args);
         if (DisableNewWindowRequestHandling) return;
-        var uri = VisualUtility.TryCreateUri(args.Uri);
-        if (uri == null) return;
         _ = OnNewWindowRequestedAsync(sender, args);
     }
 
@@ -667,7 +682,7 @@ window.localWebApp = {
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
     {
         if (json == null) return;
-        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc, messageHandler);
+        json = await LocalWebAppExtensions.OnWebMessageReceivedAsync(host, json, sender.Source, proc, WindowController, messageHandler);
         sender.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
@@ -749,10 +764,6 @@ window.localWebApp = {
     {
         await webview.EnsureCoreWebView2Async();
         OnWebViewTabInitialized(webview.CoreWebView2);
-        webview.ContainsFullScreenElementChanged += (sender, e) =>
-        {
-            VisualUtility.SetFullScreenMode(webview.ContainsFullScreenElement, window);
-        };
     }
 
     private void OnWebViewTabInitialized(CoreWebView2 webview)

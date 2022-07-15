@@ -75,17 +75,17 @@ public sealed partial class TabbedWebView : UserControl
     public static readonly DependencyProperty TabWidthModeProperty = DependencyObjectProxy.RegisterProperty<TabViewWidthMode>(nameof(TabWidthMode));
 
     /// <summary>
-    /// Occurs when fullscreen request sent including to enable and disable.
-    /// </summary>
-    public event DataEventHandler<int> ContainsFullScreenElementChanged;
-
-    /// <summary>
     /// Initialized a new instance of the TabbedWebView class.
     /// </summary>
     public TabbedWebView()
     {
         InitializeComponent();
     }
+
+    /// <summary>
+    /// Occurs when fullscreen request sent including to enable and disable.
+    /// </summary>
+    public event DataEventHandler<int> ContainsFullScreenElementChanged;
 
     /// <summary>
     /// Occurs on the tab is closed.

@@ -94,7 +94,7 @@ internal static class LocalWebAppExtensions
         return hostInfo;
     }
 
-    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers, ILocalWebAppBrowserMessageHandler browserHandler)
+    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (json == null) return null;
         var req = new LocalWebAppRequestMessage
@@ -116,7 +116,7 @@ internal static class LocalWebAppExtensions
             else if (string.IsNullOrEmpty(req.Command))
                 resp = new LocalWebAppResponseMessage(string.Concat("Command name should not be null or empty."));
             else if (string.IsNullOrEmpty(req.MessageHandlerId))
-                resp = await OnLocalWebAppMessageRequestAsync(req, host, browserHandler);
+                resp = await OnLocalWebAppMessageRequestAsync(req, host, window, browserHandler);
             else if (handlers.TryGetValue(req.MessageHandlerId, out var h) && h != null)
                 resp = await h(req);
             else
@@ -806,7 +806,85 @@ internal static class LocalWebAppExtensions
         });
     }
 
-    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, ILocalWebAppBrowserMessageHandler browserHandler)
+    public static LocalWebAppResponseMessage WindowState(LocalWebAppRequestMessage request, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
+    {
+        var info = new JsonObjectNode();
+        var physical = request?.Data?.TryGetBooleanValue("physical") ?? false;
+        if (request?.Data != null)
+        {
+            var w = request.Data.TryGetInt32Value("width") ?? request.Data.TryGetInt32Value("w");
+            var h = request.Data.TryGetInt32Value("height") ?? request.Data.TryGetInt32Value("h");
+            var x = request.Data.TryGetInt32Value("left") ?? request.Data.TryGetInt32Value("x");
+            var y = request.Data.TryGetInt32Value("top") ?? request.Data.TryGetInt32Value("y");
+            if (w.HasValue)
+            {
+                window.Size(w.Value, h ?? window.Size(physical).Y, physical);
+                info.SetValue("resize", true);
+            }
+            else if (h.HasValue)
+            {
+                window.Size(w ?? window.Size(physical).X, h.Value, physical);
+                info.SetValue("resize", true);
+            }
+
+            if (x.HasValue)
+            {
+                window.Position(x.Value, y ?? window.Position(physical).Y, physical);
+                info.SetValue("move", true);
+            }
+            else if (y.HasValue)
+            {
+                window.Position(x ?? window.Position(physical).X, y.Value, physical);
+                info.SetValue("move", true);
+            }
+
+            var state = request.Data.TryGetStringValue("state")?.Trim()?.ToLowerInvariant()?.Replace(" ", "") ?? string.Empty;
+            info.SetValue("state", state);
+            switch (state)
+            {
+                case "maximize":
+                    window.Maximize();
+                    break;
+                case "minimize":
+                    window.Minimize();
+                    break;
+                case "restore":
+                    window.Restore();
+                    break;
+                case "fullscreen":
+                case "enterfullscreen":
+                    window.FullScreen(true);
+                    break;
+                case "exitfullscreen":
+                    window.FullScreen(false);
+                    break;
+                default:
+                    info.Remove("state");
+                    break;
+            }
+
+            if (request.Data.TryGetBooleanValue("focus") == true)
+            {
+                browserHandler.Focus();
+                info.SetValue("focus", true);
+            }
+        }
+
+        var size = window.Size(physical);
+        var position = window.Position(physical);
+        return new(new JsonObjectNode()
+        {
+            { "width", size.X },
+            { "height", size.Y },
+            { "top", position.Y },
+            { "left", position.X },
+            { "state", window.WindowState().ToString() },
+            { "title", window.Title },
+            { "physical", physical }
+        }, info);
+    }
+
+    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
         switch (request.Command.ToLowerInvariant())
@@ -846,9 +924,12 @@ internal static class LocalWebAppExtensions
                 }
             case "check-update":
                 return await CheckUpdateAsync(request, host);
+            case "window":
+                if (window != null) return WindowState(request, window, browserHandler);
+                break;
         }
 
-        return new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", request.MessageHandlerId));
+        return new LocalWebAppResponseMessage(string.Concat("Not supported for this command. ", request.Command));
     }
 
     private static JsonObjectNode ToJson(FileSystemInfo item, bool skipHidden = false)

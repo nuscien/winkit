@@ -333,4 +333,7 @@ public sealed partial class TabbedWebViewWindow : Window
 
     private void HostElement_TabDroppedOutside(TabbedWebView sender, TabViewTabDroppedOutsideEventArgs args)
         => TabDroppedOutside?.Invoke(this, args);
+
+    private void HostElement_ContainsFullScreenElementChanged(object sender, Data.DataEventArgs<int> e)
+        => VisualUtility.SetFullScreenMode(e.Data > 0, this);
 }

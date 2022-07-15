@@ -63,6 +63,7 @@ public sealed partial class LocalWebAppWindow : Window
         var theme = MainElement.RequestedTheme;
         backdrop = new();
         backdrop.UpdateWindowBackground(this, theme);
+        MainElement.WindowController = new BasicWindowStateController(this);
     }
 
     /// <summary>
@@ -182,6 +183,13 @@ public sealed partial class LocalWebAppWindow : Window
         => MainElement.Notify(type, message);
 
     /// <summary>
+    /// Focuses the browser.
+    /// </summary>
+    /// <param name="value">The focus state.</param>
+    public void FocusBrowser(FocusState value)
+        => MainElement.Focus(value);
+
+    /// <summary>
     /// Tests if there is the message handler of given identifier..
     /// </summary>
     /// <param name="id">The handler identifier.</param>
@@ -221,6 +229,7 @@ public sealed partial class LocalWebAppWindow : Window
     {
         if (backdrop != null) backdrop.Dispose();
         MainElement.Close();
+        MainElement.WindowController = null;
     }
 
     private void OnTitleChanged(object sender, DataEventArgs<string> e)
@@ -263,4 +272,9 @@ public sealed partial class LocalWebAppWindow : Window
 
     private void OnDownloadStarting(LocalWebAppPage sender, CoreWebView2DownloadStartingEventArgs args)
         => DownloadStarting?.Invoke(this, args);
+
+    private void MainElement_ContainsFullScreenElementChanged(object sender, DataEventArgs<bool> e)
+    {
+
+    }
 }

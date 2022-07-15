@@ -29,33 +29,6 @@ using Windows.Foundation.Collections;
 namespace Trivial.UI;
 
 /// <summary>
-/// The monitor of the local web app page.
-/// </summary>
-public interface ILocalWebAppPageMonitor
-{
-    /// <summary>
-    /// Occurs on creating.
-    /// </summary>
-    /// <param name="page">The page.</param>
-    /// <param name="webview">The WebView2 instance.</param>
-    public void OnCreate(LocalWebAppPage page, WebView2 webview);
-
-    /// <summary>
-    /// Occurs on navigating to.
-    /// </summary>
-    /// <param name="page">The page.</param>
-    /// <param name="e">The navigation event arguments.</param>
-    public void OnNavigatedTo(LocalWebAppPage page, NavigationEventArgs e);
-
-    /// <summary>
-    /// Occurs on navigating from.
-    /// </summary>
-    /// <param name="page">The page.</param>
-    /// <param name="e">The navigation event arguments.</param>
-    public void OnNavigatedFrom(LocalWebAppPage page, NavigationEventArgs e);
-}
-
-/// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class LocalWebAppPage : Page
@@ -273,6 +246,7 @@ public sealed partial class LocalWebAppPage : Page
             NotificationBar.Severity = InfoBarSeverity.Error;
             NotificationBar.IsOpen = true;
             ProgressElement.IsActive = false;
+            MonitorSingleton?.OnErrorNotification(this, NotificationBar, new SecurityException("Invalid file signatures."));
             if (!IsDevEnvironmentEnabled)
             {
                 Browser.Visibility = Visibility.Collapsed;
@@ -364,8 +338,19 @@ public sealed partial class LocalWebAppPage : Page
         => proc.Remove(id);
 
     /// <inheritdoc />
+    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    {
+        base.OnNavigatingFrom(e);
+        Browser.Close();
+        MonitorSingleton?.OnNavigatingFrom(this, e);
+    }
+
+    /// <inheritdoc />
     protected override void OnNavigatedFrom(NavigationEventArgs e)
-        => MonitorSingleton?.OnNavigatedFrom(this, e);
+    {
+        base.OnNavigatedFrom(e);
+        MonitorSingleton?.OnNavigatedFrom(this, e);
+    }
 
     /// <inheritdoc />
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -386,6 +371,7 @@ public sealed partial class LocalWebAppPage : Page
         NotificationBar.Severity = InfoBarSeverity.Error;
         NotificationBar.IsOpen = true;
         ProgressElement.IsActive = false;
+        MonitorSingleton?.OnErrorNotification(this, NotificationBar, ex);
         LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
     }
 

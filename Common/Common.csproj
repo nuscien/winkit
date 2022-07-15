@@ -10,9 +10,9 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>5.5.0</Version>
-    <AssemblyVersion>5.5.0.0</AssemblyVersion>
-    <FileVersion>5.5.0.0</FileVersion>
+    <Version>5.6.0</Version>
+    <AssemblyVersion>5.6.0.0</AssemblyVersion>
+    <FileVersion>5.6.0.0</FileVersion>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

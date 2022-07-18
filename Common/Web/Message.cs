@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Trivial.Collection;
 using Trivial.Text;
 
-namespace Trivial.UI;
+namespace Trivial.Web;
 
 /// <summary>
 /// The message process handler for local standalone web app.

@@ -40,42 +40,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="BlockHeader.xaml" />
-    <None Remove="CommentView.xaml" />
-    <None Remove="FileListView.xaml" />
-    <None Remove="LocalWebAppPage.xaml" />
-    <None Remove="LocalWebAppWindow.xaml" />
-    <None Remove="SettingsExpanderHeader.xaml" />
-    <None Remove="SingleWebView.xaml" />
-    <None Remove="TabbedWebView.xaml" />
-    <None Remove="TabbedWebViewWindow.xaml" />
-    <None Remove="TextButton.xaml" />
-    <None Remove="TextView.xaml" />
-    <None Remove="TileCollection.xaml" />
-    <None Remove="TileItem.xaml" />
-    <None Remove="TileListView.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <PackageReference Include="Trivial" Version="6.5.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Tiles\BlockHeader.xaml">
+    <Page Update="BlockHeader.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Tiles\Collection.xaml">
+    <Page Update="TileCollection.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Tiles\Item.xaml">
+    <Page Update="TileItem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -88,31 +71,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="WebView\Window.xaml">
+    <Page Update="TabbedWebViewWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="LocalWebApp\Window.xaml">
+    <Page Update="LocalWebAppWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="LocalWebApp\Page.xaml">
+    <Page Update="LocalWebAppPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="WebView\Single.xaml">
+    <Page Update="SingleWebView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="WebView\Tabbed.xaml">
+    <Page Update="TabbedWebView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -124,31 +107,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Basic\TextView.xaml">
+    <Page Update="TextView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Basic\SettingsExpanderHeader.xaml">
+    <Page Update="SettingsExpanderHeader.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Basic\TextButton.xaml">
+    <Page Update="TextButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Basic\CommentView.xaml">
+    <Page Update="CommentView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Tiles\ListView.xaml">
+    <Page Update="TileListView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

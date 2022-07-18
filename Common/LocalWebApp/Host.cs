@@ -332,7 +332,26 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    public static Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+        => LoadAsync(options, null, null, false, skipVerificationException, cancellationToken);
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="options">The options to parse.</param>
+    /// <param name="assembly">The assembly which embed the resource package.</param>
+    /// <param name="fileName">The zip file name of the embedded resource package.</param>
+    /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, System.Reflection.Assembly assembly, string fileName, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
@@ -340,6 +359,24 @@ public class LocalWebAppHost
         var appId = options.ResourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
         appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        if (assembly != null && !string.IsNullOrWhiteSpace(fileName))
+        {
+            if (!forceToLoad)
+            {
+                var folders = dir.EnumerateDirectories("v*.*");
+                foreach (var folder in folders)
+                {
+                    if (folder.EnumerateFiles("*.json").Any())
+                    {
+                        forceToLoad = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (forceToLoad) await LoadCompressedResourceAsync(options, dir, assembly, fileName, cancellationToken);
+        }
+
         return await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
     }
 
@@ -842,13 +879,99 @@ public class LocalWebAppHost
     /// <returns>The new version.</returns>
     public async Task<string> UpdateAsync(string version, FileInfo zip, bool deleteZip, CancellationToken cancellationToken = default)
     {
+        return NewVersionAvailable = await UpdateAsync(Options, CacheDirectory.Parent, version, zip, deleteZip, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates the resource package.
+    /// </summary>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The new version.</returns>
+    public async Task<string> UpdateAsync(CancellationToken cancellationToken = default)
+    {
+        // Get update manifest.
+        var url = GetUrl(Options.Update?.Url, Options.Update?.VariableParameters);
+        if (string.IsNullOrEmpty(url)) return null;
+        var http = new JsonHttpClient<JsonObjectNode>();
+        var resp = await http.GetAsync(url, cancellationToken);
+        var respProp = Options.Update?.ResponseProperty?.Trim();
+        resp = resp?.TryGetObjectValue(string.IsNullOrEmpty(respProp) ? "data" : respProp) ?? resp;
+        if (resp == null) return null;
+        var ver = resp.TryGetStringValue("version")?.Trim();
+        if (string.IsNullOrEmpty(ver)) return null;
+        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, true) <= 0 && resp.TryGetBooleanValue("force") != true)
+            return null;
+        
+        // Download zip.
+        url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
+        var uri = UI.VisualUtility.TryCreateUri(url);
+        if (uri == null) return null;
+        FileInfo zip = null;
+        try
+        {
+            zip = await HttpClientExtensions.WriteFileAsync(uri, Path.Combine(CacheDirectory.FullName, "TempResourcePackage.zip"), null, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        // Continue and return result.
         if (zip == null) return null;
+        return await UpdateAsync(ver, zip, true, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the parent path of resource package.
+    /// </summary>
+    /// <param name="localRelativePath">The relative path.</param>
+    /// <returns>The path.</returns>
+    private string GetResourcePackageParentPath(string localRelativePath)
+    {
+        var host = ResourcePackageDirectory?.Parent?.FullName;
+        return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
+    }
+
+    /// <summary>
+    /// Updates the resource package.
+    /// </summary>
+    /// <param name="options">The app options.</param>
+    /// <param name="rootDir">The root path.</param>
+    /// <param name="version">The expected version.</param>
+    /// <param name="zip">The zip file.</param>
+    /// <param name="deleteZip">true if delete the zip file after extracting.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The new version.</returns>
+    private static async Task<string> UpdateAsync(LocalWebAppOptions options, DirectoryInfo rootDir, string version, FileInfo zip, bool deleteZip, CancellationToken cancellationToken = default)
+    {
+        if (zip == null || options == null) return null;
+        var cacheDir = Directory.CreateDirectory(Path.Combine(rootDir.FullName, "cache"));
 
         // Extract zip.
         string path;
         try
         {
-            path = Path.Combine(CacheDirectory.FullName, "TempResourcePackage");
+            path = Path.Combine(cacheDir.FullName, "TempResourcePackage");
             TryDeleteDirectory(path);
             ZipFile.ExtractToDirectory(zip.FullName, path);
         }
@@ -905,19 +1028,19 @@ public class LocalWebAppHost
         if (path == null) return null;
 
         // Test package.
-        var root = CacheDirectory.Parent;
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
         if (dir == null || !dir.Exists) return null;
         try
         {
-            var host = await LoadAsync(root, Options, false, dir, cancellationToken);
-            if (host?.Manifest?.Version != version || host?.ResourcePackageId != ResourcePackageId)
+            var host = await LoadAsync(rootDir, options, false, dir, cancellationToken);
+            if (host?.Manifest?.Version == null || (version != null && host.Manifest.Version != version) || host.ResourcePackageId != options.ResourcePackageId)
             {
                 dir.Delete(true);
                 return null;
             }
 
-            path = Path.Combine(root.FullName, string.Concat('v', version));
+            version = host?.Manifest?.Version;
+            path = Path.Combine(rootDir.FullName, string.Concat('v', version));
         }
         catch (ArgumentException)
         {
@@ -987,7 +1110,7 @@ public class LocalWebAppHost
             }
         }
 
-        var settings = await TryGetSettingsAsync(CacheDirectory, cancellationToken) ?? new JsonObjectNode();
+        var settings = await TryGetSettingsAsync(cacheDir, cancellationToken) ?? new JsonObjectNode();
         var oldVersion = settings.TryGetStringValue("version")?.Trim();
         var installInfo = settings.TryGetObjectValue("install") ?? new();
         var oldVersion2 = installInfo.TryGetStringValue("oldVersion")?.Trim();
@@ -995,47 +1118,29 @@ public class LocalWebAppHost
         installInfo.SetValue("old", oldVersion);
         installInfo.SetValue("done", DateTime.Now);
         settings.SetValue("install", installInfo);
-        await TrySaveSettingsAsync(CacheDirectory, settings, cancellationToken);
+        await TrySaveSettingsAsync(cacheDir, settings, cancellationToken);
 
         // Clean up.
         if (!string.IsNullOrEmpty(oldVersion2))
         {
-            path = Path.Combine(root.FullName, string.Concat('v', oldVersion2));
+            path = Path.Combine(rootDir.FullName, string.Concat('v', oldVersion2));
             TryDeleteDirectory(path);
         }
 
         // Return result.
-        return NewVersionAvailable = version;
+        return version;
     }
 
-    /// <summary>
-    /// Updates the resource package.
-    /// </summary>
-    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns>The new version.</returns>
-    public async Task<string> UpdateAsync(CancellationToken cancellationToken = default)
+    private static async Task<string> LoadCompressedResourceAsync(LocalWebAppOptions options, DirectoryInfo rootDir, System.Reflection.Assembly assembly, string fileName, CancellationToken cancellationToken = default)
     {
-        // Get update manifest.
-        var url = GetUrl(Options.Update?.Url, Options.Update?.VariableParameters);
-        if (string.IsNullOrEmpty(url)) return null;
-        var http = new JsonHttpClient<JsonObjectNode>();
-        var resp = await http.GetAsync(url, cancellationToken);
-        var respProp = Options.Update?.ResponseProperty?.Trim();
-        resp = resp?.TryGetObjectValue(string.IsNullOrEmpty(respProp) ? "data" : respProp) ?? resp;
-        if (resp == null) return null;
-        var ver = resp.TryGetStringValue("version")?.Trim();
-        if (string.IsNullOrEmpty(ver)) return null;
-        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, true) <= 0 && resp.TryGetBooleanValue("force") != true)
-            return null;
-        
-        // Download zip.
-        url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
-        var uri = UI.VisualUtility.TryCreateUri(url);
-        if (uri == null) return null;
-        FileInfo zip = null;
+        var cacheDir = Directory.CreateDirectory(Path.Combine(rootDir.FullName, "cache"));
+        var path = Path.Combine(cacheDir.FullName, "TempResourcePackage.zip");
         try
         {
-            zip = await HttpClientExtensions.WriteFileAsync(uri, Path.Combine(CacheDirectory.FullName, "TempResourcePackage.zip"), null, cancellationToken);
+            TryDeleteDirectory(path);
+            using var fileStream = File.Create(path);
+            using var stream = assembly.GetManifestResourceStream(fileName);
+            await stream.CopyToAsync(fileStream, cancellationToken);
         }
         catch (ArgumentException)
         {
@@ -1062,15 +1167,7 @@ public class LocalWebAppHost
         {
         }
 
-        // Continue and return result.
-        if (zip == null) return null;
-        return await UpdateAsync(ver, zip, true, cancellationToken);
-    }
-
-    private string GetResourcePackageParentPath(string localRelativePath)
-    {
-        var host = ResourcePackageDirectory?.Parent?.FullName;
-        return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
+        return await UpdateAsync(options, rootDir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
     }
 
     private static string GetSubFileName(string name, string sub)

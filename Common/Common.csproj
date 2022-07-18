@@ -10,9 +10,9 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>5.6.0</Version>
-    <AssemblyVersion>5.6.0.0</AssemblyVersion>
-    <FileVersion>5.6.0.0</FileVersion>
+    <Version>6.0.0</Version>
+    <AssemblyVersion>6.0.0.0</AssemblyVersion>
+    <FileVersion>6.0.0.0</FileVersion>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -63,19 +63,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="BlockHeader.xaml">
+    <Page Update="Tiles\BlockHeader.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TileCollection.xaml">
+    <Page Update="Tiles\Collection.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TileItem.xaml">
+    <Page Update="Tiles\Item.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -88,67 +88,67 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TabbedWebViewWindow.xaml">
+    <Page Update="WebView\Window.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="LocalWebAppWindow.xaml">
+    <Page Update="LocalWebApp\Window.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="LocalWebAppPage.xaml">
+    <Page Update="LocalWebApp\Page.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="SingleWebView.xaml">
+    <Page Update="WebView\Single.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TabbedWebView.xaml">
+    <Page Update="WebView\Tabbed.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="FileListView.xaml">
+    <Page Update="Files\ListView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TextView.xaml">
+    <Page Update="Basic\TextView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="SettingsExpanderHeader.xaml">
+    <Page Update="Basic\SettingsExpanderHeader.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TextButton.xaml">
+    <Page Update="Basic\TextButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="CommentView.xaml">
+    <Page Update="Basic\CommentView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="TileListView.xaml">
+    <Page Update="Tiles\ListView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

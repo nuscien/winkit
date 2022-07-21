@@ -53,9 +53,9 @@ public sealed partial class HomePage : Page
         FileBrowserElement.NavigateAsync(new DirectoryInfo("C:\\"));
     }
 
-    private async Task<LocalWebAppHost> CreateWebAppHostAsync(bool skipVerificationException)
+    private async Task<LocalWebAppHost> CreateWebAppHostAsync()
     {
-        if (webAppHost == null) webAppHost = await LocalWebAppHost.LoadAsync("WinKitDemo", null, false, skipVerificationException);
+        if (webAppHost == null) webAppHost = await LocalWebAppHost.LoadAsync("WinKitDemo", null);
         return webAppHost;
     }
 
@@ -66,7 +66,7 @@ public sealed partial class HomePage : Page
             Title = "Loading…",
             IsDevEnvironmentEnabled = true
         };
-        var hostTask = CreateWebAppHostAsync(true);
+        var hostTask = CreateWebAppHostAsync();
         _ = window.LoadAsync(hostTask, host => _ = host?.UpdateAsync());
         var appWin = VisualUtility.TryGetAppWindow(window);
         window.Activate();

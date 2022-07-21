@@ -338,6 +338,66 @@ public class LocalWebAppHost
     /// <summary>
     /// Loads the standalone web app package information.
     /// </summary>
+    /// <param name="hostId">The identifier of the host app.</param>
+    /// <param name="assembly">The assembly which embed the resource package.</param>
+    /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    public static Task<LocalWebAppHost> LoadAsync(string hostId, System.Reflection.Assembly assembly, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+        => LoadAsync(hostId, assembly, null, null, forceToLoad, null, skipVerificationException, cancellationToken);
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="hostId">The identifier of the host app.</param>
+    /// <param name="assembly">The assembly which embed the resource package.</param>
+    /// <param name="projectFileName">The config file name of the resource package project.</param>
+    /// <param name="packageFileName">The zip file name of the embedded resource package.</param>
+    /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
+    /// <param name="pemFileName">The public key file name of signature.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    public static Task<LocalWebAppHost> LoadAsync(string hostId, System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    {
+        if (assembly == null) assembly = System.Reflection.Assembly.GetEntryAssembly();
+        if (string.IsNullOrWhiteSpace(projectFileName)) projectFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly);
+        if (string.IsNullOrWhiteSpace(packageFileName)) packageFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"), assembly);
+        if (string.IsNullOrWhiteSpace(pemFileName)) pemFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, null, ".pem"), assembly);
+        using var stream = string.IsNullOrEmpty(projectFileName) ? null : assembly.GetManifestResourceStream(projectFileName);
+        var config = JsonObjectNode.Parse(stream);
+        var config2 = config?.TryGetObjectValue("ref");
+        if (config2 == null) throw new InvalidOperationException("Load project config failed.");
+        var key = config2.TryGetStringValue("key");
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            if (string.IsNullOrWhiteSpace(pemFileName)) throw new InvalidOperationException("Miss public key of signature.");
+            using var stream2 = assembly.GetManifestResourceStream(pemFileName);
+            using var reader = new StreamReader(stream2);
+            key = reader.ReadToEnd();
+            config2.SetValue("key", key);
+        }
+
+        var options = LoadOptions(hostId, config, null);
+        return LoadAsync(options, assembly, packageFileName, forceToLoad, skipVerificationException, cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
     /// <param name="options">The options to parse.</param>
     /// <param name="assembly">The assembly which embed the resource package.</param>
     /// <param name="fileName">The zip file name of the embedded resource package.</param>
@@ -364,16 +424,53 @@ public class LocalWebAppHost
             if (!forceToLoad)
             {
                 var folders = dir.EnumerateDirectories("v*.*");
+                forceToLoad = true;
                 foreach (var folder in folders)
                 {
-                    if (folder.EnumerateFiles("*.json").Any())
+                    try
                     {
-                        forceToLoad = true;
-                        break;
+                        if (folder.EnumerateFiles("*.json").Any())
+                        {
+                            forceToLoad = false;
+                            break;
+                        }
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (SecurityException)
+                    {
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                    catch (ExternalException)
+                    {
                     }
                 }
+
+                try
+                {
+                    if (forceToLoad)
+                    {
+                        var folder = dir.EnumerateDirectories("app").FirstOrDefault();
+                        if (folder != null && folder.EnumerateFiles("*.json").Any()) forceToLoad = false;
+                    }
+                }
+                catch (IOException)
+                {
+                }
+                catch (SecurityException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (ExternalException)
+                {
+                }
             }
-            
+
             if (forceToLoad) await LoadCompressedResourceAsync(options, dir, assembly, fileName, cancellationToken);
         }
 
@@ -434,11 +531,13 @@ public class LocalWebAppHost
         if (appDir == null || !appDir.Exists)
             appDir = rootDir.EnumerateDirectories("v*.*").OrderBy(ele => ele.CreationTime).LastOrDefault();
         if (appDir == null || !appDir.Exists)
+            appDir = rootDir.EnumerateDirectories("app").FirstOrDefault();
+        if (appDir == null || !appDir.Exists)
         {
             string errorMessage = null;
             try
             {
-                if (!string.IsNullOrEmpty(appDir.FullName))
+                if (!string.IsNullOrEmpty(appDir?.FullName))
                     errorMessage = string.Concat("The resource package directory is not found. Path: ", appDir.FullName);
             }
             catch (IOException)
@@ -851,9 +950,24 @@ public class LocalWebAppHost
     }
 
     /// <summary>
+    /// Creates the app options.
+    /// </summary>
+    /// <param name="hostId">The identifier of the host app.</param>
+    /// <param name="dir">The app path.</param>
+    /// <returns>The file output.</returns>
+    public static LocalWebAppOptions LoadOptions(string hostId, DirectoryInfo dir)
+    {
+        var config = LoadBuildConfig(dir, out _);
+        if (config == null) throw new InvalidOperationException("Parse the config file failed.");
+        var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
+        if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
+        return LoadOptions(hostId, config, keyFile);
+    }
+
+    /// <summary>
     /// Creates a package.
     /// </summary>
-    /// <param name="dir"></param>
+    /// <param name="dir">The app path.</param>
     /// <param name="signatureProvider">The signature provider with private key.</param>
     /// <param name="outputFileName">The file name of the zip.</param>
     /// <returns>The file output.</returns>
@@ -867,6 +981,65 @@ public class LocalWebAppHost
         File.Delete(outputFileName);
         ZipFile.CreateFromDirectory(dir.FullName, outputFileName);
         return FileSystemInfoUtility.TryGetFileInfo(outputFileName);
+    }
+
+    /// <summary>
+    /// Creates a package.
+    /// </summary>
+    /// <param name="hostId">The identifier of the host app.</param>
+    /// <param name="dir">The app path.</param>
+    /// <param name="outputFileName">The file name of the zip.</param>
+    /// <returns>The file output.</returns>
+    public static FileInfo Package(string hostId, DirectoryInfo dir, string outputFileName = null)
+    {
+        // Load options.
+        var config = LoadBuildConfig(dir, out var configFile);
+        if (config == null) throw new InvalidOperationException("Parse the config file failed.");
+        var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
+        if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
+        var options = LoadOptions(hostId, config, keyFile);
+        config = config.TryGetObjectValue("ref");
+
+        // Create manifest.
+        var appDir = GetDirectoryInfoByRelative(dir, config.TryGetStringValue("path")?.Trim()) ?? dir;
+        var manifestPath = Path.Combine(appDir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
+        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
+        if (manifestJson != null)
+        {
+            var packageId = config.TryGetStringValue("id")?.Trim();
+            if (!string.IsNullOrEmpty(packageId)) manifestJson.SetValue("id", packageId);
+            var manifestStr = manifestJson.ToString();
+            File.WriteAllText(manifestPath, manifestStr);
+        }
+
+        // Sign.
+        Sign(appDir, options);
+
+        // Load.
+        if (string.IsNullOrWhiteSpace(outputFileName))
+            outputFileName = Path.Combine(dir.FullName, GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"));
+        if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
+            outputFileName = Path.Combine(dir.FullName, outputFileName);
+        File.Delete(outputFileName);
+        ZipFile.CreateFromDirectory(appDir.FullName, outputFileName);
+        var zip = FileSystemInfoUtility.TryGetFileInfo(outputFileName);
+
+        // Copy
+        var arr = config.TryGetArrayValue("output")?.OfType<JsonObjectNode>();
+        if (arr != null)
+        {
+            foreach (var output in arr)
+            {
+                if (output == null) continue;
+                var outputPath = GetFileInfoByRelative(dir, output.TryGetStringValue("zip"));
+                if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && outputPath.Exists && zip.FullName != outputPath.FullName) zip.CopyTo(outputPath.FullName, true);
+                outputPath = GetFileInfoByRelative(dir, output.TryGetStringValue("config"));
+                if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && outputPath.Exists && configFile.FullName != outputPath.FullName) configFile.CopyTo(outputPath.FullName, true);
+            }
+        }
+
+        // Return result.
+        return zip;
     }
 
     /// <summary>
@@ -939,6 +1112,22 @@ public class LocalWebAppHost
         // Continue and return result.
         if (zip == null) return null;
         return await UpdateAsync(ver, zip, true, cancellationToken);
+    }
+
+    private static string GetEmbeddedFileName(string name, System.Reflection.Assembly assembly)
+    {
+        var files = assembly.GetManifestResourceNames();
+        var assemblyName = assembly.GetName().Name;
+        var fileName = $"{assembly.GetName().Name}.{name}";
+        if (files.Contains(fileName)) return fileName;
+        if (files.Contains(name)) return name;
+        name = $".{name}";
+        foreach (var n in files)
+        {
+            if (n.EndsWith(name)) return n;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -1170,11 +1359,77 @@ public class LocalWebAppHost
         return await UpdateAsync(options, rootDir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
     }
 
-    private static string GetSubFileName(string name, string sub)
+    private static JsonObjectNode LoadBuildConfig(DirectoryInfo dir, out FileInfo file)
+    {
+        file = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
+        if (file == null || !file.Exists) throw new FileNotFoundException("The config file does not exist.");
+        return JsonObjectNode.TryParse(file);
+    }
+
+    /// <summary>
+    /// Creates the app options.
+    /// </summary>
+    /// <param name="hostId">The identifier of the host app.</param>
+    /// <param name="config">The build config.</param>
+    /// <param name="keyFile">The private key.</param>
+    /// <returns>The file output.</returns>
+    private static LocalWebAppOptions LoadOptions(string hostId, JsonObjectNode config, FileInfo keyFile)
+    {
+        // Create options.
+        var resId = config.TryGetStringValue("id")?.Trim() ?? config.TryGetObjectValue("package").TryGetStringValue("id")?.Trim();
+        config = config.TryGetObjectValue("ref");
+        var sign = config.TryGetStringValue("sign")?.Trim()?.ToUpperInvariant();
+        if (string.IsNullOrEmpty(sign)) sign = "RS512";
+        RSAParameters? key;
+        try
+        {
+            var keyStr = config.TryGetStringValue("key");
+            if (string.IsNullOrWhiteSpace(keyStr) && keyFile != null && keyFile.Exists)
+                keyStr = File.ReadAllText(keyFile.FullName);
+            key = RSAParametersConvert.Parse(keyStr);
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException("Parse private key failed.", ex);
+        }
+        catch (SecurityException ex)
+        {
+            throw new InvalidOperationException("Parse private key failed.", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new InvalidOperationException("Parse private key failed.", ex);
+        }
+        catch (NotSupportedException ex)
+        {
+            throw new InvalidOperationException("Parse private key failed.", ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException("Parse private key failed.", ex);
+        }
+        catch (ExternalException ex)
+        {
+            throw new InvalidOperationException("Parse private key failed.", ex);
+        }
+
+        if (!key.HasValue) throw new InvalidOperationException("Parse private key failed.");
+        var signatureProvider = sign switch
+        {
+            "RS512" => RSASignatureProvider.CreateRS512(key.Value),
+            "RS384" => RSASignatureProvider.CreateRS384(key.Value),
+            "RS256" => RSASignatureProvider.CreateRS256(key.Value),
+            _ => throw new InvalidOperationException("The signature algorithm is not supported.", new NotSupportedException("The signature algorithm is not supported."))
+        };
+        if (!config.TryDeserializeValue<WebAppPackageUpdateInfo>("update", null, out var update)) update = null;
+        return new(hostId, resId, signatureProvider, update);
+    }
+
+    private static string GetSubFileName(string name, string sub, string ext = null)
     {
         var i = name.LastIndexOf('.');
-        var ext = name[i..];
-        return string.Concat(name[..i], '.', sub, ext);
+        if (string.IsNullOrEmpty(ext)) ext = name[i..];
+        return string.IsNullOrWhiteSpace(sub) ? string.Concat(name[..i], ext) : string.Concat(name[..i], '.', sub, ext);
     }
 
     private static IEnumerable<FileInfo> GetSourceFiles(DirectoryInfo dir)
@@ -1258,6 +1513,42 @@ public class LocalWebAppHost
         }
 
         return GetUrl(url, q);
+    }
+
+    private static DirectoryInfo GetDirectoryInfoByRelative(DirectoryInfo root, string relative)
+    {
+        if (string.IsNullOrEmpty(relative))
+            return root;
+        if (relative.EndsWith('/') || relative.EndsWith('\\'))
+            relative = relative[..^1];
+        if (relative.Length < 1 || relative == "." || relative == "~")
+            return root;
+        while (relative.StartsWith("../") || relative.StartsWith("..\\"))
+        {
+            root = root.Parent;
+            relative = relative[3..];
+        }
+
+        if (relative == "..")
+            return root.Parent;
+        return relative == "." ? root : FileSystemInfoUtility.TryGetDirectoryInfo(root.FullName, relative);
+    }
+
+    private static FileInfo GetFileInfoByRelative(DirectoryInfo root, string relative)
+    {
+        if (string.IsNullOrEmpty(relative))
+            return null;
+        if (relative.EndsWith('/') || relative.EndsWith('\\'))
+            relative = relative[..^1];
+        if (relative.Length < 1 || relative == "." || relative == "~")
+            return null;
+        while (relative.StartsWith("../") || relative.StartsWith("..\\"))
+        {
+            root = root.Parent;
+            relative = relative[3..];
+        }
+
+        return relative == ".." || relative == "." ? null : FileSystemInfoUtility.TryGetFileInfo(root.FullName, relative);
     }
 
     private static async Task<bool> VerifyAsync(LocalWebAppHost host, string manifestFileName, bool skipVerificationException, CancellationToken cancellationToken = default)

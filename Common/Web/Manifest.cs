@@ -96,6 +96,12 @@ public class LocalWebAppManifest
     /// </summary>
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; }
+
+    /// <summary>
+    /// The metadata.
+    /// </summary>
+    [JsonPropertyName("meta")]
+    public JsonObjectNode Metadata { get; set; }
 }
 
 /// <summary>

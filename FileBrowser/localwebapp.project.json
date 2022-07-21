@@ -1,0 +1,13 @@
+{
+  "id": "filebrowser",
+  "package": {
+    "version": "0.1.0",
+    "copyright": "Copyright &copy; 2022 Kingcean Tuan, all rights reserved.",
+    "website": "https://trivial.kingcean.net"
+  },
+  "ref": {
+    "update": { },
+    "path": "..\\bin\\LocalWebApp\\app",
+    "sign": "RS256"
+  }
+}

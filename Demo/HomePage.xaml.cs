@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Trivial.Collection;
+using Trivial.IO;
 using Trivial.Security;
 using Trivial.Text;
 using Trivial.UI;
@@ -52,23 +53,9 @@ public sealed partial class HomePage : Page
         FileBrowserElement.NavigateAsync(new DirectoryInfo("C:\\"));
     }
 
-    private async Task<LocalWebAppHost> CreateWebAppHostAsync(LocalWebAppVerificationOptions verifyOptions = LocalWebAppVerificationOptions.SkipException)
+    private async Task<LocalWebAppHost> CreateWebAppHostAsync(bool skipVerificationException)
     {
-        if (webAppHost == null) webAppHost = await LocalWebAppHost.LoadAsync(
-            new DirectoryInfo("LocalWebApp"),
-            new LocalWebAppOptions("filebrowser", "filebrowser", RSASignatureProvider.CreateRS256(@"-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz5GmwlD/BMX2Pix4Vkv9
-F8LGzQaTjMsRZqvgWbPaoeEIKez9GKM56FPwH4aTZOO/ibkaRQozxdzloRQmSlJJ
-xvqMVqm+upzY7z1Uu3UDsyVK859m5St8CE0VUX7sbd9Ywe3hoC+AHgewx7XIgxm8
-o3QcDnRHUPX8YbkZoqyq0vzFmmJ6Z5D39ykx2VZdHRHWp1CLb6lYOm2AA8fU9PTK
-zjl57kX+Ex4px9Fy199+sD/0sA2zag+RoWeorz+nYbInW49MU/Z/JXLeLJ5fX7f3
-vpqoRRlGJLj5FwMF5OzElKJkPmqmpaMp3Eo9QNrL8bhKDcSGggV/PCv7L8+QdZ7z
-yQIDAQAB
------END PUBLIC KEY-----"), new()
-            {
-                Url = "http://localhost/test/LocalWebApp.json"
-            }),
-            verifyOptions);
+        if (webAppHost == null) webAppHost = await LocalWebAppHost.LoadAsync("WinKitDemo", null, false, skipVerificationException);
         return webAppHost;
     }
 
@@ -79,52 +66,78 @@ yQIDAQAB
             Title = "Loading…",
             IsDevEnvironmentEnabled = true
         };
-        var hostTask = CreateWebAppHostAsync();
+        var hostTask = CreateWebAppHostAsync(true);
         _ = window.LoadAsync(hostTask, host => _ = host?.UpdateAsync());
         var appWin = VisualUtility.TryGetAppWindow(window);
         window.Activate();
     }
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)
-        => _ = SignWebAppClickAsync();
-
-    private async Task SignWebAppClickAsync()
     {
-        var key = @"-----BEGIN PRIVATE KEY-----
-MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPkabCUP8ExfY+
-LHhWS/0XwsbNBpOMyxFmq+BZs9qh4Qgp7P0YoznoU/AfhpNk47+JuRpFCjPF3OWh
-FCZKUknG+oxWqb66nNjvPVS7dQOzJUrzn2blK3wITRVRfuxt31jB7eGgL4AeB7DH
-tciDGbyjdBwOdEdQ9fxhuRmirKrS/MWaYnpnkPf3KTHZVl0dEdanUItvqVg6bYAD
-x9T09MrOOXnuRf4THinH0XLX336wP/SwDbNqD5GhZ6ivP6dhsidbj0xT9n8lct4s
-nl9ft/e+mqhFGUYkuPkXAwXk7MSUomQ+aqaloyncSj1A2svxuEoNxIaCBX88K/sv
-z5B1nvPJAgMBAAECggEAUu1G6WVArWCFo4tSvG95ey+3CxxwgJR0rEdIx63CUGA+
-SbnD2D8GGJrIWWADrRAMavKH20NbMdax6yvIrHK5xQQ+YzVH3Phi9xnSq13xj3X7
-vt9VVYOM9ygMt1V1EeRkan4mYT/4+IZsCy3GIRJ8OfVebCvqfh74qPYxlrtTOB1K
-edhb5ToERpkMK1bDJEILfFCGyVJzJXQkyKOK4uUQM3jBxWWqE9JEoCSBvVW5+xVY
-yHrqisuUz7EIhttQFj+1wPhNKQVMv7rr6/vKxygJ33X9xJWPVENzRi5ThqsYnoXi
-Yg35kuLJH5ivfSDiAEhAP9AMzRd2B25RlebR8FBRDQKBgQDg9XLoXZhF2piTChmb
-4fnglF5VDZqT4kl0fKEIO6ZbgWKbWb8s7MzvMaTNhJnF8sQ6XUU1NB9xyK7Ahtcp
-NRoYjbH8DwEAHhchZyAJVPJ0dlWizvey9hKZzmvNneDktifsn+xzqvRIjADjVEuj
-vmIrFqAn2QiFpc9wH4SxDS+hnwKBgQDsNepwnUIUW6eodLqsJBNv0+HYHIdbJqAi
-/GNvAPmJhwtSjrRxdEJD4X9pf9K3r6KpmJYmN61ZWqyk2gtdQhiou12AwIU8Lkj/
-ZSkC+W2nRI441fIi2iWC7PEdk185NVNW2xljfuiG96CkemK3v/EbKVEB0CnVCmzD
-fwvR+PsBlwKBgQC4pL5MO4Zgz6usBP5AFJsk2qMS7LeT6oigNCt4tn01Xl2xZVil
-ZzhOnFDI363X7AtkXGoR4VZt7mqBXCv+hreEr8kHOsl3bztND3gcML1RGk/v8jEd
-kxxxYhzaCFwvXdQnRJyv1AHuCfwwm1/6Zqns9AVAr8Nu70n0neor6MbPwQKBgBXz
-JKf2VQ+jPL8wqbAZYh0AKXp1nDZiLntRzMOh6Y5YGDtBu47XaNj5+WcKU8Bx98Ge
-xkUi417sSCLBiFDQNY5oatXuDfN7sZjaA6edGg1zF2w8pVWLw/SYpAdFjJG6XNYz
-YfaW8nCoTis6nDXLBlKp0jdC6sA7ScQY6DZI1rpdAoGBALiS3TRy7rvQlFzvZPB/
-QRAWXTfXo8qknqUuTfe0/qasbEvxxQJsJmejHDFP1LrbsHMuE64AFtqnvy/3nO4r
-WlFiraboISACv3BoFD2WFVi5u9PKShkyaMnuOdQWwg1aeD0qCd0HF47omHnqrzWB
-CuJHsDqtVkOkzyPImHfrR6zU
------END PRIVATE KEY-----";
-        var host = await CreateWebAppHostAsync(LocalWebAppVerificationOptions.Disabled);
-        host.Sign(RSASignatureProvider.CreateRS256(key), out var hasWritenFile);
-        if (!hasWritenFile)
+        var rootDir = "";  // The root path of the repo.
+        var dir = new DirectoryInfo(Path.Combine(rootDir, "FileBrowser"));
+        foreach (var subDir in dir.EnumerateDirectories())
         {
-            return;
+            var name = subDir.Name;
+            if (name == "css" || name == "dist" || name == "images" || name == "data")
+                subDir.CopyTo(Path.Combine(rootDir, "bin\\LocalWebApp\\app", name));
         }
 
-        host.Package();
+        foreach (var html in dir.EnumerateFiles("*.html"))
+        {
+            html.CopyTo(Path.Combine(rootDir, "bin\\LocalWebApp\\app", html.Name), true);
+        }
+
+        try
+        {
+            LocalWebAppHost.Package("WinKitDemo", new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
+        }
+        catch (Exception ex)
+        {
+            SignButton.Content = ex.Message;
+        }
+    }
+
+    private void BrowserClick(object sender, RoutedEventArgs e)
+    {
+        var win = new TabbedWebViewWindow();
+        win.Add(new Uri("https://kingcean.net"));
+        win.Activate();
+    }
+
+    private static async Task<DirectoryInfo> SelectAsync()
+    {
+        var picker = new Windows.Storage.Pickers.FileOpenPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
+        };
+        picker.FileTypeFilter.Add(".json");
+        try
+        {
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(Window.Current));
+            var file = await picker.PickSingleFileAsync();
+            var folder = await file.GetParentAsync();
+            return IO.FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
     }
 }

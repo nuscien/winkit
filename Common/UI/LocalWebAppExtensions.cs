@@ -49,7 +49,8 @@ internal static class LocalWebAppExtensions
                 { "copyright", manifest?.Copyright },
                 { "publisher", manifest?.PublisherName },
                 { "version", manifest?.Version },
-                { "tags", manifest?.Tags ?? new() }
+                { "tags", manifest?.Tags ?? new() },
+                { "meta", manifest?.Metadata ?? new() }
             } },
             { "runtime", new JsonObjectNode
             {

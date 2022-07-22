@@ -43,7 +43,7 @@ public class LocalWebAppHost
         }
 
         if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
-        VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
+        VirtualHost = options?.CustomizedVirtualHost ?? string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
     }
 
     /// <summary>
@@ -998,16 +998,17 @@ public class LocalWebAppHost
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
         var options = LoadOptions(hostId, config, keyFile);
+        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
+        var packageId = config.TryGetStringValue("id")?.Trim();
         config = config.TryGetObjectValue("ref");
 
         // Create manifest.
         var appDir = GetDirectoryInfoByRelative(dir, config.TryGetStringValue("path")?.Trim()) ?? dir;
         var manifestPath = Path.Combine(appDir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
-        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
         if (manifestJson != null)
         {
-            var packageId = config.TryGetStringValue("id")?.Trim();
             if (!string.IsNullOrEmpty(packageId)) manifestJson.SetValue("id", packageId);
+            //else packageId = manifestJson.TryGetStringValue("id");
             var manifestStr = manifestJson.ToString();
             File.WriteAllText(manifestPath, manifestStr);
         }
@@ -1117,7 +1118,6 @@ public class LocalWebAppHost
     private static string GetEmbeddedFileName(string name, System.Reflection.Assembly assembly)
     {
         var files = assembly.GetManifestResourceNames();
-        var assemblyName = assembly.GetName().Name;
         var fileName = $"{assembly.GetName().Name}.{name}";
         if (files.Contains(fileName)) return fileName;
         if (files.Contains(name)) return name;

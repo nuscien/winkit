@@ -55,7 +55,7 @@ public sealed partial class HomePage : Page
 
     private async Task<LocalWebAppHost> CreateWebAppHostAsync()
     {
-        if (webAppHost == null) webAppHost = await LocalWebAppHost.LoadAsync("WinKitDemo", null);
+        if (webAppHost == null || webAppHost.NewVersionAvailable != null) webAppHost = await LocalWebAppHost.LoadAsync("WinKitDemo", null);
         return webAppHost;
     }
 
@@ -117,7 +117,7 @@ public sealed partial class HomePage : Page
             WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(Window.Current));
             var file = await picker.PickSingleFileAsync();
             var folder = await file.GetParentAsync();
-            return IO.FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
+            return FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
         }
         catch (ArgumentException)
         {

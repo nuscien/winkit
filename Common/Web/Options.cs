@@ -125,6 +125,21 @@ public class LocalWebAppOptions
     }
 
     /// <summary>
+    /// Initializes a new instance of the LocalWebAppOptions class.
+    /// </summary>
+    /// <param name="hostId">The host app identifier.</param>
+    /// <param name="resourcePackageId">The resource package identifier.</param>
+    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="update">The update service information.</param>
+    /// <param name="manifestFileName">The file name of the manifest.</param>
+    /// <param name="virtualHost">The customized virtual host.</param>
+    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update, string manifestFileName, string virtualHost)
+        : this(hostId, resourcePackageId, signatureProvider, update, manifestFileName)
+    {
+        if (!string.IsNullOrWhiteSpace(virtualHost)) CustomizedVirtualHost = virtualHost;
+    }
+
+    /// <summary>
     /// Gets the host app identifier.
     /// </summary>
     public string HostId { get; }
@@ -143,6 +158,11 @@ public class LocalWebAppOptions
     /// Gets the update service information.
     /// </summary>
     public WebAppPackageUpdateInfo Update { get; }
+
+    /// <summary>
+    /// Gets the update virtual host.
+    /// </summary>
+    internal string CustomizedVirtualHost { get; }
 
     /// <summary>
     /// Gets the public key.

@@ -6,7 +6,9 @@
     "website": "https://trivial.kingcean.net"
   },
   "ref": {
-    "update": { },
+    "update": {
+      "url": "http://localhost/install/Test/LocalWebApp.json"
+    },
     "path": "..\\bin\\LocalWebApp\\app",
     "sign": "RS256"
   }

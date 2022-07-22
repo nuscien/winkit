@@ -110,7 +110,7 @@ public interface IBasicWindowStateController
     /// Enters to or exits from full screen mode.
     /// </summary>
     /// <param name="value">true if to enter to full screen mode; otherwise, false.</param>
-    void FullScreen(bool value);
+    void SetFullScreen(bool value);
 }
 
 internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHandler
@@ -464,20 +464,23 @@ public class BasicWindowStateController : IBasicWindowStateController
     /// Enters to or exits from full screen mode.
     /// </summary>
     /// <param name="value">true if to enter to full screen mode; otherwise, false.</param>
-    public void FullScreen(bool value)
-        => VisualUtility.SetFullScreenMode(value, appWin);
+    public void SetFullScreen(bool value)
+    {
+        if (win is LocalWebAppWindow webWin) webWin.SetFullScreen(value);
+        else VisualUtility.SetFullScreenMode(value, appWin);
+    }
 
-    private double GetDpiX(bool blur)
+    private double GetDpiX(bool round)
     {
         var r = appWin.ClientSize.Width / win.Bounds.Width;
         if (r < 0.2) return 1;
-        return blur ? r : Math.Round(r * 100) / 100;
+        return round ? r : Math.Round(r * 100) / 100;
     }
 
-    private double GetDpiY(bool blur)
+    private double GetDpiY(bool round)
     {
         var r = appWin.ClientSize.Height / win.Bounds.Height;
         if (r < 0.2) return 1;
-        return blur ? r : Math.Round(r * 100) / 100;
+        return round ? r : Math.Round(r * 100) / 100;
     }
 }

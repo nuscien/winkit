@@ -101,7 +101,7 @@ public class LocalWebAppOptions
     /// <param name="resourcePackageId">The resource package identifier.</param>
     /// <param name="signatureProvider">The signature provider.</param>
     /// <param name="update">The update service information.</param>
-    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update = null)
+    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, LocalWebAppPackageUpdateInfo update = null)
         : this(hostId, resourcePackageId, signatureProvider, update, null)
     {
     }
@@ -114,7 +114,7 @@ public class LocalWebAppOptions
     /// <param name="signatureProvider">The signature provider.</param>
     /// <param name="update">The update service information.</param>
     /// <param name="manifestFileName">The file name of the manifest.</param>
-    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update, string manifestFileName)
+    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, LocalWebAppPackageUpdateInfo update, string manifestFileName)
     {
         HostId = hostId;
         ResourcePackageId = resourcePackageId;
@@ -133,7 +133,7 @@ public class LocalWebAppOptions
     /// <param name="update">The update service information.</param>
     /// <param name="manifestFileName">The file name of the manifest.</param>
     /// <param name="virtualHost">The customized virtual host.</param>
-    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, WebAppPackageUpdateInfo update, string manifestFileName, string virtualHost)
+    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, LocalWebAppPackageUpdateInfo update, string manifestFileName, string virtualHost)
         : this(hostId, resourcePackageId, signatureProvider, update, manifestFileName)
     {
         if (!string.IsNullOrWhiteSpace(virtualHost)) CustomizedVirtualHost = virtualHost;
@@ -157,7 +157,7 @@ public class LocalWebAppOptions
     /// <summary>
     /// Gets the update service information.
     /// </summary>
-    public WebAppPackageUpdateInfo Update { get; }
+    public LocalWebAppPackageUpdateInfo Update { get; }
 
     /// <summary>
     /// Gets the update virtual host.
@@ -176,7 +176,7 @@ public class LocalWebAppOptions
 /// <summary>
 /// The update information of standalone web app.
 /// </summary>
-public class WebAppPackageUpdateInfo
+public class LocalWebAppPackageUpdateInfo
 {
     /// <summary>
     /// Gets or sets the URL of web app package update service.
@@ -195,4 +195,44 @@ public class WebAppPackageUpdateInfo
     /// </summary>
     [JsonPropertyName("prop")]
     public string ResponseProperty { get; set; }
+}
+
+/// <summary>
+/// The package result of local web app.
+/// </summary>
+public class LocalWebAppPackageResult
+{
+    internal LocalWebAppPackageResult(LocalWebAppOptions options, DirectoryInfo root, DirectoryInfo app, FileInfo sign, JsonObjectNode project)
+    {
+        Options = options;
+        RootDirectory = root;
+        AppDirectory = app;
+        Signature = sign;
+        ProjectConfiguration = project;
+    }
+
+    /// <summary>
+    /// Gets the options.
+    /// </summary>
+    public LocalWebAppOptions Options { get; }
+
+    /// <summary>
+    /// Gets the root directory.
+    /// </summary>
+    public DirectoryInfo RootDirectory { get; }
+
+    /// <summary>
+    /// Gets the app directory.
+    /// </summary>
+    public DirectoryInfo AppDirectory { get; }
+
+    /// <summary>
+    /// Gets the signature file.
+    /// </summary>
+    public FileInfo Signature { get; }
+
+    /// <summary>
+    /// Gets the project configuration.
+    /// </summary>
+    public JsonObjectNode ProjectConfiguration { get; }
 }

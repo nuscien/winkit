@@ -12,7 +12,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="28" />
+            <RowDefinition x:Name="TitleRow" Height="28" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Border x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#01808080" >

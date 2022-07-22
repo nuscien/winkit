@@ -854,10 +854,10 @@ internal static class LocalWebAppExtensions
                     break;
                 case "fullscreen":
                 case "enterfullscreen":
-                    window.FullScreen(true);
+                    window.SetFullScreen(true);
                     break;
                 case "exitfullscreen":
-                    window.FullScreen(false);
+                    window.SetFullScreen(false);
                     break;
                 default:
                     info.Remove("state");

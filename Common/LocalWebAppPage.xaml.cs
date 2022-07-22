@@ -179,6 +179,11 @@ public sealed partial class LocalWebAppPage : Page
         {
             throw;
         }
+        catch (LocalWebAppSignatureException ex)
+        {
+            OnLoadError(ex);
+            throw;
+        }
         catch (Exception ex)
         {
             OnLoadError(ex);
@@ -246,8 +251,8 @@ public sealed partial class LocalWebAppPage : Page
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
         if (!host.IsVerified)
         {
-            NotificationBar.Title = "Error";
-            NotificationBar.Message = "Invalid file signatures.";
+            NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
+            NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature;
             NotificationBar.Severity = InfoBarSeverity.Error;
             NotificationBar.IsOpen = true;
             ProgressElement.IsActive = false;
@@ -378,8 +383,9 @@ public sealed partial class LocalWebAppPage : Page
     private void OnLoadError(Exception ex)
     {
         if (ex == null) return;
-        NotificationBar.Title = "Error";
-        NotificationBar.Message = ex.Message;
+        NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
+        var message = ex is LocalWebAppSignatureException signEx ? LocalWebAppSettings.SignErrorMessage?.Invoke(signEx) : null;
+        NotificationBar.Message = string.IsNullOrWhiteSpace(message) ? ex?.Message : message;
         NotificationBar.Severity = InfoBarSeverity.Error;
         NotificationBar.IsOpen = true;
         ProgressElement.IsActive = false;
@@ -619,6 +625,7 @@ window.localWebApp = {
         DownloadList.Add(args.DownloadOperation);
         DownloadStarting?.Invoke(this, args);
     }
+
     private void OnContainsFullScreenElementChanged(CoreWebView2 sender, object args)
         => ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<bool>(Browser.CoreWebView2.ContainsFullScreenElement));
 

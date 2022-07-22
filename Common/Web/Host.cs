@@ -43,7 +43,8 @@ public class LocalWebAppHost
         }
 
         if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
-        VirtualHost = options?.CustomizedVirtualHost ?? string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
+        VirtualHost = options?.CustomizedVirtualHost ?? UI.LocalWebAppSettings.VirtualHostGenerator?.Invoke(manifest, options);
+        if (string.IsNullOrWhiteSpace(VirtualHost)) VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
     }
 
     /// <summary>
@@ -322,6 +323,31 @@ public class LocalWebAppHost
     /// <summary>
     /// Loads the standalone web app package information.
     /// </summary>
+    /// <param name="package">The package.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">package was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static Task<LocalWebAppHost> LoadAsync(LocalWebAppPackageResult package, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    {
+        if (package == null) throw new ArgumentNullException(nameof(package), "package should not be null.");
+        var dir = package.RootDirectory;
+        if (dir == null || string.IsNullOrWhiteSpace(package.Options?.HostId)) throw new InvalidOperationException("The options is not correct.");
+        var path = package.ProjectConfiguration?.TryGetObjectValue("dev", "proc")?.TryGetStringValue("path")?.Trim();
+        if (!string.IsNullOrEmpty(path)) dir = GetDirectoryInfoByRelative(dir, path);
+        if (!dir.Exists) Directory.CreateDirectory(dir.FullName);
+        return LoadAsync(dir, package.Options, false, package.AppDirectory, cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
     /// <param name="options">The options to parse.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
@@ -332,6 +358,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, bool skipVerificationException = false, CancellationToken cancellationToken = default)
         => LoadAsync(options, null, null, false, skipVerificationException, cancellationToken);
 
@@ -350,6 +377,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static Task<LocalWebAppHost> LoadAsync(string hostId, System.Reflection.Assembly assembly, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
         => LoadAsync(hostId, assembly, null, null, forceToLoad, null, skipVerificationException, cancellationToken);
 
@@ -371,6 +399,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static Task<LocalWebAppHost> LoadAsync(string hostId, System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (assembly == null) assembly = System.Reflection.Assembly.GetEntryAssembly();
@@ -411,6 +440,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, System.Reflection.Assembly assembly, string fileName, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
@@ -492,7 +522,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
-    /// <exception cref="SecurityException">Signature failed.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, bool skipVerificationException = false, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
         => LoadAsync(rootDir, options, skipVerificationException ? LocalWebAppVerificationOptions.SkipException : LocalWebAppVerificationOptions.Regular, appDir, cancellationToken);
 
@@ -511,7 +541,7 @@ public class LocalWebAppHost
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
-    /// <exception cref="SecurityException">Signature failed.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static async Task<LocalWebAppHost> LoadAsync(DirectoryInfo rootDir, LocalWebAppOptions options, LocalWebAppVerificationOptions verifyOptions = LocalWebAppVerificationOptions.Regular, DirectoryInfo appDir = null, CancellationToken cancellationToken = default)
     {
         if (rootDir == null || !rootDir.Exists) throw new ArgumentNullException(nameof(rootDir));
@@ -955,8 +985,12 @@ public class LocalWebAppHost
     /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="dir">The app path.</param>
     /// <returns>The file output.</returns>
+    /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
+    /// <exception cref="DirectoryNotFoundException">The private key was not found.</exception>
+    /// <exception cref="InvalidOperationException">The configuration is not valid.</exception>
     public static LocalWebAppOptions LoadOptions(string hostId, DirectoryInfo dir)
     {
+        if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
         var config = LoadBuildConfig(dir, out _);
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
@@ -990,25 +1024,37 @@ public class LocalWebAppHost
     /// <param name="dir">The app path.</param>
     /// <param name="outputFileName">The file name of the zip.</param>
     /// <returns>The file output.</returns>
-    public static FileInfo Package(string hostId, DirectoryInfo dir, string outputFileName = null)
+    /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
+    /// <exception cref="DirectoryNotFoundException">The private key was not found.</exception>
+    /// <exception cref="InvalidOperationException">The configuration is not valid.</exception>
+    /// <exception cref="IOException">IO exception.</exception>
+    /// <exception cref="SecurityException">The security exception during file access.</exception>
+    /// <exception cref="UnauthorizedAccessException">One or more files are unauthorized to access.</exception>
+    public static LocalWebAppPackageResult Package(string hostId, DirectoryInfo dir, string outputFileName = null)
     {
         // Load options.
+        if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
         var config = LoadBuildConfig(dir, out var configFile);
+        if (config == null && dir != null)
+        {
+            dir = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
+            if (dir != null) config = LoadBuildConfig(dir, out configFile);
+        }
+
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
         var options = LoadOptions(hostId, config, keyFile);
-        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
-        var packageId = config.TryGetStringValue("id")?.Trim();
-        config = config.TryGetObjectValue("ref");
+        var refConfig = config.TryGetObjectValue("ref");
 
         // Create manifest.
-        var appDir = GetDirectoryInfoByRelative(dir, config.TryGetStringValue("path")?.Trim()) ?? dir;
+        var appDir = GetDirectoryInfoByRelative(dir, refConfig.TryGetStringValue("path")?.Trim()) ?? dir;
         var manifestPath = Path.Combine(appDir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
+        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
         if (manifestJson != null)
         {
+            var packageId = config.TryGetStringValue("id")?.Trim();
             if (!string.IsNullOrEmpty(packageId)) manifestJson.SetValue("id", packageId);
-            //else packageId = manifestJson.TryGetStringValue("id");
             var manifestStr = manifestJson.ToString();
             File.WriteAllText(manifestPath, manifestStr);
         }
@@ -1026,7 +1072,7 @@ public class LocalWebAppHost
         var zip = FileSystemInfoUtility.TryGetFileInfo(outputFileName);
 
         // Copy
-        var arr = config.TryGetArrayValue("output")?.OfType<JsonObjectNode>();
+        var arr = refConfig.TryGetArrayValue("output")?.OfType<JsonObjectNode>();
         if (arr != null)
         {
             foreach (var output in arr)
@@ -1040,7 +1086,7 @@ public class LocalWebAppHost
         }
 
         // Return result.
-        return zip;
+        return new(options, dir, appDir, zip, config);
     }
 
     /// <summary>
@@ -1060,7 +1106,7 @@ public class LocalWebAppHost
     /// Updates the resource package.
     /// </summary>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns>The new version.</returns>
+    /// <returns>The new version; or null, if no update.</returns>
     public async Task<string> UpdateAsync(CancellationToken cancellationToken = default)
     {
         // Get update manifest.
@@ -1421,7 +1467,7 @@ public class LocalWebAppHost
             "RS256" => RSASignatureProvider.CreateRS256(key.Value),
             _ => throw new InvalidOperationException("The signature algorithm is not supported.", new NotSupportedException("The signature algorithm is not supported."))
         };
-        if (!config.TryDeserializeValue<WebAppPackageUpdateInfo>("update", null, out var update)) update = null;
+        if (!config.TryDeserializeValue<LocalWebAppPackageUpdateInfo>("update", null, out var update)) update = null;
         return new(hostId, resId, signatureProvider, update);
     }
 
@@ -1523,6 +1569,8 @@ public class LocalWebAppHost
             relative = relative[..^1];
         if (relative.Length < 1 || relative == "." || relative == "~")
             return root;
+        if (relative.StartsWith("./") || relative.StartsWith(".\\"))
+            relative = relative[2..];
         while (relative.StartsWith("../") || relative.StartsWith("..\\"))
         {
             root = root.Parent;
@@ -1561,7 +1609,7 @@ public class LocalWebAppHost
             if (file == null || !file.Exists)
             {
                 if (skipVerificationException) return false;
-                throw new SecurityException("The file signature list is not found.", new FileNotFoundException("The file signature list is not found."));
+                throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.MissSignatureFile, "The signature file is not found.", new FileNotFoundException("The file signature list is not found."));
             }
 
             using var stream = file.OpenRead();
@@ -1569,7 +1617,7 @@ public class LocalWebAppHost
             if (fileCol.Files == null)
             {
                 if (skipVerificationException) return false;
-                throw new SecurityException("Miss file signature information.");
+                throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.MissSignatureInfo, "Miss file signature information.");
             }
 
             try
@@ -1590,7 +1638,7 @@ public class LocalWebAppHost
                 {
                     if (fileInfo == null || !fileInfo.Exists) continue;
                     if (skipVerificationException) return false;
-                    throw new SecurityException("Incorrect signature.");
+                    throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.Incorrect, "Incorrect signature.");
                 }
 
                 if (fileInfo?.FullName != null) files.Remove(fileInfo.FullName);
@@ -1599,7 +1647,7 @@ public class LocalWebAppHost
             if (files.Count > 0)
             {
                 if (skipVerificationException) return false;
-                throw new SecurityException(files.Count == 1 ? "Miss signature for a file." : $"Miss signature for {files.Count} files.");
+                throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.Partial, files.Count == 1 ? "Miss signature for a file." : $"Miss signature for {files.Count} files.");
             }
 
             return true;
@@ -1607,22 +1655,22 @@ public class LocalWebAppHost
         catch (InvalidOperationException ex)
         {
             if (skipVerificationException) return false;
-            throw new SecurityException(string.Concat("Invalid operation during file signature verification. ", ex.Message), ex);
+            throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.InvalidOperation, string.Concat("Invalid operation during file signature verification. ", ex.Message), ex);
         }
         catch (NotSupportedException ex)
         {
             if (skipVerificationException) return false;
-            throw new SecurityException(string.Concat("Not supported during file signature verification.", ex.Message), ex);
+            throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.NotSupported, string.Concat("Not supported during file signature verification.", ex.Message), ex);
         }
         catch (IOException ex)
         {
             if (skipVerificationException) return false;
-            throw new SecurityException(string.Concat("IO exception during file signature verification.", ex.Message), ex);
+            throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.IO, string.Concat("IO exception during file signature verification.", ex.Message), ex);
         }
         catch (ExternalException ex)
         {
             if (skipVerificationException) return false;
-            throw new SecurityException(string.Concat("External exception during file signature verification.", ex.Message), ex);
+            throw new LocalWebAppSignatureException(LocalWebAppSignatureErrorTypes.External, string.Concat("External exception during file signature verification.", ex.Message), ex);
         }
     }
 

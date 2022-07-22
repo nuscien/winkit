@@ -63,7 +63,6 @@ public sealed partial class HomePage : Page
     {
         var window = new LocalWebAppWindow()
         {
-            Title = "Loading…",
             IsDevEnvironmentEnabled = true
         };
         var hostTask = CreateWebAppHostAsync();
@@ -74,6 +73,16 @@ public sealed partial class HomePage : Page
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)
     {
+        //var window = new LocalWebAppWindow()
+        //{
+        //    IsDevEnvironmentEnabled = true
+        //};
+        //var hostTask = CreateWebAppHostAsync();
+        //_ = window.SelectDevPackageAsync("WinKitDemo");
+        //var appWin = VisualUtility.TryGetAppWindow(window);
+        //window.Activate();
+        //return;
+
         var rootDir = "";  // The root path of the repo.
         var dir = new DirectoryInfo(Path.Combine(rootDir, "FileBrowser"));
         foreach (var subDir in dir.EnumerateDirectories())
@@ -88,14 +97,7 @@ public sealed partial class HomePage : Page
             html.CopyTo(Path.Combine(rootDir, "bin\\LocalWebApp\\app", html.Name), true);
         }
 
-        try
-        {
-            LocalWebAppHost.Package("WinKitDemo", new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
-        }
-        catch (Exception ex)
-        {
-            SignButton.Content = ex.Message;
-        }
+        LocalWebAppHost.Package("WinKitDemo", new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
     }
 
     private void BrowserClick(object sender, RoutedEventArgs e)

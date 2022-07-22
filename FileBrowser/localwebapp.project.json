@@ -11,5 +11,10 @@
     },
     "path": "..\\bin\\LocalWebApp\\app",
     "sign": "RS256"
+  },
+  "dev": {
+    "proc": {
+      "path": ".\\temp"
+    }
   }
 }

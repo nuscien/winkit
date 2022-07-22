@@ -36,6 +36,7 @@ public sealed partial class LocalWebAppWindow : Window
     public LocalWebAppWindow()
     {
         InitializeComponent();
+        Title = TitleElement.Text = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.Loading) ? "Loading…" : LocalWebAppSettings.CustomizedLocaleStrings.Loading;
         try
         {
             ExtendsContentIntoTitleBar = true;
@@ -145,6 +146,28 @@ public sealed partial class LocalWebAppWindow : Window
     }
 
     /// <summary>
+    /// Load a dev local web app.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    public async Task SelectDevPackageAsync(string hostId, CancellationToken cancellationToken = default)
+    {
+        var dir = await SelectAsync();
+        await SelectDevPackageAsync(hostId, dir, cancellationToken);
+    }
+
+    /// <summary>
+    /// Load a dev local web app.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    public async Task SelectDevPackageAsync(string hostId, DirectoryInfo dir, CancellationToken cancellationToken = default)
+    {
+        if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The directory is not found.");
+        var package = LocalWebAppHost.Package(hostId, dir);
+        var host = await LocalWebAppHost.LoadAsync(package, false, cancellationToken);
+        await MainElement.LoadAsync(host);
+    }
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
@@ -225,6 +248,47 @@ public sealed partial class LocalWebAppWindow : Window
     public bool RemoveMessageHandler(string id)
         => MainElement.RemoveMessageHandler(id);
 
+    internal void SetFullScreen(bool value)
+    {
+        VisualUtility.SetFullScreenMode(value, this);
+        TitleRow.Height = value ? new(0) : new(28);
+    }
+
+    private async Task<DirectoryInfo> SelectAsync()
+    {
+        var picker = new Windows.Storage.Pickers.FolderPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
+        };
+        picker.FileTypeFilter.Add(".json");
+        try
+        {
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
+            var folder = await picker.PickSingleFolderAsync();
+            return IO.FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         if (backdrop != null) backdrop.Dispose();
@@ -274,7 +338,5 @@ public sealed partial class LocalWebAppWindow : Window
         => DownloadStarting?.Invoke(this, args);
 
     private void MainElement_ContainsFullScreenElementChanged(object sender, DataEventArgs<bool> e)
-    {
-
-    }
+        => SetFullScreen(e.Data);
 }

@@ -9,13 +9,6 @@ using Trivial.Text;
 namespace Trivial.Web;
 
 /// <summary>
-/// The message process handler for local standalone web app.
-/// </summary>
-/// <param name="request">The request information.</param>
-/// <returns>The response.</returns>
-public delegate Task<LocalWebAppResponseMessage> LocalWebAppMessageProcessAsync(LocalWebAppRequestMessage request);
-
-/// <summary>
 /// The request message for local standalone web app.
 /// </summary>
 public class LocalWebAppRequestMessage
@@ -26,7 +19,7 @@ public class LocalWebAppRequestMessage
     public Uri Uri { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the source is full truested.
+    /// Gets or sets a value indicating whether the source is full trusted.
     /// </summary>
     public bool IsFullTrusted { get; set; }
 
@@ -184,4 +177,28 @@ public class LocalWebAppNotificationMessage
     /// Gets or sets the data provider source.
     /// </summary>
     public string Source { get; set; }
+}
+
+/// <summary>
+/// The request message for local standalone web app.
+/// </summary>
+public interface ILocalWebAppMessageHandler
+{
+    /// <summary>
+    /// Gets or sets the description of the message handler.
+    /// </summary>
+    public string Description { get; set; }
+
+    /// <summary>
+    /// Gets or sets the version of the message handler.
+    /// </summary>
+    public string Version { get; set; }
+
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="request">The request message.</param>
+    /// <param name="manifest">The manifest of the local web app.</param>
+    /// <returns>The response message.</returns>
+    public Task<LocalWebAppResponseMessage> Process(LocalWebAppRequestMessage request, LocalWebAppManifest manifest);
 }

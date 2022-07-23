@@ -31,7 +31,7 @@ internal static class LocalWebAppExtensions
     public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest, bool isDebug = false)
     {
         var eas = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
-        var entryAssembly = Assembly.GetEntryAssembly().GetName();
+        var entryAssembly = (LocalWebAppHook.Assembly ?? Assembly.GetEntryAssembly()).GetName();
         var hostInfo = new JsonObjectNode
         {
             { "appId", manifest?.Id },
@@ -39,7 +39,8 @@ internal static class LocalWebAppExtensions
             {
                 { "version", entryAssembly?.Version?.ToString() },
                 { "name", entryAssembly?.Name },
-                { "value", entryAssembly?.FullName }
+                { "value", entryAssembly?.FullName },
+                { "additional", LocalWebAppHook.HostAdditionalString }
             } },
             { "intro", new JsonObjectNode
             {
@@ -95,7 +96,7 @@ internal static class LocalWebAppExtensions
         return hostInfo;
     }
 
-    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, LocalWebAppMessageProcessAsync> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
+    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, ILocalWebAppMessageHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (json == null) return null;
         var req = new LocalWebAppRequestMessage
@@ -109,7 +110,7 @@ internal static class LocalWebAppExtensions
             AdditionalInfo = json.TryGetObjectValue("info"),
             Context = json.TryGetObjectValue("context")
         };
-        LocalWebAppResponseMessage resp = null;
+        LocalWebAppResponseMessage resp;
         try
         {
             if (string.IsNullOrWhiteSpace(host?.Manifest?.Id))
@@ -117,9 +118,9 @@ internal static class LocalWebAppExtensions
             else if (string.IsNullOrEmpty(req.Command))
                 resp = new LocalWebAppResponseMessage(string.Concat("Command name should not be null or empty."));
             else if (string.IsNullOrEmpty(req.MessageHandlerId))
-                resp = await OnLocalWebAppMessageRequestAsync(req, host, window, browserHandler);
+                resp = await OnLocalWebAppMessageRequestAsync(req, host, handlers, window, browserHandler);
             else if (handlers.TryGetValue(req.MessageHandlerId, out var h) && h != null)
-                resp = await h(req);
+                resp = await h.Process(req, host?.Manifest);
             else
                 resp = new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", req.MessageHandlerId));
         }
@@ -228,6 +229,7 @@ internal static class LocalWebAppExtensions
             { "message", resp?.Message },
             { "error", resp?.IsError ?? true },
             { "context", req.Context },
+            { "limited", !req.IsFullTrusted },
             { "timeline", new JsonObjectNode
             {
                 { "request", json.TryGetDateTimeValue("date") },
@@ -885,7 +887,27 @@ internal static class LocalWebAppExtensions
         }, info);
     }
 
-    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
+    public static LocalWebAppResponseMessage GetMessageHandlers(Dictionary<string, ILocalWebAppMessageHandler> handlers)
+    {
+        var arr = new JsonArrayNode();
+        foreach (var handler in handlers)
+        {
+            if (handler.Value == null || string.IsNullOrWhiteSpace(handler.Key)) continue;
+            arr.Add(new JsonObjectNode
+            {
+                { "id", handler.Key },
+                { "description", handler.Value.Description },
+                { "version", handler.Value.Version }
+            });
+        }
+
+        return new(new JsonObjectNode()
+        {
+            { "collection", arr }
+        });
+    }
+
+    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, Dictionary<string, ILocalWebAppMessageHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
         switch (request.Command.ToLowerInvariant())
@@ -928,6 +950,8 @@ internal static class LocalWebAppExtensions
             case "window":
                 if (window != null) return WindowState(request, window, browserHandler);
                 break;
+            case "handlers":
+                return GetMessageHandlers(handlers);
         }
 
         return new LocalWebAppResponseMessage(string.Concat("Not supported for this command. ", request.Command));

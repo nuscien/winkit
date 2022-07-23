@@ -10,7 +10,7 @@ namespace Trivial.UI;
 /// <summary>
 /// The global settings of the local web app.
 /// </summary>
-public static class LocalWebAppSettings
+public static class LocalWebAppHook
 {
     /// <summary>
     /// The locale strings.
@@ -34,6 +34,11 @@ public static class LocalWebAppSettings
     }
 
     /// <summary>
+    /// Gets or sets the additional string of host.
+    /// </summary>
+    public static string HostAdditionalString { get; set; }
+
+    /// <summary>
     /// Gets or sets the handler to generate the default virtual host.
     /// </summary>
     public static Func<LocalWebAppManifest, LocalWebAppOptions, string> VirtualHostGenerator { get; set; }
@@ -42,4 +47,19 @@ public static class LocalWebAppSettings
     /// Gets or sets the handler to generate the error message for signature error..
     /// </summary>
     public static Func<LocalWebAppSignatureException, string> SignErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the handler to modify the HTTP client of update service.
+    /// </summary>
+    public static Action<Net.JsonHttpClient<Text.JsonObjectNode>> UpdateServiceClientHandler { get; set; }
+
+    /// <summary>
+    /// Gets or sets the hanlder after updated.
+    /// </summary>
+    public static Action<LocalWebAppHost> OnUpdate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the main assembly of the app.
+    /// </summary>
+    public static System.Reflection.Assembly Assembly { get; set; }
 }

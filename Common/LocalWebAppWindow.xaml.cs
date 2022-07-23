@@ -36,7 +36,7 @@ public sealed partial class LocalWebAppWindow : Window
     public LocalWebAppWindow()
     {
         InitializeComponent();
-        Title = TitleElement.Text = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.Loading) ? "Loading…" : LocalWebAppSettings.CustomizedLocaleStrings.Loading;
+        Title = TitleElement.Text = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.Loading) ? "Loading…" : LocalWebAppHook.CustomizedLocaleStrings.Loading;
         try
         {
             ExtendsContentIntoTitleBar = true;
@@ -225,20 +225,20 @@ public sealed partial class LocalWebAppWindow : Window
     /// Tests if there is the message handler of given identifier..
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <param name="callback">The process handler.</param>
+    /// <param name="handler">The process handler.</param>
     /// <returns>true if exists; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public bool TryGetMessageHandler(string id, out LocalWebAppMessageProcessAsync callback)
-        => MainElement.TryGetMessageHandler(id, out callback);
+    public bool TryGetMessageHandler(string id, out ILocalWebAppMessageHandler handler)
+        => MainElement.TryGetMessageHandler(id, out handler);
 
     /// <summary>
     /// Registers a message handler. It will override the existed one.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <param name="callback">The process handler.</param>
+    /// <param name="handler">The process handler.</param>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public void RegisterMessageHandler(string id, LocalWebAppMessageProcessAsync callback)
-        => MainElement.RegisterMessageHandler(id, callback);
+    public void RegisterMessageHandler(string id, ILocalWebAppMessageHandler handler)
+        => MainElement.RegisterMessageHandler(id, handler);
 
     /// <summary>
     /// Removes the message handler.

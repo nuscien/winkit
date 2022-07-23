@@ -43,7 +43,7 @@ public class LocalWebAppHost
         }
 
         if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
-        VirtualHost = options?.CustomizedVirtualHost ?? UI.LocalWebAppSettings.VirtualHostGenerator?.Invoke(manifest, options);
+        VirtualHost = options?.CustomizedVirtualHost ?? UI.LocalWebAppHook.VirtualHostGenerator?.Invoke(manifest, options);
         if (string.IsNullOrWhiteSpace(VirtualHost)) VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
     }
 
@@ -395,6 +395,7 @@ public class LocalWebAppHost
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
@@ -986,8 +987,9 @@ public class LocalWebAppHost
     /// <param name="dir">The app path.</param>
     /// <returns>The file output.</returns>
     /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
-    /// <exception cref="DirectoryNotFoundException">The private key was not found.</exception>
+    /// <exception cref="FileNotFoundException">The private key was not found.</exception>
     /// <exception cref="InvalidOperationException">The configuration is not valid.</exception>
+    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
     public static LocalWebAppOptions LoadOptions(string hostId, DirectoryInfo dir)
     {
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
@@ -1027,6 +1029,7 @@ public class LocalWebAppHost
     /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
     /// <exception cref="DirectoryNotFoundException">The private key was not found.</exception>
     /// <exception cref="InvalidOperationException">The configuration is not valid.</exception>
+    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
     /// <exception cref="IOException">IO exception.</exception>
     /// <exception cref="SecurityException">The security exception during file access.</exception>
     /// <exception cref="UnauthorizedAccessException">One or more files are unauthorized to access.</exception>
@@ -1099,7 +1102,9 @@ public class LocalWebAppHost
     /// <returns>The new version.</returns>
     public async Task<string> UpdateAsync(string version, FileInfo zip, bool deleteZip, CancellationToken cancellationToken = default)
     {
-        return NewVersionAvailable = await UpdateAsync(Options, CacheDirectory.Parent, version, zip, deleteZip, cancellationToken);
+        NewVersionAvailable = await UpdateAsync(Options, CacheDirectory.Parent, version, zip, deleteZip, cancellationToken);
+        UI.LocalWebAppHook.OnUpdate?.Invoke(this);
+        return NewVersionAvailable;
     }
 
     /// <summary>
@@ -1112,12 +1117,28 @@ public class LocalWebAppHost
         // Get update manifest.
         var url = GetUrl(Options.Update?.Url, Options.Update?.VariableParameters);
         if (string.IsNullOrEmpty(url)) return null;
-        var http = new JsonHttpClient<JsonObjectNode>();
+        var http = new JsonHttpClient<JsonObjectNode>
+        {
+            SerializeEvenIfFailed = true
+        };
+        UI.LocalWebAppHook.UpdateServiceClientHandler?.Invoke(http);
         var resp = await http.GetAsync(url, cancellationToken);
         var respProp = Options.Update?.ResponseProperty?.Trim();
         resp = resp?.TryGetObjectValue(string.IsNullOrEmpty(respProp) ? "data" : respProp) ?? resp;
+        if (resp == null && !string.IsNullOrWhiteSpace(Manifest?.Id))
+        {
+            var respArr = resp?.TryGetArrayValue(string.IsNullOrEmpty(respProp) ? "data" : respProp)?.OfType<JsonObjectNode>();
+            var manifestId = Manifest.Id.Trim().ToUpperInvariant().Replace("@", string.Empty).Replace("\\", "/");
+            foreach (var respItem in respArr)
+            {
+                if (respItem?.TryGetStringValue("id")?.Trim()?.ToUpperInvariant()?.Replace("@", string.Empty)?.Replace("\\", "/") != manifestId) continue;
+                resp = respItem;
+                break;
+            }
+        }
+
         if (resp == null) return null;
-        var ver = resp.TryGetStringValue("version")?.Trim();
+        var ver = resp.TryGetStringValue("version")?.Trim() ?? resp.TryGetStringValue("latestVersion")?.Trim();
         if (string.IsNullOrEmpty(ver)) return null;
         if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, true) <= 0 && resp.TryGetBooleanValue("force") != true)
             return null;
@@ -1419,6 +1440,8 @@ public class LocalWebAppHost
     /// <param name="config">The build config.</param>
     /// <param name="keyFile">The private key.</param>
     /// <returns>The file output.</returns>
+    /// <exception cref="InvalidOperationException">Parse private key failed.</exception>
+    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
     private static LocalWebAppOptions LoadOptions(string hostId, JsonObjectNode config, FileInfo keyFile)
     {
         // Create options.
@@ -1436,36 +1459,36 @@ public class LocalWebAppHost
         }
         catch (IOException ex)
         {
-            throw new InvalidOperationException("Parse private key failed.", ex);
+            throw new InvalidOperationException("Parse private key failed because of IO exception.", ex);
         }
         catch (SecurityException ex)
         {
-            throw new InvalidOperationException("Parse private key failed.", ex);
+            throw new InvalidOperationException("Parse private key failed because of security exception.", ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new InvalidOperationException("Parse private key failed.", ex);
+            throw new InvalidOperationException("Parse private key failed because of unauthorized access exception.", ex);
         }
         catch (NotSupportedException ex)
         {
-            throw new InvalidOperationException("Parse private key failed.", ex);
+            throw new InvalidOperationException("Parse private key failed because of not supported exception.", ex);
         }
         catch (InvalidOperationException ex)
         {
-            throw new InvalidOperationException("Parse private key failed.", ex);
+            throw new InvalidOperationException("Parse private key failed because of invalid operation exception.", ex);
         }
         catch (ExternalException ex)
         {
-            throw new InvalidOperationException("Parse private key failed.", ex);
+            throw new InvalidOperationException("Parse private key failed because of external exception.", ex);
         }
 
-        if (!key.HasValue) throw new InvalidOperationException("Parse private key failed.");
+        if (!key.HasValue) throw new InvalidOperationException("Parse private key failed because it is empty.");
         var signatureProvider = sign switch
         {
             "RS512" => RSASignatureProvider.CreateRS512(key.Value),
             "RS384" => RSASignatureProvider.CreateRS384(key.Value),
             "RS256" => RSASignatureProvider.CreateRS256(key.Value),
-            _ => throw new InvalidOperationException("The signature algorithm is not supported.", new NotSupportedException("The signature algorithm is not supported."))
+            _ => throw new NotSupportedException("The signature algorithm is not supported.")
         };
         if (!config.TryDeserializeValue<LocalWebAppPackageUpdateInfo>("update", null, out var update)) update = null;
         return new(hostId, resId, signatureProvider, update);
@@ -1539,6 +1562,12 @@ public class LocalWebAppHost
                     break;
                 case "guid":
                     q.Add(k, Guid.NewGuid().ToString());
+                    break;
+                case "host":
+                    q.Add(k, Options?.HostId);
+                    break;
+                case "additional":
+                    q.Add(k, Options?.HostId);
                     break;
             }
         }

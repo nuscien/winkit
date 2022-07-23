@@ -34,7 +34,7 @@ namespace Trivial.UI;
 public sealed partial class LocalWebAppPage : Page
 {
     private LocalWebAppHost host;
-    private readonly Dictionary<string, LocalWebAppMessageProcessAsync> proc = new();
+    private readonly Dictionary<string, ILocalWebAppMessageHandler> proc = new();
     private readonly LocalWebAppBrowserMessageHandler messageHandler;
     private TabbedWebViewWindow tabbedWebViewWindowInstance;
 
@@ -251,8 +251,8 @@ public sealed partial class LocalWebAppPage : Page
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
         if (!host.IsVerified)
         {
-            NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
-            NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature;
+            NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle;
+            NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppHook.CustomizedLocaleStrings.InvalidFileSignature;
             NotificationBar.Severity = InfoBarSeverity.Error;
             NotificationBar.IsOpen = true;
             ProgressElement.IsActive = false;
@@ -319,7 +319,7 @@ public sealed partial class LocalWebAppPage : Page
         => Browser.Focus(value);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier..
+    /// Tests if there is the message handler of given identifier.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <returns>true if exists; otherwise, false.</returns>
@@ -328,23 +328,32 @@ public sealed partial class LocalWebAppPage : Page
         => proc.ContainsKey(id);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier..
+    /// Tests if there is the message handler of given identifier.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <param name="callback">The process handler.</param>
+    /// <param name="handler">The message handler.</param>
     /// <returns>true if exists; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public bool TryGetMessageHandler(string id, out LocalWebAppMessageProcessAsync callback)
-        => proc.TryGetValue(id, out callback);
+    public bool TryGetMessageHandler(string id, out ILocalWebAppMessageHandler handler)
+        => proc.TryGetValue(id, out handler);
+
+    /// <summary>
+    /// Tests if there is the message handler of given identifier.
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <returns>The message handler..</returns>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public ILocalWebAppMessageHandler TryGetMessageHandler(string id)
+        => proc.TryGetValue(id, out var callback) ? callback : null;
 
     /// <summary>
     /// Registers a message handler. It will override the existed one.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <param name="callback">The process handler.</param>
+    /// <param name="handler">The message handler.</param>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public void RegisterMessageHandler(string id, LocalWebAppMessageProcessAsync callback)
-        => proc[id] = callback;
+    public void RegisterMessageHandler(string id, ILocalWebAppMessageHandler handler)
+        => proc[id] = handler;
 
     /// <summary>
     /// Removes the message handler.
@@ -383,8 +392,8 @@ public sealed partial class LocalWebAppPage : Page
     private void OnLoadError(Exception ex)
     {
         if (ex == null) return;
-        NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
-        var message = ex is LocalWebAppSignatureException signEx ? LocalWebAppSettings.SignErrorMessage?.Invoke(signEx) : null;
+        NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle;
+        var message = ex is LocalWebAppSignatureException signEx ? LocalWebAppHook.SignErrorMessage?.Invoke(signEx) : null;
         NotificationBar.Message = string.IsNullOrWhiteSpace(message) ? ex?.Message : message;
         NotificationBar.Severity = InfoBarSeverity.Error;
         NotificationBar.IsOpen = true;
@@ -476,7 +485,7 @@ window.localWebApp = {
     if (typeof callback !== 'function' && typeof callback.proc !== 'function') return;
     hs.push({ h: callback, type });
   },
-  getCommandHandler(id) {
+  getHandler(id) {
     if (!id || typeof id !== 'string') return null;
     return {
       id() {
@@ -593,8 +602,9 @@ window.localWebApp = {
     }
   },
   hostApp: {
-    theme() {
-      return sendRequest(null, 'theme', {}, null, null);
+    theme(options) {
+      if (!options) options = {};
+      return sendRequest(null, 'theme', {}, null, options.context);
     },
     checkUpdate(options) {
       if (options === true) options = { check: true };
@@ -606,6 +616,10 @@ window.localWebApp = {
       if (!value) value = {};
       else if (typeof value === 'string') value = { state: value };
       return sendRequest(null, 'window', { state: value.state, width: value.width || value.w, height: value.height || value.h, top: value.top || value.y, left: value.left || value.x, focus: value.focus, physical: value.physical }, null, value.context);
+    },
+    handlers(options) {
+      if (!options) options = {};
+      return sendRequest(null, 'handlers', {}, null, options.context);
     }
   },
   hostInfo: ");

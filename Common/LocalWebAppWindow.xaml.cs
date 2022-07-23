@@ -137,6 +137,23 @@ public sealed partial class LocalWebAppWindow : Window
     }
 
     /// <summary>
+    /// Gets or sets the image source of the icon.
+    /// </summary>
+    public ImageSource IconImageSource
+    {
+        get
+        {
+            return IconElement.Source;
+        }
+
+        set
+        {
+            TitleElement.Margin = new Thickness(value != null ? 28 : 10, 0, 32, 0);
+            IconElement.Source = value;
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the handler occuring on the default browser window is created.
     /// </summary>
     public Action<TabbedWebViewWindow> OnWindowCreate

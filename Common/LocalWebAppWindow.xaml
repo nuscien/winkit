@@ -15,9 +15,10 @@
             <RowDefinition x:Name="TitleRow" Height="28" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#01808080" >
-            <TextBlock x:Name="TitleElement" FontSize="14" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0" />
-        </Border>
+        <Grid x:Name="TitleBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#01808080" >
+            <ImageIcon x:Name="IconElement" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0" />
+            <TextBlock x:Name="TitleElement" FontSize="14" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,32,0" />
+        </Grid>
         <controls:LocalWebAppPage x:Name="MainElement" TitleChanged="OnTitleChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreProcessFailed="OnCoreProcessFailed" CoreWebView2Initialized="OnCoreWebViewInitialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" NewWindowRequested="OnNewWindowRequested" WindowCloseRequested="OnWindowCloseRequested" ContainsFullScreenElementChanged="MainElement_ContainsFullScreenElementChanged" DownloadStarting="OnDownloadStarting" Grid.Row="1" />
     </Grid>
 </Window>

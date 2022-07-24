@@ -38,7 +38,7 @@ public class LocalWebAppHost
         if (!string.IsNullOrEmpty(ResourcePackageId))
         {
             var appDomainArr = ResourcePackageId.Split(new[] { '.', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            if (appDomainArr.Length > 1) appDomain = string.Concat(appDomainArr[1], appDomainArr[0]);
+            if (appDomainArr.Length > 1) appDomain = string.Concat(appDomainArr[1].Replace("@", string.Empty), ".", appDomainArr[0]);
             else appDomain = appDomainArr.FirstOrDefault();
         }
 
@@ -1037,14 +1037,23 @@ public class LocalWebAppHost
     {
         // Load options.
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
-        var config = LoadBuildConfig(dir, out var configFile);
+        JsonObjectNode config = null;
+        FileInfo configFile = null;
+        try
+        {
+            config = LoadBuildConfig(dir, out configFile);
+        }
+        catch (IOException)
+        {
+        }
+
         if (config == null && dir != null)
         {
             dir = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
             if (dir != null) config = LoadBuildConfig(dir, out configFile);
         }
 
-        if (config == null) throw new InvalidOperationException("Parse the config file failed.");
+        if (config == null || configFile == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
         var options = LoadOptions(hostId, config, keyFile);

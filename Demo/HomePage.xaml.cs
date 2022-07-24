@@ -67,6 +67,10 @@ public sealed partial class HomePage : Page
         };
         var hostTask = CreateWebAppHostAsync();
         _ = window.LoadAsync(hostTask, host => _ = host?.UpdateAsync());
+        window.IconImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage
+        {
+            UriSource = new Uri(BaseUri, "\\Assets\\Square44x44Logo.scale-100.png")
+        };
         var appWin = VisualUtility.TryGetAppWindow(window);
         window.Activate();
     }

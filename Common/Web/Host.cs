@@ -326,7 +326,7 @@ public class LocalWebAppHost
     /// <param name="package">The package.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">package was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
@@ -351,7 +351,7 @@ public class LocalWebAppHost
     /// <param name="options">The options to parse.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
@@ -370,7 +370,7 @@ public class LocalWebAppHost
     /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
@@ -392,7 +392,7 @@ public class LocalWebAppHost
     /// <param name="pemFileName">The public key file name of signature.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
@@ -434,7 +434,7 @@ public class LocalWebAppHost
     /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
@@ -516,7 +516,7 @@ public class LocalWebAppHost
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
     /// <param name="appDir">The optional resource package directory to load the local standalone web app.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
@@ -535,7 +535,7 @@ public class LocalWebAppHost
     /// <param name="verifyOptions">The verification options.</param>
     /// <param name="appDir">The optional resource package directory to load the local standalone web app.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns></returns>
+    /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">options was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
@@ -680,6 +680,65 @@ public class LocalWebAppHost
 
         // Return result.
         return host;
+    }
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="options">The options to parse.</param>
+    /// <param name="uri">The URI to download the compressed file of the resource package.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web app host.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, Uri uri, CancellationToken cancellationToken = default)
+    {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
+        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
+        var appId = options.ResourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
+        appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
+        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        var cacheDir = Directory.CreateDirectory(Path.Combine(dir.FullName, "cache"));
+        var path = Path.Combine(cacheDir.FullName, "TempResourcePackage.zip");
+        TryDeleteDirectory(path);
+        try
+        {
+            await HttpClientExtensions.WriteFileAsync(uri, path, null, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        await UpdateAsync(options, dir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
+        return await LoadAsync(dir, options, true, null, cancellationToken);
     }
 
     /// <summary>
@@ -1400,9 +1459,9 @@ public class LocalWebAppHost
     {
         var cacheDir = Directory.CreateDirectory(Path.Combine(rootDir.FullName, "cache"));
         var path = Path.Combine(cacheDir.FullName, "TempResourcePackage.zip");
+        TryDeleteDirectory(path);
         try
         {
-            TryDeleteDirectory(path);
             using var fileStream = File.Create(path);
             using var stream = assembly.GetManifestResourceStream(fileName);
             await stream.CopyToAsync(fileStream, cancellationToken);

@@ -247,11 +247,40 @@ namespace FileBrowserDemo {
             case "diff":
             case "patch":
                 return "File_Text";
+            case "mp4":
+            case "wmv":
+            case "webv":
+            case "avi":
+            case "mpg":
+            case "mpeg":
+            case "mov":
+            case "av1":
+                return "File_Movie";
+            case "mp3":
+            case "wma":
+            case "weba":
+            case "wav":
+            case "ogg":
+            case "flac":
+            case "snd":
+            case "mid":
+                return "File_Music";
             case "json":
             case "config":
             case "xml":
             case "yml":
+            case "ini":
+            case "dtd":
+            case "css":
+            case "js":
+            case "ts":
+            case "vbs":
                 return "File_Json";
+            case "html":
+            case "htm":
+            case "hta":
+            case "shtml":
+                return "File_Html";
             case "md":
                 return "File_Markdown";
             case "exe":
@@ -263,6 +292,8 @@ namespace FileBrowserDemo {
             case "bin":
             case "so":
             case "lib":
+            case "msc":
+            case "jar":
                 return "File_Dll";
             case "zip":
             case "gz":
@@ -290,6 +321,11 @@ namespace FileBrowserDemo {
                 return "File_Pdf";
             case "psd":
                 return "File_Psd";
+            case "font":
+            case "fon":
+            case "ttf":
+            case "otf":
+                return "File_Font"
             default:
                 return "File";
         }

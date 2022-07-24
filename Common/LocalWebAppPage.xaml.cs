@@ -159,6 +159,55 @@ public sealed partial class LocalWebAppPage : Page
     public IBasicWindowStateController WindowController { get; set; }
 
     /// <summary>
+    /// Gets or sets the default background color of the browser.
+    /// </summary>
+    public Windows.UI.Color BrowserBackgroundColor
+    {
+        get => Browser.DefaultBackgroundColor;
+        set => Browser.DefaultBackgroundColor = value;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the browser can go back.
+    /// </summary>
+    public bool CanGoBack => Browser.CanGoBack;
+
+    /// <summary>
+    /// Gets a value indicating whether the browser can go forward.
+    /// </summary>
+    public bool CanGoForward => Browser.CanGoForward;
+
+    /// <summary>
+    /// Goes back.
+    /// </summary>
+    public void GoBack()
+        => Browser.GoBack();
+
+    /// <summary>
+    /// Goes back.
+    /// </summary>
+    public void GoForward()
+        => Browser.GoForward();
+
+    /// <summary>
+    /// Goes back.
+    /// </summary>
+    public void ReloadPage()
+        => Browser.Reload();
+
+    /// <summary>
+    /// Executes JavaScript.
+    /// </summary>
+    /// <param name="javascriptCode">The code to execute.</param>
+    /// <returns>Value returned.</returns>
+    public async Task<string> ExecuteScriptAsync(string javascriptCode)
+    {
+        if (string.IsNullOrWhiteSpace(javascriptCode)) return null;
+        await Browser.EnsureCoreWebView2Async();
+        return await Browser.ExecuteScriptAsync(javascriptCode);
+    }
+
+    /// <summary>
     /// Load a dev local web app.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -236,10 +285,6 @@ public sealed partial class LocalWebAppPage : Page
         {
             host = await hostTask;
         }
-        catch (OutOfMemoryException)
-        {
-            throw;
-        }
         catch (Exception ex)
         {
             OnLoadError(ex);
@@ -266,9 +311,16 @@ public sealed partial class LocalWebAppPage : Page
             return;
         }
 
+        var dir = host.ResourcePackageDirectory;
+        if (dir == null || !dir.Exists)
+        {
+            OnLoadError(new DirectoryNotFoundException("The app directory is not found."));
+            return;
+        }
+
         this.host = host;
         await Browser.EnsureCoreWebView2Async();
-        Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, host.ResourcePackageDirectory.FullName, CoreWebView2HostResourceAccessKind.Allow);
+        Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, dir.FullName, CoreWebView2HostResourceAccessKind.Allow);
         var homepage = host.Manifest.HomepagePath?.Trim();
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
         if (!host.IsVerified)

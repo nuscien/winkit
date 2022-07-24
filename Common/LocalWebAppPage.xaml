@@ -9,12 +9,8 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid ActualThemeChanged="OnActualThemeChanged" >
-        <Grid.RowDefinitions>
-            <RowDefinition Height="0" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <WebView2 x:Name="Browser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" Grid.Row="1" />
-        <ProgressRing x:Name="ProgressElement" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="100" Grid.Row="1" />
-        <InfoBar x:Name="NotificationBar" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20" Grid.Row="1" />
+        <WebView2 x:Name="Browser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" />
+        <ProgressRing x:Name="ProgressElement" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="100" />
+        <InfoBar x:Name="NotificationBar" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20" />
     </Grid>
 </Page>

@@ -137,6 +137,25 @@ public sealed partial class LocalWebAppWindow : Window
     }
 
     /// <summary>
+    /// Gets or sets the default background color of the browser.
+    /// </summary>
+    public Windows.UI.Color BrowserBackgroundColor
+    {
+        get => MainElement.BrowserBackgroundColor;
+        set => MainElement.BrowserBackgroundColor = value;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the browser can go back.
+    /// </summary>
+    public bool CanGoBack => MainElement.CanGoBack;
+
+    /// <summary>
+    /// Gets a value indicating whether the browser can go forward.
+    /// </summary>
+    public bool CanGoForward => MainElement.CanGoForward;
+
+    /// <summary>
     /// Gets or sets the image source of the icon.
     /// </summary>
     public ImageSource IconImageSource
@@ -161,6 +180,32 @@ public sealed partial class LocalWebAppWindow : Window
         get => MainElement.OnWindowCreate;
         set => MainElement.OnWindowCreate = value;
     }
+
+    /// <summary>
+    /// Goes back.
+    /// </summary>
+    public void GoBack()
+        => MainElement.GoBack();
+
+    /// <summary>
+    /// Goes back.
+    /// </summary>
+    public void GoForward()
+        => MainElement.GoForward();
+
+    /// <summary>
+    /// Goes back.
+    /// </summary>
+    public void ReloadPage()
+        => MainElement.ReloadPage();
+
+    /// <summary>
+    /// Executes JavaScript.
+    /// </summary>
+    /// <param name="javascriptCode">The code to execute.</param>
+    /// <returns>Value returned.</returns>
+    public Task<string> ExecuteScriptAsync(string javascriptCode)
+        => MainElement.ExecuteScriptAsync(javascriptCode);
 
     /// <summary>
     /// Load a dev local web app.

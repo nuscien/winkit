@@ -110,40 +110,4 @@ public sealed partial class HomePage : Page
         win.Add(new Uri("https://kingcean.net"));
         win.Activate();
     }
-
-    private static async Task<DirectoryInfo> SelectAsync()
-    {
-        var picker = new Windows.Storage.Pickers.FileOpenPicker
-        {
-            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
-        };
-        picker.FileTypeFilter.Add(".json");
-        try
-        {
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(Window.Current));
-            var file = await picker.PickSingleFileAsync();
-            var folder = await file.GetParentAsync();
-            return FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
-        }
-        catch (ArgumentException)
-        {
-        }
-        catch (IOException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (System.Security.SecurityException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
-
-        return null;
-    }
 }

@@ -159,6 +159,37 @@ public sealed partial class LocalWebAppPage : Page
     public IBasicWindowStateController WindowController { get; set; }
 
     /// <summary>
+    /// Load a dev local web app.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    public async Task SelectDevPackageAsync(string hostId, DirectoryInfo dir, CancellationToken cancellationToken = default)
+    {
+        if (dir == null || !dir.Exists)
+        {
+            var ex = new DirectoryNotFoundException("The directory is not found.");
+            OnLoadError(ex);
+            throw ex;
+        }
+
+        var package = LocalWebAppHost.Package(hostId, dir);
+        LocalWebAppHost host;
+        try
+        {
+            host = await LocalWebAppHost.LoadAsync(package, false, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            OnLoadError(ex);
+            throw;
+        }
+
+        if (host == null)
+            OnLoadError(new InvalidOperationException("Failed to load app."));
+        else
+            await LoadAsync(host);
+    }
+
+    /// <summary>
     /// Loads data.
     /// </summary>
     /// <param name="options">The options of the standalone web app.</param>
@@ -174,15 +205,6 @@ public sealed partial class LocalWebAppPage : Page
         try
         {
             host = await LocalWebAppHost.LoadAsync(options, true);
-        }
-        catch (OutOfMemoryException)
-        {
-            throw;
-        }
-        catch (LocalWebAppSignatureException ex)
-        {
-            OnLoadError(ex);
-            throw;
         }
         catch (Exception ex)
         {

@@ -169,20 +169,17 @@ public sealed partial class LocalWebAppWindow : Window
     public async Task SelectDevPackageAsync(string hostId, CancellationToken cancellationToken = default)
     {
         var dir = await SelectAsync();
-        await SelectDevPackageAsync(hostId, dir, cancellationToken);
+        await MainElement.SelectDevPackageAsync(hostId, dir, cancellationToken);
     }
 
     /// <summary>
     /// Load a dev local web app.
     /// </summary>
-    /// <returns>The async task.</returns>
-    public async Task SelectDevPackageAsync(string hostId, DirectoryInfo dir, CancellationToken cancellationToken = default)
-    {
-        if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The directory is not found.");
-        var package = LocalWebAppHost.Package(hostId, dir);
-        var host = await LocalWebAppHost.LoadAsync(package, false, cancellationToken);
-        await MainElement.LoadAsync(host);
-    }
+    /// <param name="hostId">The identifier of the host.</param>
+    /// <param name="dir">The root directory.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    public Task SelectDevPackageAsync(string hostId, DirectoryInfo dir, CancellationToken cancellationToken = default)
+        => MainElement.SelectDevPackageAsync(hostId, dir, cancellationToken);
 
     /// <summary>
     /// Loads data.

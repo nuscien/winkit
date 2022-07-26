@@ -179,7 +179,7 @@ public class LocalWebAppInfo
     /// Gets or sets a value indicating whether the app is disabled.
     /// </summary>
     [JsonPropertyName("disable")]
-    public string IsDisabled { get; set; }
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Gets or sets the display name of the app.

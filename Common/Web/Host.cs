@@ -750,7 +750,7 @@ public class LocalWebAppHost
     /// <param name="register">true if registers; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The local web app host.</returns>
-    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="ArgumentNullException">info or uri was null.</exception>
     /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
     /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
     /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
@@ -763,9 +763,11 @@ public class LocalWebAppHost
         if (info == null) throw new ArgumentNullException(nameof(info));
         if (uri == null) throw new ArgumentNullException(nameof(uri));
         if (string.IsNullOrWhiteSpace(hostId)) throw new ArgumentException("hostId should not be empty.", nameof(hostId));
+        if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) throw new ArgumentException("The resource package identifier should not be empty.", nameof(hostId));
         var options = info?.GetOptions(hostId);
         var host = await LoadAsync(options, uri, cancellationToken);
-        if (register) await RegisterPackage(info);
+        if (host.ResourcePackageId != info.ResourcePackageId) throw new InvalidOperationException("The resource package is not the specific one.");
+        if (register) await RegisterPackageAsync(info);
         return host;
     }
 
@@ -1283,7 +1285,7 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="info">The resource package information.</param>
     /// <returns>The async task.</returns>
-    public static async Task RegisterPackage(LocalWebAppInfo info)
+    public static async Task RegisterPackageAsync(LocalWebAppInfo info)
     {
         if (string.IsNullOrWhiteSpace(info?.ResourcePackageId)) return;
         var dir = await GetSettingsDirAsync();
@@ -1313,21 +1315,59 @@ public class LocalWebAppHost
     /// <param name="details">The additional data.</param>
     /// <param name="update">The update information.</param>
     /// <returns>The async task.</returns>
-    public static Task RegisterPackage(LocalWebAppManifest manifest, string name, string signKey, string signAlg, JsonObjectNode details = null, LocalWebAppPackageUpdateInfo update = null)
-        => RegisterPackage(new LocalWebAppInfo(manifest, name, signKey, signAlg)
+    public static Task RegisterPackageAsync(LocalWebAppManifest manifest, string name, string signKey, string signAlg, JsonObjectNode details = null, LocalWebAppPackageUpdateInfo update = null)
+        => RegisterPackageAsync(new LocalWebAppInfo(manifest, name, signKey, signAlg)
         {
             Details = details,
             Update = update
         });
 
     /// <summary>
-    /// Removes a specific package.
+    /// Lists all resource packages registered.
     /// </summary>
-    /// <param name="resourcePackageId">The resource package identifier.</param>
-    /// <returns>The async task.</returns>
-    public static async Task RemovePackage(string resourcePackageId)
+    /// <returns>The list of the resource packages.</returns>
+    public static async Task<List<LocalWebAppInfo>> ListPackageAsync()
     {
-        if (string.IsNullOrWhiteSpace(resourcePackageId)) return;
+        var dir = await GetSettingsDirAsync();
+        var settings = await TryGetSettingsAsync(dir);
+        var apps = settings?.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
+        var list = new List<LocalWebAppInfo>();
+        if (apps == null) return list;
+        foreach (var app in apps)
+        {
+            try
+            {
+                var item = app.Deserialize<LocalWebAppInfo>();
+                if (string.IsNullOrWhiteSpace(item?.ResourcePackageId) || item.IsDisabled) continue;
+                list.Add(item);
+            }
+            catch (JsonException)
+            {
+            }
+        }
+
+        return list;
+    }
+
+    /// <summary>
+    /// Lists all resource packages registered.
+    /// </summary>
+    /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <returns>The list of the resource packages.</returns>
+    public static async Task<List<LocalWebAppInfo>> ListPackageAsync(Func<LocalWebAppInfo, bool> predicate)
+    {
+        var packages = await ListPackageAsync();
+        return predicate == null ? packages : packages.Where(predicate).ToList();
+    }
+
+    /// <summary>
+    /// Removes a specific resource package.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier to remove.</param>
+    /// <returns>true if the resource package exists and is removed; otherwise, false.</returns>
+    public static async Task<bool> RemovePackageAsync(string resourcePackageId)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePackageId)) return false;
         var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
         var appId = FormatResourcePackageId(resourcePackageId);
         try
@@ -1342,10 +1382,41 @@ public class LocalWebAppHost
         var dir = await GetSettingsDirAsync();
         var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
         var apps = settings.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
-        if (apps == null) return;
+        if (apps == null) return false;
         var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == resourcePackageId);
-        if (json == null) return;
+        if (json == null) return false;
         settings.TryGetArrayValue("apps").Remove(json);
+        return true;
+    }
+
+    /// <summary>
+    /// Removes the specific resource packages.
+    /// </summary>
+    /// <param name="resourcePackageIds">The list of the resource package identifier to remove.</param>
+    /// <returns>The count of the resource package removed..</returns>
+    public static async Task<int> RemovePackageAsync(IEnumerable<string> resourcePackageIds)
+    {
+        if (resourcePackageIds == null) return 0;
+        var i = 0;
+        foreach (var id in resourcePackageIds)
+        {
+            if (await RemovePackageAsync(id)) i++;
+        }
+
+        return i;
+    }
+
+    /// <summary>
+    /// Removes the specific resource packages.
+    /// </summary>
+    /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <returns>The count of the resource package removed..</returns>
+    public static async Task<int> RemovePackageAsync(Func<LocalWebAppInfo, bool> predicate)
+    {
+        if (predicate == null) return 0;
+        var packages = await ListPackageAsync();
+        var ids = packages.Where(predicate).Select(ele => ele.ResourcePackageId);
+        return await RemovePackageAsync(ids);
     }
 
     private static string FormatResourcePackageId(string resourcePackageId)

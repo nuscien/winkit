@@ -8,13 +8,15 @@ namespace FileBrowserDemo {
     export class Viewer {
         private _inner = null as {
             dom: HTMLElement;
+            header: HTMLElement;
         };
 
         onrender: ((file: localWebApp.FileInfoContract) => void);
 
-        constructor(dom: HTMLElement) {
+        constructor(dom: HTMLElement, header: HTMLHeadElement) {
             this._inner = {
-                dom: dom || document.getElementById("div")
+                dom: dom || document.getElementById("section"),
+                header: header || document.getElementById("header")
             };
         }
 
@@ -27,7 +29,7 @@ namespace FileBrowserDemo {
             let promise = localWebApp.files.list(path);
             promise.then(r => {
                 if (!r.data) return;
-                renderDetails(r.data.info, r.data.dirs, r.data.files, r.data.parent, this._inner.dom, item => {
+                renderDetails(r.data.info, r.data.dirs, r.data.files, r.data.parent, this._inner.dom, this._inner.header, item => {
                     if (!item) {
                         this.renderDrives();
                         if (typeof this.onrender === "function") this.onrender(item);
@@ -60,9 +62,29 @@ namespace FileBrowserDemo {
                         case "text":
                         case "json":
                         case "markdown":
-                            this.renderTextFile(path);
+                            this.renderTextFile(item);
                             break;
                         case "image":
+                            {
+                                let ext = item.name.toLowerCase();
+                                let i = ext.lastIndexOf('.');
+                                if (i > 0) ext = ext.substring(i + 1);
+                                switch (ext) {
+                                    case "jpg":
+                                    case "jpeg":
+                                        this.renderImageFile(item, "jpg");
+                                        break;
+                                    case "png":
+                                    case "apng":
+                                    case "webp":
+                                    case "gif":
+                                        this.renderImageFile(item, ext);
+                                    default:
+                                        localWebApp.files.open(path);
+                                }
+
+                                break;
+                            }
                         case "doc":
                         case "slide":
                         case "pdf":
@@ -109,21 +131,75 @@ namespace FileBrowserDemo {
             });
         }
 
-        renderTextFile(path: string) {
-            localWebApp.files.get(path, { read: "text" }).then(r => {
+        renderTextFile(file: localWebApp.FileInfoContract) {
+            this.renderCustomizedFile(file, "text", ["text", "json"], (dom, file) => {
+                appendSection(dom, createSpanElement(file.value, { styleRef: "x-file-text-content" }));
+            });
+        }
+
+        renderImageFile(file: localWebApp.FileInfoContract, type: string) {
+            this.renderCustomizedFile(file, "base64", null, (dom, file) => {
+                var image = document.createElement("img");
+                image.src = "data:image/" + type + ";base64," + file.value;
+                image.className = "x-file-image-content";
+                appendSection(dom, image);
+            });
+        }
+
+        private renderCustomizedFile(file: localWebApp.FileInfoContract, read: string, list: string[], callback: ((dom: HTMLElement, file: localWebApp.FileGetResponseContract) => void)) {
+            localWebApp.files.get(file.path, { read: read as any, maxLength: 10000000000 }).then(r => {
                 if (!r.data || !r.data.info) return;
                 let dom = this._inner.dom;
                 dom.innerHTML = "";
-                let section = document.createElement("section");
+                let button = document.createElement("a");
+                button.className = "link-button";
+                button.appendChild(createImageElement(settings.iconPath + getIconName(file.name) + ".png", "Open"));
+                button.appendChild(createSpanElement("Open"));
+                button.addEventListener("click", ev => {
+                    localWebApp.files.open(file.path);
+                });
+                appendSection(dom, button, { styleRef: "x-bar-actions" });
                 renderHeader(r.data.info.path || r.data.info.name, ev => {
                     this.renderFolder(r.data.parent.path);
-                }, section);
-                dom.appendChild(section);
-                section = document.createElement("section");
-                section.appendChild(createSpanElement(r.data.value));
-                dom.appendChild(section);
+                }, this._inner.header);
+                if (typeof callback === "function") callback(dom, r.data);
                 if (typeof this.onrender === "function") this.onrender(null);
-            })
+                if (!list) return;
+                for (let i in dom.children) {
+                    let section = dom.children[i];
+                    if (!section || !section.tagName || section.tagName.toLowerCase() !== "section") continue;
+                    section.classList.add("x-file-view-splitted");
+                }
+
+                let ul = document.createElement("ul");
+                appendSection(dom, ul, { styleRef: "x-file-view-menu" });
+                let currentItem = document.createElement("li");
+                currentItem.innerText = r.data.info.name;
+                currentItem.className = "x-state-selected";
+                ul.appendChild(currentItem);
+                localWebApp.files.list(r.data.parent.path).then(r2 => {
+                    if (!r2.data || !r2.data.files) return;
+                    let names = r2.data.files.map(ele => {
+                        let type = getIconName(ele.name).replace("File_", "").toLowerCase();
+                        return !ele.name || list.indexOf(type) < 0 ? null : ele;
+                    }).filter(ele => ele).map(ele => {
+                        let li = document.createElement("li");
+                        li.innerText = ele.name;
+                        li.addEventListener("click", ev => {
+                            this.renderTextFile(ele);
+                        });
+                        if (ele.name === file.name) li.className = "x-state-selected";
+                        return li;
+                    });
+                    if (names.length < 2) return;
+                    ul.innerHTML = "";
+                    for (let li in names) {
+                        ul.appendChild(names[li]);
+                    }
+                });
+            }, ex => {
+                
+            });
         }
     }
 
@@ -191,7 +267,8 @@ namespace FileBrowserDemo {
     }
 
     function renderHeader(title: string, back: ((this: HTMLAnchorElement, ev: MouseEvent) => void) | null, dom: HTMLElement) {
-        if (!dom) dom = document.createElement("div");
+        if (!dom) dom = document.createElement("header");
+        else dom.innerHTML = "";
         let backEle = document.createElement("a");
         backEle.className = "x-file-back";
         backEle.innerHTML = "&lt;";
@@ -200,20 +277,17 @@ namespace FileBrowserDemo {
         dom.appendChild(createSpanElement(title, { styleRef: "x-file-name" }));
     }
 
-    function renderDetails(info: localWebApp.FileInfoContract, dirs: localWebApp.FileInfoContract[], files: localWebApp.FileInfoContract[], parent: localWebApp.FileInfoContract | null, dom: HTMLElement, callback: ((item: localWebApp.FileInfoContract) => string | null)) {
+    function renderDetails(info: localWebApp.FileInfoContract, dirs: localWebApp.FileInfoContract[], files: localWebApp.FileInfoContract[], parent: localWebApp.FileInfoContract | null, dom: HTMLElement, header: HTMLElement, callback: ((item: localWebApp.FileInfoContract) => string | null)) {
         if (!dom) dom = document.createElement("div");
         dom.innerHTML = "";
-        let section = document.createElement("section");
         if (info) {
             if (parent == info) parent = null;
             renderHeader(info.path || info.name, callback ? ev => {
                 callback(parent);
-            } : null, section);
-            dom.appendChild(section);
-            section = document.createElement("section");
+            } : null, header);
         }
         
-        section = document.createElement("section");
+        let section = document.createElement("section");
         let i = renderItems(dirs, section, callback);
         if (i > 0) {
             dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label" }));
@@ -275,6 +349,8 @@ namespace FileBrowserDemo {
             case "js":
             case "ts":
             case "vbs":
+            case "vsconfig":
+            case "gitconfig":
                 return "File_Json";
             case "html":
             case "htm":
@@ -352,6 +428,23 @@ namespace FileBrowserDemo {
         ele.innerText = text;
         fillOptions(ele, options);
         return ele;
+    }
+
+    function appendSection(container: HTMLElement, child: HTMLElement | HTMLElement[], options?: any) {
+        let section = document.createElement("section");
+        if (!child) {
+        } else if (child instanceof Array) {
+            for (let i in child) {
+                let c = child[i];
+                if (c) section.appendChild(c);
+            }
+        } else {
+            section.appendChild(child);
+        }
+
+        container.appendChild(section);
+        fillOptions(section, options);
+        return section;
     }
 
     function fillOptions(dom: HTMLElement, options: any) {

@@ -3,7 +3,7 @@ body {
     font-family: 'Segoe UI', 'Microsoft Yahei', 'Microsoft JhengHei', Tahoma, "Helvetica Neue", Arial, Geneva, Verdana, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 14px;
     background-color: #222;
-    padding: 60px 0 0 0;
+    padding: 40px 0 0 0;
     margin: 0;
 }
 a, a:visited {
@@ -35,11 +35,12 @@ body > section > section a:active, body > section > section a:hover {
 }
 body > section, body > header, body > footer {
     padding: 0 20px;
+    position: relative;
 }
 
 /* Header */
 body > header:first-child {
-    height: 60px;
+    height: 40px;
     background-color: #333;
     background-image: url(https://kingcean.net/images/bg/title.jpg);
     background-position: center top;
@@ -51,109 +52,25 @@ body > header:first-child {
     left: 0;
     z-index: 1024;
 }
-body > header:first-child > section:first-child {
-    height: 60px;
-    line-height: 60px;
-    padding: 0;
-    margin: 0 auto;
-}
-body > header:first-child > section:first-child > h1 {
-    font-weight: normal;
-    font-style: normal;
-    font-size: 20px;
-    width: 120px;
-    height: 60px;
-    line-height: 60px;
-    padding: 0;
-    margin: 0 80px 0 0;
-    display: inline-block;
-    vertical-align: top;
-    user-select: none;
-}
-body > header:first-child > section:first-child > h1 > a:first-child > strong:first-child + span {
-    font-weight: lighter;
-}
-body > header:first-child > section:first-child > h1 + ul {
-    font-weight: normal;
-    font-style: normal;
-    font-size: 16px;
-    line-height: 60px;
-    height: 60px;
-    max-width: 560px;
-    padding: 4px 0;
-    margin: 0;
-    display: inline-block;
-    list-style: none;
-    white-space: nowrap;
-    overflow: hidden;
-    user-select: none;
-}
-body > header:first-child > section:first-child > h1 + ul > li {
-    font-weight: normal;
-    font-style: normal;
-    font-size: 16px;
-    height: 52px;
-    padding: 0;
-    margin: 0;
-    display: inline-block;
-    list-style: none;
-    vertical-align: top;
-}
-body > header:first-child > section:first-child a,
-body > header:first-child > section:first-child a:visited {
-    color: rgba(255, 255, 255, 0.8);
+body > header:first-child > a.x-file-back, a.x-file-back:visited {
+    padding: 0 8px;
+    margin: 8px 8px 8px 0;
+    border-radius: 4px;
+    line-height: 24px;
     text-decoration: none;
-    transition: 0.6s;
+    display: inline-block;
     text-shadow: rgba(0, 0, 0, 0.7) 0 0 2px;
 }
-body > header:first-child > section:first-child > h1 + ul > li > a,
-body > header:first-child > section:first-child > h1 + ul > li > a:visited {
-    line-height: 52px;
-    padding: 0 16px;
-    margin: 0;
-    border-radius: 4px;
-    display: inline-block;
-    vertical-align: top;
+body > header:first-child > a.x-file-back:hover {
+    background-color: rgba(0,0,0,0.1);
 }
-body > header:first-child > section:first-child > h1 + ul > li.state-sel > a,
-body > header:first-child > section:first-child > h1 + ul > li.state-sel > a:visited {
-    color: #EEE;
-    background-color: rgba(0, 0, 0, 0.2);
-    text-shadow: rgba(192, 240, 255, 0.6) 0 0 10px;
+body > header:first-child > a.x-file-back:active {
+    background-color: rgba(0,0,0,0.2);
 }
-body > header:first-child > section:first-child a:hover {
-    color: rgba(64, 192, 255, 1);
-    text-decoration: underline;
-    transition: 0.1s;
-}
-body > header:first-child > section:first-child a:active {
-    color: rgba(64, 192, 255, 0.7);
-    text-decoration: none;
-    transition: 0.1s;
-}
-body > header:first-child + header {
-    height: 80px;
-}
-@media screen and (max-width:800px) {
-    body > header:first-child {
-        height: 112px;
-        padding: 0;
-    }
-    body > header:first-child > section:first-child > h1 {
-        padding: 0 20px;
-        display: block;
-    }
-    body > header:first-child > section:first-child > h1 + ul {
-        height: 52px;
-        max-width: none;
-        padding: 0 10px;
-        display: block;
-        overflow-x: overlay;
-    }
-    body > header:first-child > section:first-child > h1 + ul > li > a,
-    body > header:first-child > section:first-child > h1 + ul > li > a:visited {
-        padding: 0 10px;
-    }
+body > header:first-child > span.x-file-name {
+    line-height: 24px;
+    margin: 8px 12px 8px 0;
+    text-shadow: rgba(0, 0, 0, 0.7) 0 0 2px;
 }
 
 /* Footer */
@@ -235,7 +152,6 @@ a.link-tile-wide, a.link-tile-wide:visited {
     color: #CCC;
     font-size: 18px;
     text-decoration: none;
-    line-height: 24px;
     width: 190px;
     background-color: #282828;
     padding: 24px;
@@ -370,14 +286,14 @@ a.link-tile-folder, a.link-tile-folder:visited {
     color: #CCC;
     font-size: 16px;
     text-decoration: none;
-    line-height: 24px;
     width: 230px;
-    height: 24px;
+    height: 28px;
     background-color: transparent;
-    padding: 7px;
+    padding: 5px 7px;
     margin: 0 4px 4px 0;
     border: 1px solid transparent;
     border-radius: 4px;
+    line-height: 24px;
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
@@ -432,12 +348,13 @@ a.link-long-file, a.link-long-file:visited {
     font-size: 16px;
     text-decoration: none;
     line-height: 24px;
-    height: 24px;
+    height: 28px;
     background-color: transparent;
-    padding: 7px;
+    padding: 5px 7px;
     margin: 0 4px 4px 0;
     border: 1px solid transparent;
     border-radius: 4px;
+    line-height: 24px;
     display: block;
     overflow: hidden;
     white-space: nowrap;
@@ -495,22 +412,71 @@ a.link-long-file > span + span {
     color: #AAA;
     font-size: 14px;
 }
-a.x-file-name {
-    line-height: 24px;
-}
-a.x-file-back, a.x-file-back:visited {
-    padding: 0 8px;
-    margin-right: 12px;
+
+/* Buttons */
+.x-bar-actions {
+    background-color: #333;
+    height: 36px;
+    padding: 1px;
+    border: 1px solid #444;
     border-radius: 4px;
-    line-height: 24px;
+    white-space: nowrap;
+    user-select: none;
+}
+.x-bar-actions > a.link-button, .x-bar-actions > a.link-button:visited {
+    color: #CCC;
+    font-size: 14px;
     text-decoration: none;
+    height: 24px;
+    background-color: transparent;
+    padding: 6px 8px;
+    margin: 0;
+    border-radius: 4px;
+    line-height: 20px;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.x-bar-actions > a.link-button:hover {
+    color: #EEE;
+    text-decoration: none;
+    background-color: #444;
+}
+.x-bar-actions > a.link-button:active {
+    color: #9EF;
+    background-color: #282828;
+    text-decoration: none;
+}
+.x-bar-actions > a.link-button > img {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    display: inline-block;
+    overflow: hidden;
+}
+a.link-button > svg, a.link-button:visited > svg {
+    fill: #CCC;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
     display: inline-block;
 }
-a.x-file-back:hover {
-    background-color: #333;
+.x-bar-actions > a.link-button:hover > svg {
+    fill: #EEE;
 }
-a.x-file-back:active {
-    background-color: #444;
+.x-bar-actions > a.link-button:active > svg {
+    fill: #9EF;
+}
+.x-bar-actions > a.link-button > span {
+    margin: 0 8px;
+    line-height: 20px;
+    vertical-align: middle;
+    display: inline-block;
+    text-overflow: ellipsis;
 }
 
 /* Others */
@@ -526,4 +492,44 @@ a.x-file-back:active {
     max-width: 100%;
     user-select: none;
     cursor: default;
+}
+.x-file-text-content {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+}
+.x-file-image-content {
+    max-width: 100%;
+}
+.x-file-view-splitted {
+    margin-left: 150px;
+    transition: 0.6s;
+}
+.x-file-view-menu {
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 150px;
+}
+.x-file-view-menu > ul, .x-file-view-menu > ul > li {
+    margin: 0;
+    list-style: none;
+    user-select: none;
+}
+.x-file-view-menu > ul {
+    padding: 0;
+}
+.x-file-view-menu > ul > li {
+    padding: 9px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.x-file-view-menu > ul > li.x-state-selected {
+    background-color: #111;
+}
+.x-file-view-menu > ul > li:hover, .x-file-view-menu > ul > li.x-state-selected:hover {
+    background-color: #333;
+    border: 1px solid #444;
 }

@@ -428,9 +428,33 @@ internal static class LocalWebAppExtensions
         var readMethod = request.Data.TryGetStringValue("read")?.Trim()?.ToLowerInvariant();
         var readBoolean = request.Data.TryGetBooleanValue("read");
         if (readMethod == "none" || readBoolean == false) return resp;
+        var maxLen = request.Data.TryGetInt64Value("maxLength");
         try
         {
-            if (readMethod == "text" || readMethod == "json" || readBoolean == true || file.Length < 1_000_000)
+            if (maxLen.HasValue && file.Length > maxLen.Value) return resp;
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        try
+        {
+            if (readMethod == "base64")
+            {
+                var str = Convert.ToBase64String(File.ReadAllBytes(path)); ;
+                resp.Data.SetValue("value", str);
+                resp.Data.SetValue("valueType", "base64");
+            }
+            else if (readMethod == "text" || readMethod == "json" || readBoolean == true || file.Length < 1_000_000)
             {
                 var str = await File.ReadAllTextAsync(path);
                 resp.Data.SetValue("value", str);

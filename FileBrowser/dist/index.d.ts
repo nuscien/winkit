@@ -9,16 +9,13 @@ declare namespace FileBrowserDemo {
     class Viewer {
         private _inner;
         onrender: ((file: localWebApp.FileInfoContract) => void);
-        constructor(dom: HTMLElement);
+        constructor(dom: HTMLElement, header: HTMLHeadElement);
         element(): HTMLElement;
-        renderFolder(path: string): void | localWebApp.HandlerResponse<{
-            info: localWebApp.FileInfoContract;
-            dirs: localWebApp.FileInfoContract[];
-            files: localWebApp.FileInfoContract[];
-            parent?: localWebApp.FileInfoContract;
-        }>;
+        renderFolder(path: string): void | localWebApp.HandlerResponse<localWebApp.FileListResponseContract>;
         renderDrives(): void;
-        renderTextFile(path: string): void;
+        renderTextFile(file: localWebApp.FileInfoContract): void;
+        renderImageFile(file: localWebApp.FileInfoContract, type: string): void;
+        private renderCustomizedFile;
     }
     function renderItem(item: localWebApp.FileInfoContract, dom: HTMLElement, callback?: ((file: localWebApp.FileInfoContract) => void)): "file" | "dir";
     function renderItems(col: localWebApp.FileInfoContract[], dom: HTMLElement, callback?: ((file: localWebApp.FileInfoContract) => void)): number;

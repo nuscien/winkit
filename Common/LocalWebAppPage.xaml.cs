@@ -597,7 +597,7 @@ window.localWebApp = {
     get(path, options) {
       if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'get-file', { path, read: options.read }, null, options.context);
+      return sendRequest(null, 'get-file', { path, read: options.read, maxLength: options.maxLength }, null, options.context);
     },
     write(path, value, options) {
       if (!options) options = {};

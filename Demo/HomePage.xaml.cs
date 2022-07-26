@@ -61,18 +61,8 @@ public sealed partial class HomePage : Page
 
     private void LaunchWebAppClick(object sender, RoutedEventArgs e)
     {
-        var window = new LocalWebAppWindow()
-        {
-            IsDevEnvironmentEnabled = true
-        };
         var hostTask = CreateWebAppHostAsync();
-        _ = window.LoadAsync(hostTask, host => _ = host?.UpdateAsync());
-        window.IconImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage
-        {
-            UriSource = new Uri(BaseUri, "\\Assets\\Square44x44Logo.scale-100.png")
-        };
-        var appWin = VisualUtility.TryGetAppWindow(window);
-        window.Activate();
+        Load(hostTask);
     }
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)
@@ -101,7 +91,9 @@ public sealed partial class HomePage : Page
             html.CopyTo(Path.Combine(rootDir, "bin\\LocalWebApp\\app", html.Name), true);
         }
 
-        LocalWebAppHost.Package("WinKitDemo", new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
+        var package = LocalWebAppHost.Package("WinKitDemo", new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
+        var hostTask = LocalWebAppHost.LoadAsync(package, true);
+        Load(hostTask);
     }
 
     private void BrowserClick(object sender, RoutedEventArgs e)
@@ -109,5 +101,20 @@ public sealed partial class HomePage : Page
         var win = new TabbedWebViewWindow();
         win.Add(new Uri("https://kingcean.net"));
         win.Activate();
+    }
+
+    private void Load(Task<LocalWebAppHost> hostTask)
+    {
+        var window = new LocalWebAppWindow()
+        {
+            IsDevEnvironmentEnabled = true
+        };
+        _ = window.LoadAsync(hostTask, host => _ = host?.UpdateAsync());
+        window.IconImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage
+        {
+            UriSource = new Uri(BaseUri, "\\Assets\\Square44x44Logo.scale-100.png")
+        };
+        var appWin = VisualUtility.TryGetAppWindow(window);
+        window.Activate();
     }
 }

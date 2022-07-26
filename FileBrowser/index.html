@@ -8,26 +8,12 @@
     <script src="./dist/index.js" ></script>
 </head>
 <body>
-    <header>
-        <section>
-            <h1><a href="https://kingcean.net"><strong>Kingcean</strong><span>.net</span></a></h1>
-            <ul>
-                <li>
-                    <a href="https://kingcean.net/blog">Blogs</a>
-                </li>
-                <li>
-                    <a href="https://trivial.kingcean.net">Trivial libraries</a>
-                </li>
-                <li>
-                    <a href="https://nuscien.github.io">NuScien</a>
-                </li>
-            </ul>
-        </section>
+    <header id="headerElement">
     </header>
     <section id="mainElement">
     </section>
     <script>
-        let explorer = new FileBrowserDemo.Viewer(document.getElementById("mainElement"));
+        let explorer = new FileBrowserDemo.Viewer(document.getElementById("mainElement"), document.getElementById("headerElement"));
         explorer.onrender = function (ev) {
             scrollTo(0, 0);
         };

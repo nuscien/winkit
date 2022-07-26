@@ -447,7 +447,7 @@ public class LocalWebAppHost
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
         var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-        var appId = options.ResourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
+        var appId = FormatResourcePackageId(options.ResourcePackageId);
         appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
         if (assembly != null && !string.IsNullOrWhiteSpace(fileName))
@@ -702,7 +702,7 @@ public class LocalWebAppHost
         if (uri == null) throw new ArgumentNullException(nameof(uri));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
         var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-        var appId = options.ResourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
+        var appId = FormatResourcePackageId(options.ResourcePackageId);
         appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
         var cacheDir = Directory.CreateDirectory(Path.Combine(dir.FullName, "cache"));
@@ -739,6 +739,34 @@ public class LocalWebAppHost
 
         await UpdateAsync(options, dir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
         return await LoadAsync(dir, options, true, null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="hostId">The identifier of the host app.</param>
+    /// <param name="info">The resource package information.</param>
+    /// <param name="uri">The URI to download the compressed file of the resource package.</param>
+    /// <param name="register">true if registers; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web app host.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(string hostId, LocalWebAppInfo info, Uri uri, bool register, CancellationToken cancellationToken = default)
+    {
+        if (hostId == null) throw new ArgumentNullException(nameof(hostId));
+        if (info == null) throw new ArgumentNullException(nameof(info));
+        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        if (string.IsNullOrWhiteSpace(hostId)) throw new ArgumentException("hostId should not be empty.", nameof(hostId));
+        var options = info?.GetOptions(hostId);
+        var host = await LoadAsync(options, uri, cancellationToken);
+        if (register) await RegisterPackage(info);
+        return host;
     }
 
     /// <summary>
@@ -1250,6 +1278,79 @@ public class LocalWebAppHost
         return await UpdateAsync(ver, zip, true, cancellationToken);
     }
 
+    /// <summary>
+    /// Registers a resource package.
+    /// </summary>
+    /// <param name="info">The resource package information.</param>
+    /// <returns>The async task.</returns>
+    public static async Task RegisterPackage(LocalWebAppInfo info)
+    {
+        if (string.IsNullOrWhiteSpace(info?.ResourcePackageId)) return;
+        var dir = await GetSettingsDirAsync();
+        var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
+        var apps = settings.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
+        if (apps == null)
+        {
+            apps = new List<JsonObjectNode>();
+            settings.SetValue("apps", apps);
+        }
+
+        var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == info.ResourcePackageId);
+        if (json == null) settings.TryGetArrayValue("apps").Remove(json);
+        json = JsonObjectNode.ConvertFrom(json);
+        settings.TryGetArrayValue("apps").Add(json);
+        var path = Path.Combine(dir.FullName, "settings.json");
+        File.WriteAllText(path, settings.ToString(), Encoding.UTF8);
+    }
+
+    /// <summary>
+    /// Registers a resource package.
+    /// </summary>
+    /// <param name="manifest">The resource package manifest.</param>
+    /// <param name="name">The display name.</param>
+    /// <param name="signAlg">The signature algorithm.</param>
+    /// <param name="signKey">The public signature key for verification.</param>
+    /// <param name="details">The additional data.</param>
+    /// <param name="update">The update information.</param>
+    /// <returns>The async task.</returns>
+    public static Task RegisterPackage(LocalWebAppManifest manifest, string name, string signKey, string signAlg, JsonObjectNode details = null, LocalWebAppPackageUpdateInfo update = null)
+        => RegisterPackage(new LocalWebAppInfo(manifest, name, signKey, signAlg)
+        {
+            Details = details,
+            Update = update
+        });
+
+    /// <summary>
+    /// Removes a specific package.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier.</param>
+    /// <returns>The async task.</returns>
+    public static async Task RemovePackage(string resourcePackageId)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePackageId)) return;
+        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
+        var appId = FormatResourcePackageId(resourcePackageId);
+        try
+        {
+            appDataFolder = await appDataFolder.GetFolderAsync(appId);
+            if (appDataFolder != null) await appDataFolder.DeleteAsync();
+        }
+        catch (IOException)
+        {
+        }
+
+        var dir = await GetSettingsDirAsync();
+        var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
+        var apps = settings.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
+        if (apps == null) return;
+        var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == resourcePackageId);
+        if (json == null) return;
+        settings.TryGetArrayValue("apps").Remove(json);
+    }
+
+    private static string FormatResourcePackageId(string resourcePackageId)
+        => resourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
+
     private static string GetEmbeddedFileName(string name, System.Reflection.Assembly assembly)
     {
         var files = assembly.GetManifestResourceNames();
@@ -1274,6 +1375,13 @@ public class LocalWebAppHost
     {
         var host = ResourcePackageDirectory?.Parent?.FullName;
         return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
+    }
+
+    private static async Task<DirectoryInfo> GetSettingsDirAsync()
+    {
+        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
+        appDataFolder = await appDataFolder.CreateFolderAsync("_settings", Windows.Storage.CreationCollisionOption.OpenIfExists);
+        return FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
     }
 
     /// <summary>

@@ -131,6 +131,44 @@
         dir: FileInfoContract;
     }
 
+    interface FileListResponseContract {
+        info: FileInfoContract;
+        dirs: FileInfoContract[];
+        files: FileInfoContract[];
+        parent?: FileInfoContract | null;
+    }
+
+    interface FileGetResponseContract {
+        info: FileInfoContract;
+        value?: any;
+        valueType?: "text" | "json" | "jsonArray" | "base64" | null;
+        parent?: FileInfoContract | null;
+    }
+
+    interface DownloadListContract {
+        dialog: boolean;
+        max: number;
+        list: {
+            uri: string;
+            file: string;
+            state: "InProgress" | "Interrupted" | "Completed" | string;
+            received: number;
+            length: number;
+            interrupt: string | null;
+            mime: string | null;
+        }[];
+        enumerated: string;
+    }
+
+    interface WindowStateInfoContract {
+        width: number;
+        height: number;
+        top: number;
+        left: number;
+        state: "Maximized" | "Restored" | "Minimized" | "Fullscreen" | "Compact";
+        title: string;
+    }
+
     type EventCallback = EventCallbackContract | ((ev: any) => void);
 
     type HandlerResponse<T> = Promise<HandlerResponseContract<T>>;
@@ -173,12 +211,7 @@
             q?: string;
             showHidden?: boolean | null;
             context?: HandlerInfoContract;
-        } | string | undefined | null): HandlerResponse<{
-            info: FileInfoContract;
-            dirs: FileInfoContract[];
-            files: FileInfoContract[];
-            parent?: FileInfoContract | null;
-        }>;
+        } | string | undefined | null): HandlerResponse<FileListResponseContract>;
 
         /**
          * Lists drives.
@@ -198,14 +231,10 @@
          */
         get(path: string, options?: {
             appData?: boolean;
-            read?: boolean | "none" | "text" | "json";
+            read?: boolean | "none" | "text" | "json" | "base64";
+            maxLength?: number;
             context?: HandlerInfoContract;
-        }): HandlerResponse<{
-            info: FileInfoContract;
-            value?: any;
-            valueType?: "text" | "json" | "jsonArray" | null;
-            parent?: FileInfoContract | null;
-        }>;
+        }): HandlerResponse<FileGetResponseContract>;
 
         /**
          * Writes a file.
@@ -283,20 +312,7 @@
             open?: boolean;
             max?: number;
             context?: HandlerInfoContract;
-        }): HandlerResponse<{
-            dialog: boolean;
-            max: number;
-            list: {
-                uri: string;
-                file: string;
-                state: "InProgress" | "Interrupted" | "Completed" | string;
-                received: number;
-                length: number;
-                interrupt: string | null;
-                mime: string | null;
-            }[];
-            enumerated: string;
-        }>;
+        }): HandlerResponse<DownloadListContract>;
     };
 
     /**
@@ -416,14 +432,7 @@
             focus?: boolean;
             physical?: boolean;
             context?: HandlerInfoContract;
-        } | null): HandlerResponse<{
-            width: number;
-            height: number;
-            top: number;
-            left: number;
-            state: "Maximized" | "Restored" | "Minimized" | "Fullscreen" | "Compact";
-            title: string;
-        }>;
+        } | null): HandlerResponse<WindowStateInfoContract>;
     };
 
     /**

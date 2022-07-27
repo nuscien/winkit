@@ -334,12 +334,6 @@ public class LocalWebAppFileInfo
 public class LocalWebAppFileCollection
 {
     /// <summary>
-    /// Gets or sets the key in signature mapping.
-    /// </summary>
-    [JsonPropertyName("key")]
-    public string SignKey { get; set; }
-
-    /// <summary>
     /// The file list of HTML, JavaScript, Type Script, JSON and CSS.
     /// </summary>
     [JsonPropertyName("files")]

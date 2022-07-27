@@ -32,6 +32,12 @@ public class LocalWebAppManifest
     public string Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the display name of the app.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string DisplayName { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon of the app.
     /// </summary>
     [JsonPropertyName("icon")]
@@ -144,29 +150,22 @@ public class LocalWebAppInfo
     /// </summary>
     public LocalWebAppInfo()
     {
+        CreationTime = DateTime.Now;
+        LastModificationTime = DateTime.Now;
     }
 
     /// <summary>
     /// Initializes a new instance of the LocalWebAppInfo class.
     /// </summary>
     /// <param name="manifest">The manifest.</param>
-    /// <param name="name">The display name.</param>
-    /// <param name="signAlg">The signature algorithm.</param>
-    /// <param name="signKey">The public signature key for verification.</param>
-    public LocalWebAppInfo(LocalWebAppManifest manifest, string name, string signKey = null, string signAlg = null)
+    /// <param name="options">The options.</param>
+    /// <param name="details">The details.</param>
+    public LocalWebAppInfo(LocalWebAppManifest manifest, LocalWebAppOptions options, JsonObjectNode details = null)
+        : this()
     {
-        DisplayName = name;
-        SignatureKey = signKey;
-        SignatureAlgorithm = signAlg;
-        if (manifest == null) return;
-        ResourcePackageId = manifest.Id;
-        Icon = manifest.Icon;
-        Version = manifest.Version;
-        Description = manifest.Description;
-        PublisherName = manifest.PublisherName;
-        Copyright = manifest.Copyright;
-        Website = manifest.Website;
-        Tags = manifest.Tags;
+        Set(manifest);
+        Set(options);
+        Details = details;
     }
 
     /// <summary>
@@ -254,26 +253,96 @@ public class LocalWebAppInfo
     public JsonObjectNode Details { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the app is installed.
+    /// </summary>
+    [JsonPropertyName("installed")]
+    public bool Installed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the creation date time.
+    /// </summary>
+    [JsonPropertyName("created")]
+    public DateTime CreationTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the last modification date time.
+    /// </summary>
+    [JsonPropertyName("updated")]
+    public DateTime LastModificationTime { get; set; }
+
+    /// <summary>
+    /// Gets the update virtual host.
+    /// </summary>
+    [JsonPropertyName("server")]
+    public string CustomizedVirtualHost { get; set; }
+
+    /// <summary>
+    /// Gets the update virtual host.
+    /// </summary>
+    [JsonPropertyName("manifest")]
+    public string CustomizedManifestFileName { get; set; }
+
+    /// <summary>
+    /// Gets the update virtual host.
+    /// </summary>
+    [JsonPropertyName("local")]
+    public string LocalPath { get; set; }
+
+    /// <summary>
     /// Gets signature provider.
     /// </summary>
     /// <returns>The signature provider.</returns>
     public ISignatureProvider GetSignatureProvider()
+        => GetOptions()?.GetSignatureProvider();
+
+    /// <summary>
+    /// Sets the manifest.
+    /// </summary>
+    /// <param name="manifest">The manifest.</param>
+    public void Set(LocalWebAppManifest manifest)
     {
-        if (string.IsNullOrWhiteSpace(SignatureAlgorithm) || string.IsNullOrWhiteSpace(SignatureKey)) return null;
-        return SignatureAlgorithm.Trim().ToLowerInvariant() switch
-        {
-            "rs512" => RSASignatureProvider.CreateRS512(SignatureKey),
-            "rs384" => RSASignatureProvider.CreateRS384(SignatureKey),
-            "rs256" => RSASignatureProvider.CreateRS256(SignatureKey),
-            _ => null,
-        };
+        if (manifest == null) return;
+        ResourcePackageId = manifest.Id;
+        DisplayName = manifest.DisplayName;
+        Icon = manifest.Icon;
+        Version = manifest.Version;
+        Description = manifest.Description;
+        PublisherName = manifest.PublisherName;
+        Copyright = manifest.Copyright;
+        Website = manifest.Website;
+        Tags = manifest.Tags;
+    }
+
+    /// <summary>
+    /// Sets the options.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    public void Set(LocalWebAppOptions options)
+    {
+        if (options == null) return;
+        ResourcePackageId = options.ResourcePackageId;
+        Update = options.Update;
+        SignatureAlgorithm = options.SignatureAlgorithm;
+        SignatureKey = options.SignatureKey;
+        CustomizedManifestFileName = options.ManifestFileName;
+        CustomizedVirtualHost = options.CustomizedVirtualHost;
+    }
+
+    /// <summary>
+    /// Sets the signature key.
+    /// </summary>
+    /// <param name="alg">The signature algorithm.</param>
+    /// <param name="key">The public key of signature for verification.</param>
+    public void SetKey(string alg, string key)
+    {
+        if (!string.IsNullOrWhiteSpace(alg)) SignatureAlgorithm = alg;
+        if (!string.IsNullOrWhiteSpace(key)) SignatureKey = key;
     }
 
     /// <summary>
     /// Gets options.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <returns>The options.</returns>
-    public LocalWebAppOptions GetOptions(string hostId)
-        => new(hostId, ResourcePackageId, GetSignatureProvider(), Update);
+    public LocalWebAppOptions GetOptions()
+        => new(ResourcePackageId, SignatureAlgorithm, SignatureKey, Update, CustomizedManifestFileName, CustomizedVirtualHost);
 }

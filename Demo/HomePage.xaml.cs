@@ -53,16 +53,22 @@ public sealed partial class HomePage : Page
         FileBrowserElement.NavigateAsync(new DirectoryInfo("C:\\"));
     }
 
-    private async Task<LocalWebAppHost> CreateWebAppHostAsync()
+    private async Task<LocalWebAppHost> CreateWebAppHostAsync(bool forceToLoad = false)
     {
-        if (webAppHost == null || webAppHost.NewVersionAvailable != null) webAppHost = await LocalWebAppHost.LoadAsync("WinKitDemo", null);
+        if (webAppHost == null || webAppHost.NewVersionAvailable != null)
+        {
+            LocalWebAppHost.SetHostId("WinKitDemo");
+            webAppHost = await LocalWebAppHost.LoadAsync(null as System.Reflection.Assembly, forceToLoad);
+        }
+
         return webAppHost;
     }
 
     private void LaunchWebAppClick(object sender, RoutedEventArgs e)
     {
-        var hostTask = CreateWebAppHostAsync();
-        Load(hostTask);
+        var window = new LocalWebAppWindow();
+        _ = window.LoadAsync(CreateWebAppHostAsync(), host => _ = host?.UpdateAsync());
+        ShowWindow(window);
     }
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)
@@ -78,6 +84,15 @@ public sealed partial class HomePage : Page
         //return;
 
         var rootDir = "";  // The root path of the repo.
+        var window = new LocalWebAppWindow();
+        if (string.IsNullOrEmpty(rootDir))
+        {
+            webAppHost = null;
+            _ = window.LoadAsync(CreateWebAppHostAsync(true), host => _ = host?.UpdateAsync());
+            ShowWindow(window);
+            return;
+        }
+
         var dir = new DirectoryInfo(Path.Combine(rootDir, "FileBrowser"));
         foreach (var subDir in dir.EnumerateDirectories())
         {
@@ -91,9 +106,8 @@ public sealed partial class HomePage : Page
             html.CopyTo(Path.Combine(rootDir, "bin\\LocalWebApp\\app", html.Name), true);
         }
 
-        var package = LocalWebAppHost.Package("WinKitDemo", new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
-        var hostTask = LocalWebAppHost.LoadAsync(package, true);
-        Load(hostTask);
+        _ = window.SelectDevPackageAsync(new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
+        ShowWindow(window);
     }
 
     private void BrowserClick(object sender, RoutedEventArgs e)
@@ -103,18 +117,13 @@ public sealed partial class HomePage : Page
         win.Activate();
     }
 
-    private void Load(Task<LocalWebAppHost> hostTask)
+    private void ShowWindow(LocalWebAppWindow window)
     {
-        var window = new LocalWebAppWindow()
-        {
-            IsDevEnvironmentEnabled = true
-        };
-        _ = window.LoadAsync(hostTask, host => _ = host?.UpdateAsync());
+        window.IsDevEnvironmentEnabled = true;
         window.IconImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage
         {
             UriSource = new Uri(BaseUri, "\\Assets\\Square44x44Logo.scale-100.png")
         };
-        var appWin = VisualUtility.TryGetAppWindow(window);
         window.Activate();
     }
 }

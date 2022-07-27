@@ -211,20 +211,20 @@ public sealed partial class LocalWebAppWindow : Window
     /// Load a dev local web app.
     /// </summary>
     /// <returns>The async task.</returns>
-    public async Task SelectDevPackageAsync(string hostId, CancellationToken cancellationToken = default)
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    public async Task SelectDevPackageAsync(CancellationToken cancellationToken = default)
     {
         var dir = await SelectAsync();
-        await MainElement.SelectDevPackageAsync(hostId, dir, cancellationToken);
+        await MainElement.SelectDevPackageAsync(dir, cancellationToken);
     }
 
     /// <summary>
     /// Load a dev local web app.
     /// </summary>
-    /// <param name="hostId">The identifier of the host.</param>
     /// <param name="dir">The root directory.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    public Task SelectDevPackageAsync(string hostId, DirectoryInfo dir, CancellationToken cancellationToken = default)
-        => MainElement.SelectDevPackageAsync(hostId, dir, cancellationToken);
+    public Task SelectDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
+        => MainElement.SelectDevPackageAsync(dir, cancellationToken);
 
     /// <summary>
     /// Loads data.
@@ -263,6 +263,21 @@ public sealed partial class LocalWebAppWindow : Window
     /// <param name="message">The message body to send.</param>
     public void Notify(string type, LocalWebAppNotificationMessage message)
         => MainElement.Notify(type, message);
+
+    /// <summary>
+    /// Stops progress ring.
+    /// </summary>
+    public void StopLoading()
+        => MainElement.StopLoading();
+
+    /// <summary>
+    /// Shows notification.
+    /// </summary>
+    /// <param name="title">The title.</param>
+    /// <param name="message">The message.</param>
+    /// <param name="severity">The severity.</param>
+    public void ShowNotification(string title, string message, InfoBarSeverity severity)
+        => MainElement.ShowNotification(title, message, severity);
 
     /// <summary>
     /// Focuses the browser.

@@ -43,7 +43,7 @@ public class LocalWebAppHost
         }
 
         if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
-        VirtualHost = options?.CustomizedVirtualHost ?? UI.LocalWebAppHook.VirtualHostGenerator?.Invoke(manifest, options);
+        VirtualHost = options?.CustomizedVirtualHost ?? LocalWebAppHook.VirtualHostGenerator?.Invoke(manifest, options);
         if (string.IsNullOrWhiteSpace(VirtualHost)) VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
     }
 
@@ -321,6 +321,13 @@ public class LocalWebAppHost
     }
 
     /// <summary>
+    /// Sets identifier of the host app.
+    /// </summary>
+    /// <param name="id">The identifier of the host app.</param>
+    public static void SetHostId(string id)
+        => LocalWebAppHook.HostId = id;
+
+    /// <summary>
     /// Loads the standalone web app package information.
     /// </summary>
     /// <param name="package">The package.</param>
@@ -338,11 +345,11 @@ public class LocalWebAppHost
     {
         if (package == null) throw new ArgumentNullException(nameof(package), "package should not be null.");
         var dir = package.RootDirectory;
-        if (dir == null || string.IsNullOrWhiteSpace(package.Options?.HostId)) throw new InvalidOperationException("The options is not correct.");
+        if (dir == null || string.IsNullOrWhiteSpace(LocalWebAppHook.HostId)) throw new InvalidOperationException("The options is not correct.");
         var path = package.ProjectConfiguration?.TryGetObjectValue("dev", "proc")?.TryGetStringValue("path")?.Trim();
         if (!string.IsNullOrEmpty(path)) dir = GetDirectoryInfoByRelative(dir, path);
         if (!dir.Exists) Directory.CreateDirectory(dir.FullName);
-        return LoadAsync(dir, package.Options, false, package.AppDirectory, cancellationToken);
+        return LoadAsync(dir, package.Options, skipVerificationException, package.AppDirectory, cancellationToken);
     }
 
     /// <summary>
@@ -365,7 +372,6 @@ public class LocalWebAppHost
     /// <summary>
     /// Loads the standalone web app package information.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="assembly">The assembly which embed the resource package.</param>
     /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
     /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
@@ -378,13 +384,12 @@ public class LocalWebAppHost
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
-    public static Task<LocalWebAppHost> LoadAsync(string hostId, System.Reflection.Assembly assembly, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
-        => LoadAsync(hostId, assembly, null, null, forceToLoad, null, skipVerificationException, cancellationToken);
+    public static Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+        => LoadAsync(assembly, null, null, forceToLoad, null, skipVerificationException, cancellationToken);
 
     /// <summary>
     /// Loads the standalone web app package information.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="assembly">The assembly which embed the resource package.</param>
     /// <param name="projectFileName">The config file name of the resource package project.</param>
     /// <param name="packageFileName">The zip file name of the embedded resource package.</param>
@@ -401,7 +406,7 @@ public class LocalWebAppHost
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
-    public static Task<LocalWebAppHost> LoadAsync(string hostId, System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    public static async Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (assembly == null) assembly = System.Reflection.Assembly.GetEntryAssembly();
         if (string.IsNullOrWhiteSpace(projectFileName)) projectFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly);
@@ -421,8 +426,8 @@ public class LocalWebAppHost
             config2.SetValue("key", key);
         }
 
-        var options = LoadOptions(hostId, config, null);
-        return LoadAsync(options, assembly, packageFileName, forceToLoad, skipVerificationException, cancellationToken);
+        var options = LoadOptions(config, null);
+        return await LoadAsync(options, assembly, packageFileName, forceToLoad, skipVerificationException, cancellationToken);
     }
 
     /// <summary>
@@ -505,7 +510,29 @@ public class LocalWebAppHost
             if (forceToLoad) await LoadCompressedResourceAsync(options, dir, assembly, fileName, cancellationToken);
         }
 
-        return await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
+        var host = await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
+        await RegisterPackageAsync(new LocalWebAppInfo(host.Manifest, options));
+        return host;
+    }
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier registered.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web app host.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(string resourcePackageId, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    {
+        var info = await GetPackageAsync(resourcePackageId);
+        return await LoadAsync(info.GetOptions(), skipVerificationException, cancellationToken);
     }
 
     /// <summary>
@@ -615,7 +642,7 @@ public class LocalWebAppHost
                 var verifiedHost = false;
                 foreach (var bindingInfo in hostBinding)
                 {
-                    if (bindingInfo?.HostId != options.HostId) continue;
+                    if (bindingInfo?.HostId != LocalWebAppHook.HostId) continue;
                     if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
                         if (VersionComparer.Compare(bindingInfo.MinimumVersion, manifest.Version, false) > 0) continue;
                     if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
@@ -738,16 +765,17 @@ public class LocalWebAppHost
         }
 
         await UpdateAsync(options, dir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
-        return await LoadAsync(dir, options, true, null, cancellationToken);
+        var host = await LoadAsync(dir, options, true, null, cancellationToken);
+        if (host.ResourcePackageId != options.ResourcePackageId) throw new InvalidOperationException("The app is not the expect one.");
+        await RegisterPackageAsync(new LocalWebAppInfo(host.Manifest, options));
+        return host;
     }
 
     /// <summary>
     /// Loads the standalone web app package information.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="info">The resource package information.</param>
     /// <param name="uri">The URI to download the compressed file of the resource package.</param>
-    /// <param name="register">true if registers; otherwise, false.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The local web app host.</returns>
     /// <exception cref="ArgumentNullException">info or uri was null.</exception>
@@ -757,18 +785,12 @@ public class LocalWebAppHost
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(string hostId, LocalWebAppInfo info, Uri uri, bool register, CancellationToken cancellationToken = default)
+    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppInfo info, Uri uri, CancellationToken cancellationToken = default)
     {
-        if (hostId == null) throw new ArgumentNullException(nameof(hostId));
         if (info == null) throw new ArgumentNullException(nameof(info));
         if (uri == null) throw new ArgumentNullException(nameof(uri));
-        if (string.IsNullOrWhiteSpace(hostId)) throw new ArgumentException("hostId should not be empty.", nameof(hostId));
-        if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) throw new ArgumentException("The resource package identifier should not be empty.", nameof(hostId));
-        var options = info?.GetOptions(hostId);
-        var host = await LoadAsync(options, uri, cancellationToken);
-        if (host.ResourcePackageId != info.ResourcePackageId) throw new InvalidOperationException("The resource package is not the specific one.");
-        if (register) await RegisterPackageAsync(info);
-        return host;
+        if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) throw new ArgumentException("The resource package identifier should not be empty.", nameof(info));
+        return await LoadAsync(info?.GetOptions(), uri, cancellationToken);
     }
 
     /// <summary>
@@ -1031,7 +1053,7 @@ public class LocalWebAppHost
         try
         {
             if (signatureProvider == null && options != null)
-                signatureProvider = options.GetPublicKey(string.Empty);
+                signatureProvider = options.GetSignatureProvider();
         }
         catch (ArgumentException)
         {
@@ -1048,16 +1070,15 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="dir">The app directory.</param>
     /// <param name="options">The options of the local standalone web app.</param>
-    /// <param name="signKey">The key of file signature mapping.</param>
     /// <returns>The file collection.</returns>
     /// <exception cref="ArgumentNullException">The directory was null.</exception>
     /// <exception cref="DirectoryNotFoundException">The directory was not found.</exception>
-    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, string signKey = null)
+    public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options)
     {
         ISignatureProvider signatureProvider = null;
         try
         {
-            signatureProvider = options?.GetPublicKey(signKey ?? string.Empty);
+            signatureProvider = options?.GetSignatureProvider();
         }
         catch (ArgumentException)
         {
@@ -1072,21 +1093,20 @@ public class LocalWebAppHost
     /// <summary>
     /// Creates the app options.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="dir">The app path.</param>
     /// <returns>The file output.</returns>
     /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
     /// <exception cref="FileNotFoundException">The private key was not found.</exception>
     /// <exception cref="InvalidOperationException">The configuration is not valid.</exception>
     /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
-    public static LocalWebAppOptions LoadOptions(string hostId, DirectoryInfo dir)
+    public static LocalWebAppOptions LoadOptions(DirectoryInfo dir)
     {
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
         var config = LoadBuildConfig(dir, out _);
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
-        return LoadOptions(hostId, config, keyFile);
+        return LoadOptions(config, keyFile);
     }
 
     /// <summary>
@@ -1111,7 +1131,6 @@ public class LocalWebAppHost
     /// <summary>
     /// Creates a package.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="dir">The app path.</param>
     /// <param name="outputFileName">The file name of the zip.</param>
     /// <returns>The file output.</returns>
@@ -1122,7 +1141,7 @@ public class LocalWebAppHost
     /// <exception cref="IOException">IO exception.</exception>
     /// <exception cref="SecurityException">The security exception during file access.</exception>
     /// <exception cref="UnauthorizedAccessException">One or more files are unauthorized to access.</exception>
-    public static LocalWebAppPackageResult Package(string hostId, DirectoryInfo dir, string outputFileName = null)
+    public static LocalWebAppPackageResult Package(DirectoryInfo dir, string outputFileName = null)
     {
         // Load options.
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
@@ -1145,7 +1164,7 @@ public class LocalWebAppHost
         if (config == null || configFile == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
-        var options = LoadOptions(hostId, config, keyFile);
+        var options = LoadOptions(config, keyFile);
         var refConfig = config.TryGetObjectValue("ref");
 
         // Create manifest.
@@ -1187,7 +1206,9 @@ public class LocalWebAppHost
         }
 
         // Return result.
-        return new(options, dir, appDir, zip, config);
+        var result = new LocalWebAppPackageResult(options, dir, appDir, zip, config.TryGetObjectValue("details"), config.TryGetObjectValue("project"));
+        LocalWebAppHook.BuildDevPackage?.Invoke(result);
+        return result;
     }
 
     /// <summary>
@@ -1201,7 +1222,7 @@ public class LocalWebAppHost
     public async Task<string> UpdateAsync(string version, FileInfo zip, bool deleteZip, CancellationToken cancellationToken = default)
     {
         NewVersionAvailable = await UpdateAsync(Options, CacheDirectory.Parent, version, zip, deleteZip, cancellationToken);
-        UI.LocalWebAppHook.OnUpdate?.Invoke(this);
+        LocalWebAppHook.OnUpdate?.Invoke(this);
         return NewVersionAvailable;
     }
 
@@ -1219,7 +1240,7 @@ public class LocalWebAppHost
         {
             SerializeEvenIfFailed = true
         };
-        UI.LocalWebAppHook.UpdateServiceClientHandler?.Invoke(http);
+        LocalWebAppHook.UpdateServiceClientHandler?.Invoke(http);
         var resp = await http.GetAsync(url, cancellationToken);
         var respProp = Options.Update?.ResponseProperty?.Trim();
         resp = resp?.TryGetObjectValue(string.IsNullOrEmpty(respProp) ? "data" : respProp) ?? resp;
@@ -1281,56 +1302,25 @@ public class LocalWebAppHost
     }
 
     /// <summary>
-    /// Registers a resource package.
+    /// Gets the specific resource package information registered.
     /// </summary>
-    /// <param name="info">The resource package information.</param>
-    /// <returns>The async task.</returns>
-    public static async Task RegisterPackageAsync(LocalWebAppInfo info)
-    {
-        if (string.IsNullOrWhiteSpace(info?.ResourcePackageId)) return;
-        var dir = await GetSettingsDirAsync();
-        var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
-        var apps = settings.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
-        if (apps == null)
-        {
-            apps = new List<JsonObjectNode>();
-            settings.SetValue("apps", apps);
-        }
-
-        var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == info.ResourcePackageId);
-        if (json == null) settings.TryGetArrayValue("apps").Remove(json);
-        json = JsonObjectNode.ConvertFrom(json);
-        settings.TryGetArrayValue("apps").Add(json);
-        var path = Path.Combine(dir.FullName, "settings.json");
-        File.WriteAllText(path, settings.ToString(), Encoding.UTF8);
-    }
-
-    /// <summary>
-    /// Registers a resource package.
-    /// </summary>
-    /// <param name="manifest">The resource package manifest.</param>
-    /// <param name="name">The display name.</param>
-    /// <param name="signAlg">The signature algorithm.</param>
-    /// <param name="signKey">The public signature key for verification.</param>
-    /// <param name="details">The additional data.</param>
-    /// <param name="update">The update information.</param>
-    /// <returns>The async task.</returns>
-    public static Task RegisterPackageAsync(LocalWebAppManifest manifest, string name, string signKey, string signAlg, JsonObjectNode details = null, LocalWebAppPackageUpdateInfo update = null)
-        => RegisterPackageAsync(new LocalWebAppInfo(manifest, name, signKey, signAlg)
-        {
-            Details = details,
-            Update = update
-        });
+    /// <param name="id">The resource package identifier.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
+    /// <returns>The resource package information instance.</returns>
+    public static Task<LocalWebAppInfo> GetPackageAsync(string id, bool dev = false)
+        => UpdatePackageAsync(id, null, dev);
 
     /// <summary>
     /// Lists all resource packages registered.
     /// </summary>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
+    /// <param name="predicate">A function to test each element for a condition.</param>
     /// <returns>The list of the resource packages.</returns>
-    public static async Task<List<LocalWebAppInfo>> ListPackageAsync()
+    public static async Task<List<LocalWebAppInfo>> ListPackageAsync(bool dev = false, Func<LocalWebAppInfo, bool> predicate = null)
     {
         var dir = await GetSettingsDirAsync();
         var settings = await TryGetSettingsAsync(dir);
-        var apps = settings?.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
+        var apps = settings?.TryGetArrayValue(dev ? "devapps" : "apps")?.OfType<JsonObjectNode>();
         var list = new List<LocalWebAppInfo>();
         if (apps == null) return list;
         foreach (var app in apps)
@@ -1346,18 +1336,7 @@ public class LocalWebAppHost
             }
         }
 
-        return list;
-    }
-
-    /// <summary>
-    /// Lists all resource packages registered.
-    /// </summary>
-    /// <param name="predicate">A function to test each element for a condition.</param>
-    /// <returns>The list of the resource packages.</returns>
-    public static async Task<List<LocalWebAppInfo>> ListPackageAsync(Func<LocalWebAppInfo, bool> predicate)
-    {
-        var packages = await ListPackageAsync();
-        return predicate == null ? packages : packages.Where(predicate).ToList();
+        return predicate == null ? list : list.Where(predicate).ToList();
     }
 
     /// <summary>
@@ -1419,6 +1398,67 @@ public class LocalWebAppHost
         return await RemovePackageAsync(ids);
     }
 
+    /// <summary>
+    /// Registers a resource package.
+    /// </summary>
+    /// <param name="info">The resource package information.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
+    /// <returns>The async task.</returns>
+    internal static async Task<bool> RegisterPackageAsync(LocalWebAppInfo info, bool dev = false)
+        => (await UpdatePackageAsync(info?.ResourcePackageId, _ => info, dev)) != null;
+
+    /// <summary>
+    /// Gets the specific resource package information registered.
+    /// </summary>
+    /// <param name="id">The resource package identifier.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
+    /// <param name="update">A callback to update.</param>
+    /// <returns>The resource package information instance.</returns>
+    private static async Task<LocalWebAppInfo> UpdatePackageAsync(string id, Func<LocalWebAppInfo, LocalWebAppInfo> update, bool dev = false)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return null;
+        var dir = await GetSettingsDirAsync();
+        var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
+        var property = dev ? "devapps" : "apps";
+        var apps = settings.TryGetArrayValue(property)?.OfType<JsonObjectNode>();
+        if (apps == null)
+        {
+            apps = new List<JsonObjectNode>();
+            settings.SetValue(property, apps);
+        }
+
+        var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == id);
+        LocalWebAppInfo info = null;
+        var now = DateTime.Now;
+        try
+        {
+            if (json != null)
+            {
+                info = json.Deserialize<LocalWebAppInfo>();
+                now = info.CreationTime;
+            }
+        }
+        catch (JsonException)
+        {
+        }
+
+        if (update != null)
+        {
+            info = update(info);
+            if (info != null)
+            {
+                info.LastModificationTime = DateTime.Now;
+                if (json != null) settings.TryGetArrayValue(property).Remove(json);
+                info.CreationTime = now;
+                var json2 = JsonObjectNode.ConvertFrom(info);
+                settings.TryGetArrayValue(property).Add(json2);
+                if (json2 != json) await TrySaveSettingsAsync(dir, settings);
+            }
+        }
+
+        return info;
+    }
+
     private static string FormatResourcePackageId(string resourcePackageId)
         => resourcePackageId.Replace('/', '_').Replace('\\', '_').Replace(' ', '_').Replace("@", string.Empty);
 
@@ -1450,9 +1490,32 @@ public class LocalWebAppHost
 
     private static async Task<DirectoryInfo> GetSettingsDirAsync()
     {
-        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-        appDataFolder = await appDataFolder.CreateFolderAsync("_settings", Windows.Storage.CreationCollisionOption.OpenIfExists);
-        return FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        try
+        {
+            var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
+            appDataFolder = await appDataFolder.CreateFolderAsync("_settings", Windows.Storage.CreationCollisionOption.OpenIfExists);
+            return FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        }
+        catch (IOException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -1683,26 +1746,23 @@ public class LocalWebAppHost
     /// <summary>
     /// Creates the app options.
     /// </summary>
-    /// <param name="hostId">The identifier of the host app.</param>
     /// <param name="config">The build config.</param>
     /// <param name="keyFile">The private key.</param>
     /// <returns>The file output.</returns>
     /// <exception cref="InvalidOperationException">Parse private key failed.</exception>
     /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
-    private static LocalWebAppOptions LoadOptions(string hostId, JsonObjectNode config, FileInfo keyFile)
+    private static LocalWebAppOptions LoadOptions(JsonObjectNode config, FileInfo keyFile)
     {
         // Create options.
         var resId = config.TryGetStringValue("id")?.Trim() ?? config.TryGetObjectValue("package").TryGetStringValue("id")?.Trim();
         config = config.TryGetObjectValue("ref");
         var sign = config.TryGetStringValue("sign")?.Trim()?.ToUpperInvariant();
         if (string.IsNullOrEmpty(sign)) sign = "RS512";
-        RSAParameters? key;
+        var keyStr = config.TryGetStringValue("key");
         try
         {
-            var keyStr = config.TryGetStringValue("key");
             if (string.IsNullOrWhiteSpace(keyStr) && keyFile != null && keyFile.Exists)
                 keyStr = File.ReadAllText(keyFile.FullName);
-            key = RSAParametersConvert.Parse(keyStr);
         }
         catch (IOException ex)
         {
@@ -1729,16 +1789,8 @@ public class LocalWebAppHost
             throw new InvalidOperationException("Parse private key failed because of external exception.", ex);
         }
 
-        if (!key.HasValue) throw new InvalidOperationException("Parse private key failed because it is empty.");
-        var signatureProvider = sign switch
-        {
-            "RS512" => RSASignatureProvider.CreateRS512(key.Value),
-            "RS384" => RSASignatureProvider.CreateRS384(key.Value),
-            "RS256" => RSASignatureProvider.CreateRS256(key.Value),
-            _ => throw new NotSupportedException("The signature algorithm is not supported.")
-        };
         if (!config.TryDeserializeValue<LocalWebAppPackageUpdateInfo>("update", null, out var update)) update = null;
-        return new(hostId, resId, signatureProvider, update);
+        return new(resId, sign, keyStr, update);
     }
 
     private static string GetSubFileName(string name, string sub, string ext = null)
@@ -1811,10 +1863,10 @@ public class LocalWebAppHost
                     q.Add(k, Guid.NewGuid().ToString());
                     break;
                 case "host":
-                    q.Add(k, Options?.HostId);
+                    q.Add(k, LocalWebAppHook.HostId);
                     break;
                 case "additional":
-                    q.Add(k, Options?.HostId);
+                    q.Add(k, LocalWebAppHook.HostAdditionalString);
                     break;
             }
         }
@@ -1898,7 +1950,7 @@ public class LocalWebAppHost
 
             try
             {
-                host.SignatureProvider = host.Options?.GetPublicKey(fileCol.SignKey ?? string.Empty);
+                host.SignatureProvider = host.Options?.GetSignatureProvider();
             }
             catch (ArgumentException)
             {

@@ -92,33 +92,31 @@ public enum CommonWindowStates : byte
 /// </summary>
 public class LocalWebAppOptions
 {
-    private readonly ISignatureProvider defaultSign;
-
     /// <summary>
     /// Initializes a new instance of the LocalWebAppOptions class.
     /// </summary>
-    /// <param name="hostId">The host app identifier.</param>
     /// <param name="resourcePackageId">The resource package identifier.</param>
-    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="signAlg">The signature algorithm.</param>
+    /// <param name="signKey">The public key of signature.</param>
     /// <param name="update">The update service information.</param>
-    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, LocalWebAppPackageUpdateInfo update = null)
-        : this(hostId, resourcePackageId, signatureProvider, update, null)
+    public LocalWebAppOptions(string resourcePackageId, string signAlg, string signKey, LocalWebAppPackageUpdateInfo update = null)
+        : this(resourcePackageId, signAlg, signKey, update, null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the LocalWebAppOptions class.
     /// </summary>
-    /// <param name="hostId">The host app identifier.</param>
     /// <param name="resourcePackageId">The resource package identifier.</param>
-    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="signAlg">The signature algorithm.</param>
+    /// <param name="signKey">The public key of signature.</param>
     /// <param name="update">The update service information.</param>
     /// <param name="manifestFileName">The file name of the manifest.</param>
-    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, LocalWebAppPackageUpdateInfo update, string manifestFileName)
+    public LocalWebAppOptions(string resourcePackageId, string signAlg, string signKey, LocalWebAppPackageUpdateInfo update, string manifestFileName)
     {
-        HostId = hostId;
         ResourcePackageId = resourcePackageId;
-        defaultSign = signatureProvider;
+        SignatureAlgorithm = signAlg;
+        SignatureKey = signKey;
         Update = update;
         if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
         ManifestFileName = manifestFileName;
@@ -127,22 +125,17 @@ public class LocalWebAppOptions
     /// <summary>
     /// Initializes a new instance of the LocalWebAppOptions class.
     /// </summary>
-    /// <param name="hostId">The host app identifier.</param>
     /// <param name="resourcePackageId">The resource package identifier.</param>
-    /// <param name="signatureProvider">The signature provider.</param>
+    /// <param name="signAlg">The signature algorithm.</param>
+    /// <param name="signKey">The public key of signature.</param>
     /// <param name="update">The update service information.</param>
     /// <param name="manifestFileName">The file name of the manifest.</param>
     /// <param name="virtualHost">The customized virtual host.</param>
-    public LocalWebAppOptions(string hostId, string resourcePackageId, ISignatureProvider signatureProvider, LocalWebAppPackageUpdateInfo update, string manifestFileName, string virtualHost)
-        : this(hostId, resourcePackageId, signatureProvider, update, manifestFileName)
+    public LocalWebAppOptions(string resourcePackageId, string signAlg, string signKey, LocalWebAppPackageUpdateInfo update, string manifestFileName, string virtualHost)
+        : this(resourcePackageId, signAlg, signKey, update, manifestFileName)
     {
         if (!string.IsNullOrWhiteSpace(virtualHost)) CustomizedVirtualHost = virtualHost;
     }
-
-    /// <summary>
-    /// Gets the host app identifier.
-    /// </summary>
-    public string HostId { get; }
 
     /// <summary>
     /// Gets the file name of the manifest.
@@ -160,6 +153,16 @@ public class LocalWebAppOptions
     public LocalWebAppPackageUpdateInfo Update { get; }
 
     /// <summary>
+    /// Gets the signature algorithm.
+    /// </summary>
+    public string SignatureAlgorithm { get; }
+
+    /// <summary>
+    /// Gets the public key of signature.
+    /// </summary>
+    internal string SignatureKey { get; }
+
+    /// <summary>
     /// Gets the update virtual host.
     /// </summary>
     internal string CustomizedVirtualHost { get; }
@@ -167,10 +170,18 @@ public class LocalWebAppOptions
     /// <summary>
     /// Gets the public key.
     /// </summary>
-    /// <param name="signKey">The key of file signature mapping.</param>
     /// <returns>The RSA public key to verify file signature.</returns>
-    public virtual ISignatureProvider GetPublicKey(string signKey)
-        => defaultSign;
+    public virtual ISignatureProvider GetSignatureProvider()
+    {
+        if (string.IsNullOrWhiteSpace(SignatureAlgorithm)) return null;
+        return SignatureAlgorithm.Trim().ToUpperInvariant() switch
+        {
+            "RS512" => RSASignatureProvider.CreateRS512(SignatureKey),
+            "RS384" => RSASignatureProvider.CreateRS384(SignatureKey),
+            "RS256" => RSASignatureProvider.CreateRS256(SignatureKey),
+            _ => null,
+        };
+    }
 }
 
 /// <summary>
@@ -202,12 +213,13 @@ public class LocalWebAppPackageUpdateInfo
 /// </summary>
 public class LocalWebAppPackageResult
 {
-    internal LocalWebAppPackageResult(LocalWebAppOptions options, DirectoryInfo root, DirectoryInfo app, FileInfo sign, JsonObjectNode project)
+    internal LocalWebAppPackageResult(LocalWebAppOptions options, DirectoryInfo root, DirectoryInfo app, FileInfo sign, JsonObjectNode details, JsonObjectNode project)
     {
         Options = options;
         RootDirectory = root;
         AppDirectory = app;
         Signature = sign;
+        Details = details;
         ProjectConfiguration = project;
     }
 
@@ -230,6 +242,11 @@ public class LocalWebAppPackageResult
     /// Gets the signature file.
     /// </summary>
     public FileInfo Signature { get; }
+
+    /// <summary>
+    /// Gets the details information.
+    /// </summary>
+    public JsonObjectNode Details { get; }
 
     /// <summary>
     /// Gets the project configuration.

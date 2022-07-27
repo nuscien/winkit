@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Trivial.Web;
 
-namespace Trivial.UI;
+namespace Trivial.Web;
 
 /// <summary>
 /// The global settings of the local web app.
@@ -33,6 +33,44 @@ public static class LocalWebAppHook
         public static string Loading { get; set; }
     }
 
+    private static string hostId;
+
+    /// <summary>
+    /// Gets or sets the identifier of the host app.
+    /// </summary>
+    public static string HostId
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(hostId)) return hostId;
+            try
+            {
+                var assembly = Assembly ?? System.Reflection.Assembly.GetEntryAssembly();
+                if (assembly != null) hostId = assembly.GetName()?.Name;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (MemberAccessException)
+            {
+            }
+            catch (TypeLoadException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+
+            if (string.IsNullOrEmpty(hostId)) hostId = "x-private-wasdk-app";
+            return hostId;
+        }
+
+        set
+        {
+            hostId = value;
+        }
+    }
+
     /// <summary>
     /// Gets or sets the additional string of host.
     /// </summary>
@@ -52,6 +90,11 @@ public static class LocalWebAppHook
     /// Gets or sets the handler to modify the HTTP client of update service.
     /// </summary>
     public static Action<Net.JsonHttpClient<Text.JsonObjectNode>> UpdateServiceClientHandler { get; set; }
+
+    /// <summary>
+    /// Gets or sets the handler to build dev package.
+    /// </summary>
+    public static Action<LocalWebAppPackageResult> BuildDevPackage { get; set; }
 
     /// <summary>
     /// Gets or sets the hanlder after updated.

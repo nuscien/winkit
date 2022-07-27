@@ -210,8 +210,10 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Load a dev local web app.
     /// </summary>
+    /// <param name="dir">The root directory.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The async task.</returns>
-    public async Task SelectDevPackageAsync(string hostId, DirectoryInfo dir, CancellationToken cancellationToken = default)
+    public async Task SelectDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
     {
         if (dir == null || !dir.Exists)
         {
@@ -220,7 +222,7 @@ public sealed partial class LocalWebAppPage : Page
             throw ex;
         }
 
-        var package = LocalWebAppHost.Package(hostId, dir);
+        var package = LocalWebAppHost.Package(dir);
         LocalWebAppHost host;
         try
         {
@@ -233,9 +235,13 @@ public sealed partial class LocalWebAppPage : Page
         }
 
         if (host == null)
+        {
             OnLoadError(new InvalidOperationException("Failed to load app."));
-        else
-            await LoadAsync(host);
+            return;
+        }
+
+        await LoadAsync(host);
+        await LocalWebAppHost.RegisterPackageAsync(new LocalWebAppInfo(host.Manifest, host.Options, package.Details), true);
     }
 
     /// <summary>
@@ -373,6 +379,27 @@ public sealed partial class LocalWebAppPage : Page
             { "id", Guid.NewGuid() }
         };
         Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
+    }
+
+    /// <summary>
+    /// Stops progress ring.
+    /// </summary>
+    public void StopLoading()
+        => ProgressElement.IsActive = false;
+
+    /// <summary>
+    /// Shows notification.
+    /// </summary>
+    /// <param name="title">The title.</param>
+    /// <param name="message">The message.</param>
+    /// <param name="severity">The severity.</param>
+    public void ShowNotification(string title, string message, InfoBarSeverity severity)
+    {
+        NotificationBar.Title = title;
+        NotificationBar.Message = message;
+        NotificationBar.Severity = severity;
+        NotificationBar.IsOpen = true;
+        ProgressElement.IsActive = false;
     }
 
     /// <summary>

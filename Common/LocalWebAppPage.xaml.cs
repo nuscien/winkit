@@ -213,7 +213,7 @@ public sealed partial class LocalWebAppPage : Page
     /// <param name="dir">The root directory.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The async task.</returns>
-    public async Task SelectDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
+    public async Task LoadDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
     {
         if (dir == null || !dir.Exists)
         {
@@ -222,11 +222,10 @@ public sealed partial class LocalWebAppPage : Page
             throw ex;
         }
 
-        var package = LocalWebAppHost.Package(dir);
         LocalWebAppHost host;
         try
         {
-            host = await LocalWebAppHost.LoadAsync(package, false, cancellationToken);
+            host = await LocalWebAppHost.LoadDevPackageAsync(dir, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -241,22 +240,6 @@ public sealed partial class LocalWebAppPage : Page
         }
 
         await LoadAsync(host);
-        LocalWebAppInfo info = null;
-        try
-        {
-            info = new LocalWebAppInfo(host, package.Details)
-            {
-                LocalPath = package.RootDirectory.FullName
-            };
-        }
-        catch (IOException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-
-        if (!string.IsNullOrWhiteSpace(info?.LocalPath)) await LocalWebAppHost.RegisterPackageAsync(info, true);
     }
 
     /// <summary>

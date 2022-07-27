@@ -212,10 +212,10 @@ public sealed partial class LocalWebAppWindow : Window
     /// </summary>
     /// <returns>The async task.</returns>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    public async Task SelectDevPackageAsync(CancellationToken cancellationToken = default)
+    public async Task LoadDevPackageAsync(CancellationToken cancellationToken = default)
     {
         var dir = await SelectAsync();
-        await MainElement.SelectDevPackageAsync(dir, cancellationToken);
+        await MainElement.LoadDevPackageAsync(dir, cancellationToken);
     }
 
     /// <summary>
@@ -223,8 +223,8 @@ public sealed partial class LocalWebAppWindow : Window
     /// </summary>
     /// <param name="dir">The root directory.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    public Task SelectDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
-        => MainElement.SelectDevPackageAsync(dir, cancellationToken);
+    public Task LoadDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
+        => MainElement.LoadDevPackageAsync(dir, cancellationToken);
 
     /// <summary>
     /// Loads data.

@@ -106,7 +106,7 @@ public sealed partial class HomePage : Page
             html.CopyTo(Path.Combine(rootDir, "bin\\LocalWebApp\\app", html.Name), true);
         }
 
-        _ = window.SelectDevPackageAsync(new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
+        _ = window.LoadDevPackageAsync(new DirectoryInfo(Path.Combine(rootDir, "FileBrowser")));
         ShowWindow(window);
     }
 

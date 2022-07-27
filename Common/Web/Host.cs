@@ -767,7 +767,7 @@ public class LocalWebAppHost
         await UpdateAsync(options, dir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
         var host = await LoadAsync(dir, options, true, null, cancellationToken);
         if (host.ResourcePackageId != options.ResourcePackageId) throw new InvalidOperationException("The app is not the expect one.");
-        await RegisterPackageAsync(new LocalWebAppInfo(host));
+        if (host.IsVerified) await RegisterPackageAsync(new LocalWebAppInfo(host));
         return host;
     }
 
@@ -791,6 +791,43 @@ public class LocalWebAppHost
         if (uri == null) throw new ArgumentNullException(nameof(uri));
         if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) throw new ArgumentException("The resource package identifier should not be empty.", nameof(info));
         return await LoadAsync(info?.GetOptions(), uri, cancellationToken);
+    }
+
+    /// <summary>
+    /// Load a dev local web app.
+    /// </summary>
+    /// <param name="dir">The root directory.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The async task.</returns>
+    /// <exception cref="ArgumentNullException">info or uri was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadDevPackageAsync(DirectoryInfo dir, CancellationToken cancellationToken = default)
+    {
+        if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The directory is not found.");
+        var package = Package(dir);
+        var host = await LoadAsync(package, false, cancellationToken);
+        LocalWebAppInfo info = null;
+        try
+        {
+            info = new LocalWebAppInfo(host, package.Details)
+            {
+                LocalPath = package.RootDirectory.FullName
+            };
+        }
+        catch (IOException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+
+        if (!string.IsNullOrWhiteSpace(info?.LocalPath)) await RegisterPackageAsync(info, true);
+        return host;
     }
 
     /// <summary>
@@ -1404,7 +1441,7 @@ public class LocalWebAppHost
     /// <param name="info">The resource package information.</param>
     /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <returns>The async task.</returns>
-    internal static async Task<bool> RegisterPackageAsync(LocalWebAppInfo info, bool dev = false)
+    private static async Task<bool> RegisterPackageAsync(LocalWebAppInfo info, bool dev = false)
         => (await UpdatePackageAsync(info?.ResourcePackageId, info2 => {
             if (info2 != null && info2.Version == info.Version) info.LastModificationTime = info2.LastModificationTime;
             return info;
@@ -1843,7 +1880,7 @@ public class LocalWebAppHost
 
     private async Task<string> UpdateRegisteredAsync()
     {
-        await RegisterPackageAsync(new LocalWebAppInfo(this));
+        if (IsVerified) await RegisterPackageAsync(new LocalWebAppInfo(this));
         return await UpdateAsync();
     }
 

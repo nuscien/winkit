@@ -66,23 +66,13 @@ public sealed partial class HomePage : Page
 
     private void LaunchWebAppClick(object sender, RoutedEventArgs e)
     {
-        var window = new LocalWebAppWindow();
-        _ = window.LoadAsync(CreateWebAppHostAsync(), host => _ = host?.UpdateAsync());
-        ShowWindow(window);
+        var win = new TabbedWebViewWindow();
+        win.Activate();
+        _ = OnBrowserClickAsync(win);
     }
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)
     {
-        //var window = new LocalWebAppWindow()
-        //{
-        //    IsDevEnvironmentEnabled = true
-        //};
-        //var hostTask = CreateWebAppHostAsync();
-        //_ = window.SelectDevPackageAsync("WinKitDemo");
-        //var appWin = VisualUtility.TryGetAppWindow(window);
-        //window.Activate();
-        //return;
-
         var rootDir = "";  // The root path of the repo.
         var window = new LocalWebAppWindow();
         if (string.IsNullOrEmpty(rootDir))
@@ -110,12 +100,11 @@ public sealed partial class HomePage : Page
         ShowWindow(window);
     }
 
-    private void BrowserClick(object sender, RoutedEventArgs e)
-    {
-        var win = new TabbedWebViewWindow();
-        win.Add(new Uri("https://kingcean.net"));
-        win.Activate();
-    }
+    private async Task<LocalWebAppPage> OnBrowserClickAsync(TabbedWebViewWindow win)
+        => await win.AddAsync(CreateWebAppHostAsync(), (tab, page) =>
+        {
+            page.IsDevEnvironmentEnabled = true;
+        });
 
     private void ShowWindow(LocalWebAppWindow window)
     {

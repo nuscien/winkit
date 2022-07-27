@@ -126,7 +126,7 @@ internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHand
         this.webview = webview;
     }
 
-    public List<CoreWebView2DownloadOperation> DownloadList { get; } = new();
+    public List<CoreWebView2DownloadOperation> DownloadList { get; internal set; } = new();
 
     /// <summary>
     /// Gets download list information.

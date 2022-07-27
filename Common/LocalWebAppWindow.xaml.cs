@@ -109,6 +109,46 @@ public sealed partial class LocalWebAppWindow : Window
     public event TypedEventHandler<LocalWebAppWindow, CoreWebView2DownloadStartingEventArgs> DownloadStarting;
 
     /// <summary>
+    /// Gets the identifier of the resource package.
+    /// </summary>
+    public string ResourcePackageId => MainElement.ResourcePackageId;
+
+    /// <summary>
+    /// Gets the display name of the resource package.
+    /// </summary>
+    public string ResourcePackageDisplayName => MainElement.ResourcePackageDisplayName;
+
+    /// <summary>
+    /// Gets the version string of the resource package.
+    /// </summary>
+    public string ResourcePackageVersion => MainElement.ResourcePackageVersion;
+
+    /// <summary>
+    /// Gets the copyright string of the resource package.
+    /// </summary>
+    public string ResourcePackageCopyright => MainElement.ResourcePackageCopyright;
+
+    /// <summary>
+    /// Gets the publisher name of the resource package.
+    /// </summary>
+    public string ResourcePackagePublisherName => MainElement.ResourcePackagePublisherName;
+
+    /// <summary>
+    /// Gets the description of the resource package.
+    /// </summary>
+    public string ResourcePackageDescription => MainElement.ResourcePackageDescription;
+
+    /// <summary>
+    /// Gets the relative icon path of the resource package.
+    /// </summary>
+    public string ResourcePackageIcon => MainElement.ResourcePackageIcon;
+
+    /// <summary>
+    /// Gets the website URL of the resource package.
+    /// </summary>
+    public string ResourcePackageWebsite => MainElement.ResourcePackageWebsite;
+
+    /// <summary>
     /// Gets the download list.
     /// </summary>
     public List<CoreWebView2DownloadOperation> DownloadList => MainElement.DownloadList;
@@ -146,6 +186,11 @@ public sealed partial class LocalWebAppWindow : Window
     }
 
     /// <summary>
+    /// Gets the a value indicating whether contains the full screen element.
+    /// </summary>
+    public bool ContainsFullScreenElement => MainElement.ContainsFullScreenElement;
+
+    /// <summary>
     /// Gets a value indicating whether the browser can go back.
     /// </summary>
     public bool CanGoBack => MainElement.CanGoBack;
@@ -180,6 +225,16 @@ public sealed partial class LocalWebAppWindow : Window
         get => MainElement.OnWindowCreate;
         set => MainElement.OnWindowCreate = value;
     }
+
+    /// <summary>
+    /// Gets the options.
+    /// </summary>
+    public LocalWebAppOptions Options => MainElement.Options;
+
+    /// <summary>
+    /// Gets a value indicating whether the app is verified.
+    /// </summary>
+    public bool IsVerified => MainElement.IsVerified;
 
     /// <summary>
     /// Goes back.

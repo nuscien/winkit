@@ -46,17 +46,44 @@ public sealed partial class TabbedWebView : UserControl
         /// <summary>
         /// Gets or sets the tab view item instance.
         /// </summary>
-        public TabViewItem Tab { get; set; }
+        public TabViewItem Tab { get; }
 
         /// <summary>
         /// Gets or sets the web view instance.
         /// </summary>
-        public SingleWebView WebView { get; set; }
+        public SingleWebView WebView { get; }
 
         /// <summary>
         /// Gets or sets the initializied source URI to navigate.
         /// </summary>
-        public Uri Source { get; set; }
+        public Uri Source { get; }
+    }
+
+    /// <summary>
+    /// The event arguments of local web app tab.
+    /// </summary>
+    public class LocalWebAppTabEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Initializes a new instance of the LocalWebAppTabEventArgs class.
+        /// </summary>
+        /// <param name="tab">The tab view item instance.</param>
+        /// <param name="page">The single web view instance.</param>
+        public LocalWebAppTabEventArgs(TabViewItem tab, LocalWebAppPage page)
+        {
+            Tab = tab;
+            Page = page;
+        }
+
+        /// <summary>
+        /// Gets or sets the tab view item instance.
+        /// </summary>
+        public TabViewItem Tab { get; }
+
+        /// <summary>
+        /// Gets or sets the web view instance.
+        /// </summary>
+        public LocalWebAppPage Page { get; }
     }
 
     /// <summary>
@@ -113,6 +140,11 @@ public sealed partial class TabbedWebView : UserControl
     public event EventHandler<WebViewTabEventArgs> WebViewTabCreated;
 
     /// <summary>
+    /// Occurs on the local web app tab has created.
+    /// </summary>
+    public event EventHandler<LocalWebAppTabEventArgs> LocalWebAppTabCreated;
+
+    /// <summary>
     /// Occurs on the selection has changed.
     /// </summary>
     public event SelectionChangedEventHandler SelectionChanged;
@@ -155,9 +187,19 @@ public sealed partial class TabbedWebView : UserControl
     public IReadOnlyList<SingleWebView> WebViews => HostElement.TabItems?.OfType<TabViewItem>()?.Select(ele => ele?.Content as SingleWebView)?.Where(ele => ele != null)?.ToList() ?? new List<SingleWebView>();
 
     /// <summary>
+    /// Gets all local web app page instances.
+    /// </summary>
+    public IReadOnlyList<LocalWebAppPage> LocalWebApps => HostElement.TabItems?.OfType<TabViewItem>()?.Select(ele => ele?.Content as LocalWebAppPage)?.Where(ele => ele != null)?.ToList() ?? new List<LocalWebAppPage>();
+
+    /// <summary>
     /// Gets all tab view items with web view.
     /// </summary>
     public IReadOnlyList<TabViewItem> ItemsWithWebView => HostElement.TabItems?.OfType<TabViewItem>()?.Where(ele => ele?.Content is SingleWebView)?.ToList() ?? new List<TabViewItem>();
+
+    /// <summary>
+    /// Gets all tab view items with local web app page.
+    /// </summary>
+    public IReadOnlyList<TabViewItem> ItemsWithLocalWebApp => HostElement.TabItems?.OfType<TabViewItem>()?.Where(ele => ele?.Content is LocalWebAppPage)?.ToList() ?? new List<TabViewItem>();
 
     /// <summary>
     /// Gets or sets the selected item.
@@ -172,6 +214,11 @@ public sealed partial class TabbedWebView : UserControl
     /// Gets the selected web view.
     /// </summary>
     public SingleWebView SelectedWebView => HostElement.SelectedItem as SingleWebView;
+
+    /// <summary>
+    /// Gets the selected local web app page.
+    /// </summary>
+    public LocalWebAppPage SelectedLocalWebApp => HostElement.SelectedItem as LocalWebAppPage;
 
     /// <summary>
     /// Gets or sets the selected index.
@@ -206,18 +253,26 @@ public sealed partial class TabbedWebView : UserControl
     public Func<Uri> DefaultUriCreator { get; set; }
 
     /// <summary>
-    /// Gets the the web view in first tab.
+    /// Gets the web view in first tab.
     /// </summary>
     /// <returns>The web view instance.</returns>
     public SingleWebView GetFirstWebView()
         => WebViews.FirstOrDefault() ?? Add(null as Uri);
 
     /// <summary>
-    /// Gets the the web view in first tab.
+    /// Gets the web view in first tab.
     /// </summary>
     /// <returns>The web view instance.</returns>
     public SingleWebView GetLastWebView()
         => WebViews.LastOrDefault() ?? Add(null as Uri);
+
+    /// <summary>
+    /// Gets a specific local web app page.
+    /// </summary>
+    /// <param name="resourcePackageIdentifier">The identifier of the resource package.</param>
+    /// <returns>The local web app page; or null, if does not exist.</returns>
+    public LocalWebAppPage GetLocalWebAppPage(string resourcePackageIdentifier)
+        => string.IsNullOrWhiteSpace(resourcePackageIdentifier) ? null : LocalWebApps.FirstOrDefault(ele => ele?.ResourcePackageId == resourcePackageIdentifier);
 
     /// <summary>
     /// Gets the tab view item.
@@ -226,6 +281,22 @@ public sealed partial class TabbedWebView : UserControl
     /// <returns>The tab view item which contains the web view; or null, if non-exists.</returns>
     public TabViewItem GetTabItem(SingleWebView webview)
         => webview == null ? null : HostElement.TabItems?.OfType<TabViewItem>()?.FirstOrDefault(ele => ele?.Content is SingleWebView v && v == webview);
+
+    /// <summary>
+    /// Gets the tab view item.
+    /// </summary>
+    /// <param name="webview">The local web app page.</param>
+    /// <returns>The tab view item which contains the web view; or null, if non-exists.</returns>
+    public TabViewItem GetTabItem(LocalWebAppPage webview)
+        => webview == null ? null : HostElement.TabItems?.OfType<TabViewItem>()?.FirstOrDefault(ele => ele?.Content is LocalWebAppPage v && v == webview);
+
+    /// <summary>
+    /// Gets the tab view item.
+    /// </summary>
+    /// <param name="host">The local web app host.</param>
+    /// <returns>The tab view item which contains the web view; or null, if non-exists.</returns>
+    public TabViewItem GetTabItem(Web.LocalWebAppHost host)
+        => host == null ? null : HostElement.TabItems?.OfType<TabViewItem>()?.FirstOrDefault(ele => ele?.Content is LocalWebAppPage v && v.IsHost(host));
 
     /// <summary>
     /// Adds a new tab.
@@ -244,6 +315,39 @@ public sealed partial class TabbedWebView : UserControl
     /// <returns>The web view instance.</returns>
     public SingleWebView Add(Uri source, Action<TabViewItem> callback = null)
         => NavigateTo(null, source, callback);
+
+    /// <summary>
+    /// Adds a new tab.
+    /// </summary>
+    /// <param name="host">The host.</param>
+    /// <param name="callback">The callback.</param>
+    public async Task<LocalWebAppPage> AddAsync(Web.LocalWebAppHost host, Action<TabViewItem, LocalWebAppPage> callback = null)
+    {
+        if (host == null) return null;
+        foreach (var tabItem in HostElement.TabItems)
+        {
+            if (tabItem is not TabViewItem tabView || tabView.Content is not LocalWebAppPage page || !page.IsHost(host)) continue;
+            tabView.IsSelected = true;
+            return page;
+        }
+
+        var c = AddLocalWebAppTab(callback);
+        await c.LoadAsync(host);
+        return c;
+    }
+
+    /// <summary>
+    /// Adds a new tab.
+    /// </summary>
+    /// <param name="hostTask">The host.</param>
+    /// <param name="callback">The callback.</param>
+    public async Task<LocalWebAppPage> AddAsync(Task<Web.LocalWebAppHost> hostTask, Action<TabViewItem, LocalWebAppPage> callback = null)
+    {
+        if (hostTask == null) return null;
+        var c = AddLocalWebAppTab(callback);
+        await c.LoadAsync(hostTask);
+        return c;
+    }
 
     /// <summary>
     /// Adds a new web view.
@@ -355,7 +459,18 @@ public sealed partial class TabbedWebView : UserControl
         if (item == null) return;
         try
         {
-            GetWebView(item as TabViewItem)?.Close();
+            if (item is TabViewItem tab)
+            {
+                var webview = GetWebView(tab);
+                if (webview != null)
+                {
+                    webview.Close();
+                }
+                else
+                {
+                    GetLocalWebApp(tab)?.Close();
+                }
+            }
         }
         catch (InvalidOperationException)
         {
@@ -383,7 +498,14 @@ public sealed partial class TabbedWebView : UserControl
         {
             try
             {
-                GetWebView(tab)?.Close();
+                var webview = GetWebView(tab);
+                if (webview != null)
+                {
+                    webview.Close();
+                    continue;
+                }
+
+                GetLocalWebApp(tab)?.Close();
             }
             catch (InvalidOperationException)
             {
@@ -418,8 +540,68 @@ public sealed partial class TabbedWebView : UserControl
     public bool Contains(SingleWebView webview)
         => webview != null && HostElement.TabItems.Any(ele => ele is TabViewItem tab && tab.Content is SingleWebView v && v == webview);
 
+    /// <summary>
+    /// Determines whether the tabs contains a specific value.
+    /// </summary>
+    /// <param name="webview">The web view to test.</param>
+    /// <returns>true if contains; otherwise, false.</returns>
+    public bool Contains(LocalWebAppPage webview)
+        => webview != null && HostElement.TabItems.Any(ele => ele is TabViewItem tab && tab.Content is LocalWebAppPage v && v == webview);
+
     private void OnNewWindowRequested(SingleWebView sender, CoreWebView2NewWindowRequestedEventArgs e)
         => _ = OnNewWindowRequestedAsync(e);
+
+    private void OnNewWindowRequested2(LocalWebAppPage sender, CoreWebView2NewWindowRequestedEventArgs e)
+        => _ = OnNewWindowRequestedAsync(e);
+
+    private LocalWebAppPage AddLocalWebAppTab(Action<TabViewItem, LocalWebAppPage> callback = null)
+    {
+        var c = new LocalWebAppPage
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            DownloadList = DownloadList,
+            DisableNewWindowRequestHandling = true
+        };
+        var name = "Loading…";
+        var tab = new TabViewItem
+        {
+            Header = name,
+            Content = c,
+            IsSelected = true,
+        };
+        callback?.Invoke(tab, c);
+        HostElement.TabItems.Add(tab);
+        c.TitleChanged += (sender, e) =>
+        {
+            tab.Header = e.Data ?? string.Empty;
+        };
+        c.NewWindowRequested += OnNewWindowRequested2;
+        c.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged;
+        c.WindowCloseRequested += (sender, e) =>
+        {
+            try
+            {
+                c.Close();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ApplicationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+
+            HostElement.TabItems.Remove(tab);
+        };
+        LocalWebAppTabCreated?.Invoke(this, new LocalWebAppTabEventArgs(tab, c));
+        return c;
+    }
 
     private async Task OnNewWindowRequestedAsync(CoreWebView2NewWindowRequestedEventArgs e)
     {
@@ -436,7 +618,16 @@ public sealed partial class TabbedWebView : UserControl
     {
         try
         {
-            GetWebView(args.Tab)?.Close();
+            var tab = args.Tab;
+            var webview = GetWebView(tab);
+            if (webview != null)
+            {
+                webview.Close();
+            }
+            else
+            {
+                GetLocalWebApp(tab)?.Close();
+            }
         }
         catch (InvalidOperationException)
         {
@@ -459,6 +650,26 @@ public sealed partial class TabbedWebView : UserControl
     {
         var i = 0;
         foreach (var item in WebViews)
+        {
+            try
+            {
+                if (item.ContainsFullScreenElement) i++;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ApplicationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+
+        foreach (var item in LocalWebApps)
         {
             try
             {
@@ -503,6 +714,14 @@ public sealed partial class TabbedWebView : UserControl
     /// <returns>The web view contained by the tab view item; or null, if non-exists.</returns>
     private static SingleWebView GetWebView(TabViewItem tab)
         => tab?.Content as SingleWebView;
+
+    /// <summary>
+    /// Gets the local web app instance.
+    /// </summary>
+    /// <param name="tab">The tab view item.</param>
+    /// <returns>The web view contained by the tab view item; or null, if non-exists.</returns>
+    private static LocalWebAppPage GetLocalWebApp(TabViewItem tab)
+        => tab?.Content as LocalWebAppPage;
 
     private void HostElement_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
         => TabDragStarting?.Invoke(this, args);

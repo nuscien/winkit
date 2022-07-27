@@ -129,9 +129,53 @@ public sealed partial class LocalWebAppPage : Page
     public event DataEventHandler<Exception> LoadFailed;
 
     /// <summary>
+    /// Gets the identifier of the resource package.
+    /// </summary>
+    public string ResourcePackageId => host?.Manifest?.Id;
+
+    /// <summary>
+    /// Gets the display name of the resource package.
+    /// </summary>
+    public string ResourcePackageDisplayName => host?.Manifest?.DisplayName;
+
+    /// <summary>
+    /// Gets the version string of the resource package.
+    /// </summary>
+    public string ResourcePackageVersion => host?.Manifest?.Version;
+
+    /// <summary>
+    /// Gets the copyright string of the resource package.
+    /// </summary>
+    public string ResourcePackageCopyright => host?.Manifest?.Copyright;
+
+    /// <summary>
+    /// Gets the publisher name of the resource package.
+    /// </summary>
+    public string ResourcePackagePublisherName => host?.Manifest?.PublisherName;
+
+    /// <summary>
+    /// Gets the description of the resource package.
+    /// </summary>
+    public string ResourcePackageDescription => host?.Manifest?.Description;
+
+    /// <summary>
+    /// Gets the relative icon path of the resource package.
+    /// </summary>
+    public string ResourcePackageIcon => host?.Manifest?.Icon;
+
+    /// <summary>
+    /// Gets the website URL of the resource package.
+    /// </summary>
+    public string ResourcePackageWebsite => host?.Manifest?.Website;
+
+    /// <summary>
     /// Gets the download list.
     /// </summary>
-    public List<CoreWebView2DownloadOperation> DownloadList => messageHandler.DownloadList;
+    public List<CoreWebView2DownloadOperation> DownloadList
+    {
+        get => messageHandler.DownloadList;
+        internal set => messageHandler.DownloadList = value;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
@@ -154,6 +198,16 @@ public sealed partial class LocalWebAppPage : Page
     public Action<TabbedWebViewWindow> OnWindowCreate { get; set; }
 
     /// <summary>
+    /// Gets the options.
+    /// </summary>
+    public LocalWebAppOptions Options => host?.Options;
+
+    /// <summary>
+    /// Gets a value indicating whether the app is verified.
+    /// </summary>
+    public bool IsVerified => host?.IsVerified ?? false;
+
+    /// <summary>
     /// Gets or sets the window controller.
     /// </summary>
     public IBasicWindowStateController WindowController { get; set; }
@@ -166,6 +220,11 @@ public sealed partial class LocalWebAppPage : Page
         get => Browser.DefaultBackgroundColor;
         set => Browser.DefaultBackgroundColor = value;
     }
+
+    /// <summary>
+    /// Gets the a value indicating whether contains the full screen element.
+    /// </summary>
+    public bool ContainsFullScreenElement => Browser.CoreWebView2?.ContainsFullScreenElement ?? false;
 
     /// <summary>
     /// Gets a value indicating whether the browser can go back.
@@ -194,6 +253,14 @@ public sealed partial class LocalWebAppPage : Page
     /// </summary>
     public void ReloadPage()
         => Browser.Reload();
+
+    /// <summary>
+    /// Tests if the host loaded is the specific one.
+    /// </summary>
+    /// <param name="host">The host to test.</param>
+    /// <returns>true if they are the same one; otherwise, false.</returns>
+    public bool IsHost(LocalWebAppHost host)
+        => host == this.host;
 
     /// <summary>
     /// Executes JavaScript.

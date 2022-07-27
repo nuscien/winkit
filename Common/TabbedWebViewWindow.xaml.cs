@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -88,6 +89,11 @@ public sealed partial class TabbedWebViewWindow : Window
     public event EventHandler<TabbedWebView.WebViewTabEventArgs> WebViewTabCreated;
 
     /// <summary>
+    /// Occurs on the web view tab has created.
+    /// </summary>
+    public event EventHandler<TabbedWebView.LocalWebAppTabEventArgs> LocalWebAppTabCreated;
+
+    /// <summary>
     /// Occurs on the selection has changed.
     /// </summary>
     public event SelectionChangedEventHandler SelectionChanged;
@@ -139,6 +145,11 @@ public sealed partial class TabbedWebViewWindow : Window
     public IReadOnlyList<SingleWebView> WebViews => HostElement.WebViews;
 
     /// <summary>
+    /// Gets all local web app page instances.
+    /// </summary>
+    public IReadOnlyList<LocalWebAppPage> LocalWebApps => HostElement.LocalWebApps;
+
+    /// <summary>
     /// Gets all tab view items with web view.
     /// </summary>
     public IReadOnlyList<TabViewItem> ItemsWithWebView => HostElement.ItemsWithWebView;
@@ -156,6 +167,11 @@ public sealed partial class TabbedWebViewWindow : Window
     /// Gets the selected web view.
     /// </summary>
     public SingleWebView SelectedWebView => HostElement.SelectedItem as SingleWebView;
+
+    /// <summary>
+    /// Gets the selected local web app page.
+    /// </summary>
+    public LocalWebAppPage SelectedLocalWebApp => HostElement.SelectedItem as LocalWebAppPage;
 
     /// <summary>
     /// Gets or sets the selected index.
@@ -208,11 +224,27 @@ public sealed partial class TabbedWebViewWindow : Window
         => WebViews.LastOrDefault() ?? Add(null as Uri);
 
     /// <summary>
+    /// Gets a specific local web app page.
+    /// </summary>
+    /// <param name="resourcePackageIdentifier">The identifier of the resource package.</param>
+    /// <returns>The local web app page; or null, if does not exist.</returns>
+    public LocalWebAppPage GetLocalWebAppPage(string resourcePackageIdentifier)
+        => HostElement.GetLocalWebAppPage(resourcePackageIdentifier);
+
+    /// <summary>
     /// Gets the tab view item.
     /// </summary>
     /// <param name="webview">The web view.</param>
     /// <returns>The tab view item which contains the web view; or null, if non-exists.</returns>
     public TabViewItem GetTabItem(SingleWebView webview)
+        => HostElement.GetTabItem(webview);
+
+    /// <summary>
+    /// Gets the tab view item.
+    /// </summary>
+    /// <param name="webview">The local web app page.</param>
+    /// <returns>The tab view item which contains the web view; or null, if non-exists.</returns>
+    public TabViewItem GetTabItem(LocalWebAppPage webview)
         => HostElement.GetTabItem(webview);
 
     /// <summary>
@@ -230,6 +262,24 @@ public sealed partial class TabbedWebViewWindow : Window
     /// <returns>The web view instance.</returns>
     public SingleWebView Add(Uri source, Action<TabViewItem> callback = null)
         => HostElement.Add(source, callback);
+
+    /// <summary>
+    /// Adds a new web view.
+    /// </summary>
+    /// <param name="host">The local web app host.</param>
+    /// <param name="callback">The callback.</param>
+    /// <returns>The web view instance.</returns>
+    public Task<LocalWebAppPage> AddAsync(Web.LocalWebAppHost host, Action<TabViewItem, LocalWebAppPage> callback = null)
+        => HostElement.AddAsync(host, callback);
+
+    /// <summary>
+    /// Adds a new web view.
+    /// </summary>
+    /// <param name="host">The local web app host.</param>
+    /// <param name="callback">The callback.</param>
+    /// <returns>The web view instance.</returns>
+    public Task<LocalWebAppPage> AddAsync(Task<Web.LocalWebAppHost> host, Action<TabViewItem, LocalWebAppPage> callback = null)
+        => HostElement.AddAsync(host, callback);
 
     /// <summary>
     /// Adds a new web view.
@@ -287,6 +337,14 @@ public sealed partial class TabbedWebViewWindow : Window
     public bool Contains(SingleWebView webview)
         => HostElement.Contains(webview);
 
+    /// <summary>
+    /// Determines whether the tabs contains a specific value.
+    /// </summary>
+    /// <param name="webview">The web view to test.</param>
+    /// <returns>true if contains; otherwise, false.</returns>
+    public bool Contains(LocalWebAppPage webview)
+        => HostElement.Contains(webview);
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         if (backdrop != null) backdrop.Dispose();
@@ -304,12 +362,27 @@ public sealed partial class TabbedWebViewWindow : Window
         catch (NullReferenceException)
         {
         }
+
+        try
+        {
+            var col2 = HostElement.LocalWebApps.ToList();
+            foreach (var wv in col2)
+            {
+                wv.Close();
+            }
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
     }
 
     private void OnTabCloseRequested(TabbedWebView sender, TabViewTabCloseRequestedEventArgs args)
     {
         TabCloseRequested?.Invoke(this, args);
-        if (HostElement.WebViews.Count < 1) Close();
+        if (HostElement.WebViews.Count < 1 && HostElement.LocalWebApps.Count < 1) Close();
     }
 
     private void OnActivated(object sender, WindowActivatedEventArgs args)
@@ -321,6 +394,9 @@ public sealed partial class TabbedWebViewWindow : Window
 
     private void OnWebViewTabCreated(object sender, TabbedWebView.WebViewTabEventArgs e)
         => WebViewTabCreated?.Invoke(this, e);
+
+    private void OnLocalWebAppTabCreated(object sender, TabbedWebView.LocalWebAppTabEventArgs e)
+        => LocalWebAppTabCreated?.Invoke(this, e);
 
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         => SelectionChanged?.Invoke(this, e);

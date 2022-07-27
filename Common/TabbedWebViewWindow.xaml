@@ -9,7 +9,7 @@
     Activated="OnActivated"
     mc:Ignorable="d">
 
-    <local:TabbedWebView x:Name="HostElement" TabCloseRequested="OnTabCloseRequested" WebViewTabCreated="OnWebViewTabCreated" SelectionChanged="OnSelectionChanged" TabDragStarting="HostElement_TabDragStarting" TabDragCompleted="HostElement_TabDragCompleted" TabDroppedOutside="HostElement_TabDroppedOutside" ContainsFullScreenElementChanged="HostElement_ContainsFullScreenElementChanged" Grid.Row="1" >
+    <local:TabbedWebView x:Name="HostElement" TabCloseRequested="OnTabCloseRequested" WebViewTabCreated="OnWebViewTabCreated" LocalWebAppTabCreated="OnLocalWebAppTabCreated" SelectionChanged="OnSelectionChanged" TabDragStarting="HostElement_TabDragStarting" TabDragCompleted="HostElement_TabDragCompleted" TabDroppedOutside="HostElement_TabDroppedOutside" ContainsFullScreenElementChanged="HostElement_ContainsFullScreenElementChanged" Grid.Row="1" >
         <local:TabbedWebView.TabStripFooter>
             <Border x:Name="CustomDragRegion" Background="#01808080" MinWidth="180" />
         </local:TabbedWebView.TabStripFooter>

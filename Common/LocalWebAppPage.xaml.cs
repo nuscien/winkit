@@ -306,6 +306,7 @@ public sealed partial class LocalWebAppPage : Page
             return;
         }
 
+        IsDevEnvironmentEnabled = true;
         await LoadAsync(host);
     }
 

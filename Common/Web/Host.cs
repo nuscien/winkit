@@ -1420,7 +1420,8 @@ public class LocalWebAppHost
         var dir = await GetSettingsDirAsync();
         var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
         var property = dev ? "devapps" : "apps";
-        var apps = settings.TryGetArrayValue(property)?.OfType<JsonObjectNode>();
+        var arr = settings.TryGetArrayValue(property);
+        var apps = arr?.OfType<JsonObjectNode>();
         if (apps == null)
         {
             apps = new List<JsonObjectNode>();
@@ -1448,11 +1449,21 @@ public class LocalWebAppHost
             if (info != null)
             {
                 info.LastModificationTime = DateTime.Now;
-                if (json != null) settings.TryGetArrayValue(property).Remove(json);
+                if (json != null) arr.Remove(json);
                 info.CreationTime = now;
                 var json2 = JsonObjectNode.ConvertFrom(info);
                 settings.TryGetArrayValue(property).Add(json2);
-                if (json2 != json) await TrySaveSettingsAsync(dir, settings);
+                if (json2 != json)
+                {
+                    if (dev && arr.Count > 100)
+                    {
+                        arr.Remove(0);
+                        if (arr.Count > 100) arr.Remove(0);
+                        if (arr.Count > 100) arr.Remove(0);
+                    }
+
+                    await TrySaveSettingsAsync(dir, settings);
+                }
             }
         }
 
@@ -2050,7 +2061,7 @@ public class LocalWebAppHost
         var path = Path.Combine(cacheDir.FullName, "settings.json");
         try
         {
-            await File.WriteAllTextAsync(path, json?.ToString(IndentStyles.Compact) ?? "null", Encoding.UTF8, cancellationToken);
+            await File.WriteAllTextAsync(path, json?.ToString(IndentStyles.Minified) ?? "null", Encoding.UTF8, cancellationToken);
             return true;
         }
         catch (ArgumentException)

@@ -24,7 +24,7 @@ using Windows.Foundation.Collections;
 namespace Trivial.UI;
 
 /// <summary>
-/// The local standalone web app window.
+/// The local standalone local web app window.
 /// </summary>
 public sealed partial class LocalWebAppWindow : Window
 {
@@ -229,21 +229,28 @@ public sealed partial class LocalWebAppWindow : Window
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="options">The options of the standalone web app.</param>
+    /// <param name="resourcePackageId">The identifier of the resource package.</param>
+    public Task LoadAsync(string resourcePackageId)
+        => MainElement.LoadAsync(resourcePackageId);
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="options">The options of the standalone local web app.</param>
     public Task LoadAsync(LocalWebAppOptions options)
         => MainElement.LoadAsync(options);
 
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="host">The standalone web app host.</param>
+    /// <param name="host">The standalone local web app host.</param>
     public Task LoadAsync(LocalWebAppHost host)
         => MainElement.LoadAsync(host);
 
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="host">The standalone web app host.</param>
+    /// <param name="host">The standalone local web app host.</param>
     /// <param name="callback">The callback.</param>
     public Task LoadAsync(Task<LocalWebAppHost> host, Action<LocalWebAppHost> callback = null)
         => MainElement.LoadAsync(host, callback);

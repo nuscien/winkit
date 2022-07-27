@@ -511,7 +511,7 @@ public class LocalWebAppHost
         }
 
         var host = await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
-        await RegisterPackageAsync(new LocalWebAppInfo(host.Manifest, options));
+        _ = host.UpdateRegisteredAsync();
         return host;
     }
 
@@ -767,7 +767,7 @@ public class LocalWebAppHost
         await UpdateAsync(options, dir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
         var host = await LoadAsync(dir, options, true, null, cancellationToken);
         if (host.ResourcePackageId != options.ResourcePackageId) throw new InvalidOperationException("The app is not the expect one.");
-        await RegisterPackageAsync(new LocalWebAppInfo(host.Manifest, options));
+        await RegisterPackageAsync(new LocalWebAppInfo(host));
         return host;
     }
 
@@ -1405,14 +1405,55 @@ public class LocalWebAppHost
     /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <returns>The async task.</returns>
     internal static async Task<bool> RegisterPackageAsync(LocalWebAppInfo info, bool dev = false)
-        => (await UpdatePackageAsync(info?.ResourcePackageId, _ => info, dev)) != null;
+        => (await UpdatePackageAsync(info?.ResourcePackageId, info2 => {
+            if (info2 != null && info2.Version == info.Version) info.LastModificationTime = info2.LastModificationTime;
+            return info;
+        }, dev)) != null;
+
+    internal static DirectoryInfo GetDirectoryInfoByRelative(DirectoryInfo root, string relative)
+    {
+        if (string.IsNullOrEmpty(relative))
+            return root;
+        if (relative.EndsWith('/') || relative.EndsWith('\\'))
+            relative = relative[..^1];
+        if (relative.Length < 1 || relative == "." || relative == "~")
+            return root;
+        if (relative.StartsWith("./") || relative.StartsWith(".\\"))
+            relative = relative[2..];
+        while (relative.StartsWith("../") || relative.StartsWith("..\\"))
+        {
+            root = root.Parent;
+            relative = relative[3..];
+        }
+
+        if (relative == "..")
+            return root.Parent;
+        return relative == "." ? root : FileSystemInfoUtility.TryGetDirectoryInfo(root.FullName, relative);
+    }
+
+    internal static FileInfo GetFileInfoByRelative(DirectoryInfo root, string relative)
+    {
+        if (string.IsNullOrEmpty(relative))
+            return null;
+        if (relative.EndsWith('/') || relative.EndsWith('\\'))
+            relative = relative[..^1];
+        if (relative.Length < 1 || relative == "." || relative == "~")
+            return null;
+        while (relative.StartsWith("../") || relative.StartsWith("..\\"))
+        {
+            root = root.Parent;
+            relative = relative[3..];
+        }
+
+        return relative == ".." || relative == "." ? null : FileSystemInfoUtility.TryGetFileInfo(root.FullName, relative);
+    }
 
     /// <summary>
     /// Gets the specific resource package information registered.
     /// </summary>
     /// <param name="id">The resource package identifier.</param>
-    /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <param name="update">A callback to update.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <returns>The resource package information instance.</returns>
     private static async Task<LocalWebAppInfo> UpdatePackageAsync(string id, Func<LocalWebAppInfo, LocalWebAppInfo> update, bool dev = false)
     {
@@ -1430,13 +1471,13 @@ public class LocalWebAppHost
 
         var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == id);
         LocalWebAppInfo info = null;
-        var now = DateTime.Now;
+        var creation = DateTime.Now;
         try
         {
             if (json != null)
             {
                 info = json.Deserialize<LocalWebAppInfo>();
-                now = info.CreationTime;
+                creation = info.CreationTime;
             }
         }
         catch (JsonException)
@@ -1448,22 +1489,18 @@ public class LocalWebAppHost
             info = update(info);
             if (info != null)
             {
-                info.LastModificationTime = DateTime.Now;
                 if (json != null) arr.Remove(json);
-                info.CreationTime = now;
+                info.CreationTime = creation;
                 var json2 = JsonObjectNode.ConvertFrom(info);
                 settings.TryGetArrayValue(property).Add(json2);
-                if (json2 != json)
+                if (dev && arr.Count > 100)
                 {
-                    if (dev && arr.Count > 100)
-                    {
-                        arr.Remove(0);
-                        if (arr.Count > 100) arr.Remove(0);
-                        if (arr.Count > 100) arr.Remove(0);
-                    }
-
-                    await TrySaveSettingsAsync(dir, settings);
+                    arr.Remove(0);
+                    if (arr.Count > 100) arr.Remove(0);
+                    if (arr.Count > 100) arr.Remove(0);
                 }
+
+                await TrySaveSettingsAsync(dir, settings);
             }
         }
 
@@ -1804,6 +1841,12 @@ public class LocalWebAppHost
         return new(resId, sign, keyStr, update);
     }
 
+    private async Task<string> UpdateRegisteredAsync()
+    {
+        await RegisterPackageAsync(new LocalWebAppInfo(this));
+        return await UpdateAsync();
+    }
+
     private static string GetSubFileName(string name, string sub, string ext = null)
     {
         var i = name.LastIndexOf('.');
@@ -1898,44 +1941,6 @@ public class LocalWebAppHost
         }
 
         return GetUrl(url, q);
-    }
-
-    private static DirectoryInfo GetDirectoryInfoByRelative(DirectoryInfo root, string relative)
-    {
-        if (string.IsNullOrEmpty(relative))
-            return root;
-        if (relative.EndsWith('/') || relative.EndsWith('\\'))
-            relative = relative[..^1];
-        if (relative.Length < 1 || relative == "." || relative == "~")
-            return root;
-        if (relative.StartsWith("./") || relative.StartsWith(".\\"))
-            relative = relative[2..];
-        while (relative.StartsWith("../") || relative.StartsWith("..\\"))
-        {
-            root = root.Parent;
-            relative = relative[3..];
-        }
-
-        if (relative == "..")
-            return root.Parent;
-        return relative == "." ? root : FileSystemInfoUtility.TryGetDirectoryInfo(root.FullName, relative);
-    }
-
-    private static FileInfo GetFileInfoByRelative(DirectoryInfo root, string relative)
-    {
-        if (string.IsNullOrEmpty(relative))
-            return null;
-        if (relative.EndsWith('/') || relative.EndsWith('\\'))
-            relative = relative[..^1];
-        if (relative.Length < 1 || relative == "." || relative == "~")
-            return null;
-        while (relative.StartsWith("../") || relative.StartsWith("..\\"))
-        {
-            root = root.Parent;
-            relative = relative[3..];
-        }
-
-        return relative == ".." || relative == "." ? null : FileSystemInfoUtility.TryGetFileInfo(root.FullName, relative);
     }
 
     private static async Task<bool> VerifyAsync(LocalWebAppHost host, string manifestFileName, bool skipVerificationException, CancellationToken cancellationToken = default)

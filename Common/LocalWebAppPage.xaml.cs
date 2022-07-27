@@ -241,25 +241,40 @@ public sealed partial class LocalWebAppPage : Page
         }
 
         await LoadAsync(host);
-        await LocalWebAppHost.RegisterPackageAsync(new LocalWebAppInfo(host.Manifest, host.Options, package.Details), true);
+        LocalWebAppInfo info = null;
+        try
+        {
+            info = new LocalWebAppInfo(host, package.Details)
+            {
+                LocalPath = package.RootDirectory.FullName
+            };
+        }
+        catch (IOException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+
+        if (!string.IsNullOrWhiteSpace(info?.LocalPath)) await LocalWebAppHost.RegisterPackageAsync(info, true);
     }
 
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="options">The options of the standalone web app.</param>
-    public async Task LoadAsync(LocalWebAppOptions options)
+    /// <param name="resourcePackageId">The identifier of the resource package.</param>
+    public async Task LoadAsync(string resourcePackageId)
     {
-        if (options == null)
+        if (resourcePackageId == null)
         {
-            OnLoadError(new ArgumentNullException(nameof(options)));
+            OnLoadError(new ArgumentNullException(nameof(resourcePackageId)));
             return;
         }
 
         LocalWebAppHost host;
         try
         {
-            host = await LocalWebAppHost.LoadAsync(options, true);
+            host = await LocalWebAppHost.LoadAsync(resourcePackageId, IsDevEnvironmentEnabled);
         }
         catch (Exception ex)
         {
@@ -276,7 +291,36 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="hostTask">The standalone web app host.</param>
+    /// <param name="options">The options of the standalone local web app.</param>
+    public async Task LoadAsync(LocalWebAppOptions options)
+    {
+        if (options == null)
+        {
+            OnLoadError(new ArgumentNullException(nameof(options)));
+            return;
+        }
+
+        LocalWebAppHost host;
+        try
+        {
+            host = await LocalWebAppHost.LoadAsync(options, IsDevEnvironmentEnabled);
+        }
+        catch (Exception ex)
+        {
+            OnLoadError(ex);
+            throw;
+        }
+
+        if (host == null)
+            OnLoadError(new InvalidOperationException("Failed to load app."));
+        else
+            await LoadAsync(host);
+    }
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="hostTask">The standalone local web app host.</param>
     /// <param name="callback">The callback.</param>
     public async Task LoadAsync(Task<LocalWebAppHost> hostTask, Action<LocalWebAppHost> callback = null)
     {
@@ -307,7 +351,7 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Loads data.
     /// </summary>
-    /// <param name="host">The standalone web app host.</param>
+    /// <param name="host">The standalone local web app host.</param>
     public async Task LoadAsync(LocalWebAppHost host)
     {
         //Browser.NavigateToString(@"<html><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" ><base target=""_blank"" /></head><body></body></html>");

@@ -1436,6 +1436,53 @@ public class LocalWebAppHost
     }
 
     /// <summary>
+    /// Lists all resource packages registered.
+    /// </summary>
+    /// <returns>The list of the resource packages.</returns>
+    internal static async Task<(List<LocalWebAppInfo>, List<LocalWebAppInfo>)> ListAllPackageAsync()
+    {
+        var dir = await GetSettingsDirAsync();
+        var settings = await TryGetSettingsAsync(dir);
+        var apps = settings?.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
+        var list1 = new List<LocalWebAppInfo>();
+        if (apps != null)
+        {
+            foreach (var app in apps)
+            {
+                try
+                {
+                    var item = app.Deserialize<LocalWebAppInfo>();
+                    if (string.IsNullOrWhiteSpace(item?.ResourcePackageId) || item.IsDisabled) continue;
+                    list1.Add(item);
+                }
+                catch (JsonException)
+                {
+                }
+            }
+        }
+
+        apps = settings?.TryGetArrayValue("devapps")?.OfType<JsonObjectNode>();
+        var list2 = new List<LocalWebAppInfo>();
+        if (apps != null)
+        {
+            foreach (var app in apps)
+            {
+                try
+                {
+                    var item = app.Deserialize<LocalWebAppInfo>();
+                    if (string.IsNullOrWhiteSpace(item?.ResourcePackageId) || item.IsDisabled) continue;
+                    list2.Add(item);
+                }
+                catch (JsonException)
+                {
+                }
+            }
+        }
+
+        return (list1, list2);
+    }
+
+    /// <summary>
     /// Registers a resource package.
     /// </summary>
     /// <param name="info">The resource package information.</param>

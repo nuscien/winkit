@@ -344,9 +344,12 @@ public class LocalWebAppInfo
         if (appDir == null || !appDir.Exists) return;
         try
         {
-            var file = LocalWebAppHost.GetFileInfoByRelative(appDir, manifest.Icon);
-            if (file == null || !file.Exists || string.IsNullOrWhiteSpace(file.FullName)) return;
-            Icon = file.FullName;
+            if (!string.IsNullOrWhiteSpace(manifest.Icon) && !manifest.Icon.StartsWith("http"))
+            {
+                var file = LocalWebAppHost.GetFileInfoByRelative(appDir, manifest.Icon);
+                if (file == null || !file.Exists || string.IsNullOrWhiteSpace(file.FullName)) return;
+                Icon = file.FullName;
+            }
         }
         catch (IOException)
         {

@@ -184,6 +184,11 @@ public sealed partial class TabbedWebView : UserControl
     /// <summary>
     /// Gets all web view instances.
     /// </summary>
+    public IList<object> TabItems => HostElement.TabItems;
+
+    /// <summary>
+    /// Gets all web view instances.
+    /// </summary>
     public IReadOnlyList<SingleWebView> WebViews => HostElement.TabItems?.OfType<TabViewItem>()?.Select(ele => ele?.Content as SingleWebView)?.Where(ele => ele != null)?.ToList() ?? new List<SingleWebView>();
 
     /// <summary>
@@ -251,6 +256,11 @@ public sealed partial class TabbedWebView : UserControl
     /// Gets or sets the handler to create default URI.
     /// </summary>
     public Func<Uri> DefaultUriCreator { get; set; }
+
+    /// <summary>
+    /// Gets or sets the window controller.
+    /// </summary>
+    public Web.IBasicWindowStateController WindowController { get; set; }
 
     /// <summary>
     /// Gets the web view in first tab.
@@ -561,7 +571,8 @@ public sealed partial class TabbedWebView : UserControl
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
             DownloadList = DownloadList,
-            DisableNewWindowRequestHandling = true
+            DisableNewWindowRequestHandling = true,
+            WindowController = WindowController
         };
         var name = "Loading…";
         var tab = new TabViewItem

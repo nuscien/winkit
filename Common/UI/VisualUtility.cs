@@ -1231,6 +1231,40 @@ public static partial class VisualUtility
         return null;
     }
 
+    internal static async Task<DirectoryInfo> SelectFolderAsync(Window window)
+    {
+        var picker = new Windows.Storage.Pickers.FolderPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
+        };
+        try
+        {
+            if (window != null) WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(window));
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder != null) return IO.FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)
     {
         if (json == null) return;

@@ -61,6 +61,7 @@ public sealed partial class TabbedWebViewWindow : Window
         var theme = HostElement.RequestedTheme;
         backdrop = new();
         backdrop.UpdateWindowBackground(this, theme);
+        HostElement.WindowController = new Web.BasicWindowStateController(this);
     }
 
     /// <summary>
@@ -345,6 +346,34 @@ public sealed partial class TabbedWebViewWindow : Window
     public bool Contains(LocalWebAppPage webview)
         => HostElement.Contains(webview);
 
+    internal async Task OpenLocalWebApp(Web.LocalWebAppInfo info, bool dev)
+    {
+        var id = info?.ResourcePackageId;
+        var page = GetLocalWebAppPage(id);
+        if (page != null)
+        {
+            var tab = GetTabItem(page);
+            if (tab != null)
+            {
+                tab.IsSelected = true;
+                return;
+            }
+        }
+
+        if (dev)
+        {
+            var dir = IO.FileSystemInfoUtility.TryGetDirectoryInfo(info.LocalPath);
+            if (dir != null && dir.Exists)
+            {
+                await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir));
+                return;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(id)) return;
+        await AddAsync(Web.LocalWebAppHost.LoadAsync(id));
+    }
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         if (backdrop != null) backdrop.Dispose();
@@ -382,7 +411,7 @@ public sealed partial class TabbedWebViewWindow : Window
     private void OnTabCloseRequested(TabbedWebView sender, TabViewTabCloseRequestedEventArgs args)
     {
         TabCloseRequested?.Invoke(this, args);
-        if (HostElement.WebViews.Count < 1 && HostElement.LocalWebApps.Count < 1) Close();
+        if (HostElement.TabItems.Count < 1) Close();
     }
 
     private void OnActivated(object sender, WindowActivatedEventArgs args)

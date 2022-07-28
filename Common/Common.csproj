@@ -67,7 +67,7 @@
     <None Include="..\FileBrowser\src\localWebApp.d.ts" Link="localWebApp.d.ts" />
     <None Include="README.md" Pack="true" PackagePath="README.md" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
-    <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+    <Content Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -140,5 +140,17 @@
     <Page Update="Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <CustomAdditionalCompileInputs Remove="LocalWebAppHubPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="LocalWebAppHubPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Remove="LocalWebAppHubPage.xaml" />
   </ItemGroup>
 </Project>

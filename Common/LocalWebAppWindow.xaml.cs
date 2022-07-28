@@ -267,11 +267,8 @@ public sealed partial class LocalWebAppWindow : Window
     /// </summary>
     /// <returns>The async task.</returns>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    public async Task LoadDevPackageAsync(CancellationToken cancellationToken = default)
-    {
-        var dir = await SelectAsync();
-        await MainElement.LoadDevPackageAsync(dir, cancellationToken);
-    }
+    public Task LoadDevPackageAsync(CancellationToken cancellationToken = default)
+        => MainElement.LoadDevPackageAsync(this, cancellationToken);
 
     /// <summary>
     /// Load a dev local web app.
@@ -388,41 +385,6 @@ public sealed partial class LocalWebAppWindow : Window
     {
         VisualUtility.SetFullScreenMode(value, this);
         TitleRow.Height = value ? new(0) : new(28);
-    }
-
-    private async Task<DirectoryInfo> SelectAsync()
-    {
-        var picker = new Windows.Storage.Pickers.FolderPicker
-        {
-            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
-        };
-        picker.FileTypeFilter.Add(".json");
-        try
-        {
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
-            var folder = await picker.PickSingleFolderAsync();
-            return IO.FileSystemInfoUtility.TryGetDirectoryInfo(folder.Path);
-        }
-        catch (ArgumentException)
-        {
-        }
-        catch (IOException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (System.Security.SecurityException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
-
-        return null;
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

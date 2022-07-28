@@ -277,6 +277,18 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Load a dev local web app.
     /// </summary>
+    /// <param name="window">The host window.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The async task.</returns>
+    public async Task LoadDevPackageAsync(Window window, CancellationToken cancellationToken = default)
+    {
+        var dir = await VisualUtility.SelectFolderAsync(window);
+        await LoadDevPackageAsync(dir, cancellationToken);
+    }
+
+    /// <summary>
+    /// Load a dev local web app.
+    /// </summary>
     /// <param name="dir">The root directory.</param>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
     /// <returns>The async task.</returns>

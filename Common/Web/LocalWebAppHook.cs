@@ -31,6 +31,21 @@ public static class LocalWebAppHook
         /// Gets or sets the description of loading.
         /// </summary>
         public static string Loading { get; set; }
+
+        /// <summary>
+        /// Gets or sets the button content text of dev environment mode show.
+        /// </summary>
+        public static string DevModeShowTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title of dev environment mode.
+        /// </summary>
+        public static string DevModeTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the button content text of dev app selector.
+        /// </summary>
+        public static string DevModeAddTitle { get; set; }
     }
 
     private static string hostId;
@@ -75,6 +90,11 @@ public static class LocalWebAppHook
     /// Gets or sets the additional string of host.
     /// </summary>
     public static string HostAdditionalString { get; set; }
+
+    /// <summary>
+    /// Gets or sets the default icon path of app.
+    /// </summary>
+    public static string DefaultIconPath { get; set; }
 
     /// <summary>
     /// Gets or sets the handler to generate the default virtual host.

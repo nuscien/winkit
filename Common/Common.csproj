@@ -153,4 +153,8 @@
   <ItemGroup>
     <Resource Remove="LocalWebAppHubPage.xaml" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\" />
+  </ItemGroup>
 </Project>

@@ -66,9 +66,11 @@ public sealed partial class HomePage : Page
 
     private void LaunchWebAppClick(object sender, RoutedEventArgs e)
     {
-        var win = new TabbedWebViewWindow();
+        //var win = new TabbedWebViewWindow();
+        //win.Activate();
+        //_ = OnBrowserClickAsync(win);
+        var win = LocalWebAppHubPage.CreateWindow(null);
         win.Activate();
-        _ = OnBrowserClickAsync(win);
     }
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)

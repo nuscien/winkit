@@ -40,7 +40,7 @@
             <GridView x:Name="InstalledList" SelectionMode="None" HorizontalAlignment="Stretch" ItemContainerStyle="{ThemeResource GridViewItemStyle}" ItemTemplate="{StaticResource StandardGridViewItemTemplate}" >
                 <GridView.Footer>
                     <HyperlinkButton x:Name="DevShowButton" Padding="4" Margin="0,10" Click="OnDevShowButtonClick" >
-                        <TextBlock x:Name="DevShowButtonText" Width="90" Text="Dev Mode" TextAlignment="Center" />
+                        <TextBlock x:Name="DevShowButtonText" Width="90" Text="…" TextAlignment="Center" />
                     </HyperlinkButton>
                 </GridView.Footer>
             </GridView>

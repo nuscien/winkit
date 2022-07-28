@@ -80,10 +80,13 @@ public sealed partial class LocalWebAppHubPage : Page
         UpdateText(DevTitleText, LocalWebAppHook.CustomizedLocaleStrings.DevModeTitle);
         (var list1, var list2) = await LocalWebAppHost.ListAllPackageAsync();
         InstalledList.ItemsSource = FormatList(list1, false);
+        var icon = LocalWebAppHook.SelectDevAppIconPath;
+        if (string.IsNullOrWhiteSpace(icon)) icon = new Uri(BaseUri, "Assets\\SearchLwa_128.png").OriginalString;
         list2.Add(new()
         {
             ResourcePackageId = "+",
             LocalPath = "+",
+            Icon = icon,
             DisplayName = LocalWebAppHook.CustomizedLocaleStrings.DevModeAddTitle
         });
         DevList.ItemsSource = FormatList(list2, true);
@@ -93,14 +96,14 @@ public sealed partial class LocalWebAppHubPage : Page
     {
         if (list == null) return null;
         list.Reverse();
-        var defaultIcon = new Uri(BaseUri, "logo.png").OriginalString;
+        var defaultIcon = new Uri(BaseUri, "Assets\\DefaultLwa_128.png").OriginalString;
         foreach (var item in list)
         {
             if (item == null) continue;
             if (!dev) item.LocalPath = null;
             else if (string.IsNullOrWhiteSpace(item.LocalPath)) item.LocalPath = "-";
             if (string.IsNullOrWhiteSpace(item.DisplayName)) item.DisplayName = item.ResourcePackageId;
-            if (string.IsNullOrEmpty(item.Icon) || (!item.Icon.StartsWith("http") && !File.Exists(item.Icon)))
+            if (string.IsNullOrEmpty(item.Icon) || (!item.Icon.Contains("://") && !File.Exists(item.Icon)))
             {
                 item.Icon = LocalWebAppHook.DefaultIconPath;
                 if (string.IsNullOrEmpty(item.Icon)) item.Icon = defaultIcon;

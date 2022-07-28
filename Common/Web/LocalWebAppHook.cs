@@ -97,6 +97,11 @@ public static class LocalWebAppHook
     public static string DefaultIconPath { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon path to select dev app.
+    /// </summary>
+    public static string SelectDevAppIconPath { get; set; }
+
+    /// <summary>
     /// Gets or sets the handler to generate the default virtual host.
     /// </summary>
     public static Func<LocalWebAppManifest, LocalWebAppOptions, string> VirtualHostGenerator { get; set; }

@@ -79,20 +79,25 @@ public sealed partial class LocalWebAppHubPage : Page
         UpdateText(DevShowButtonText, LocalWebAppHook.CustomizedLocaleStrings.DevModeShowTitle);
         UpdateText(DevTitleText, LocalWebAppHook.CustomizedLocaleStrings.DevModeTitle);
         (var list1, var list2) = await LocalWebAppHost.ListAllPackageAsync();
-        InstalledList.ItemsSource = FormatList(list1, false);
+        InstalledList.ItemsSource = FormatList(list1);
+        AddPlus(list2);
+        DevList.ItemsSource = FormatList(list2);
+    }
+
+    private void AddPlus(List<LocalWebAppInfo> list)
+    {
         var icon = LocalWebAppHook.SelectDevAppIconPath;
         if (string.IsNullOrWhiteSpace(icon)) icon = new Uri(BaseUri, "Assets\\SearchLwa_128.png").OriginalString;
-        list2.Add(new()
+        list.Add(new()
         {
             ResourcePackageId = "+",
             LocalPath = "+",
             Icon = icon,
             DisplayName = LocalWebAppHook.CustomizedLocaleStrings.DevModeAddTitle
         });
-        DevList.ItemsSource = FormatList(list2, true);
     }
 
-    private List<LocalWebAppInfo> FormatList(List<LocalWebAppInfo> list, bool dev)
+    private List<LocalWebAppInfo> FormatList(List<LocalWebAppInfo> list)
     {
         if (list == null) return null;
         list.Reverse();
@@ -100,8 +105,6 @@ public sealed partial class LocalWebAppHubPage : Page
         foreach (var item in list)
         {
             if (item == null) continue;
-            if (!dev) item.LocalPath = null;
-            else if (string.IsNullOrWhiteSpace(item.LocalPath)) item.LocalPath = "-";
             if (string.IsNullOrWhiteSpace(item.DisplayName)) item.DisplayName = item.ResourcePackageId;
             if (string.IsNullOrEmpty(item.Icon) || (!item.Icon.Contains("://") && !File.Exists(item.Icon)))
             {
@@ -160,7 +163,10 @@ public sealed partial class LocalWebAppHubPage : Page
         {
             var win = new LocalWebAppWindow();
             win.Activate();
-            _ = win.LoadDevPackageAsync(dir);
+            await win.LoadDevPackageAsync(dir);
+            var list = await LocalWebAppHost.ListPackageAsync(true);
+            AddPlus(list);
+            DevList.ItemsSource = FormatList(list);
             return true;
         }
         else if (!string.IsNullOrWhiteSpace(info.ResourcePackageId))

@@ -72,7 +72,7 @@ public sealed partial class HomePage : Page
 
     private void SignWebAppClick(object sender, RoutedEventArgs e)
     {
-        var rootDir = "";  // The root path of the repo.
+        var rootDir = "C:\\Projects\\GitHub\\nuscien\\winkit";  // The root path of the repo.
         var window = new LocalWebAppWindow();
         if (string.IsNullOrEmpty(rootDir))
         {

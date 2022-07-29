@@ -1,7 +1,10 @@
 {
   "id": "filebrowser",
   "package": {
+    "title": "File Browser",
     "version": "0.1.0",
+    "icon": "ms-appx:///Trivial.WindowsKit/Assets/FolderLwa_128.png",
+    "description": "Explore local files.",
     "copyright": "Copyright &copy; 2022 Kingcean Tuan, all rights reserved.",
     "website": "https://trivial.kingcean.net"
   },

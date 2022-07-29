@@ -37,6 +37,8 @@ The primary content is listed by a manifest. It contains the metadata of the app
 - All components is on `window.localWebApp` object.
 - The return result from native is encapsulated by Promise/A.
 
+See [Type Script definition file](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts) for API details.
+
 ## Engineering supports
 
 The same development and debug experience with H5.

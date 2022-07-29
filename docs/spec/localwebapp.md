@@ -28,7 +28,7 @@ Only supports following signature algorithms.
 
 The manifest include following properties. The relative paths mentioned below are based on the root path of the package.
 
-- `id`* (string) is the resource package identifier.
+- `id`* (string) is the resource package identifier, like `id` property in `package.json`.
 - `title`* (string) is the display name.
 - `version`* (string) is the version of the package identifier in `x.y.z` SemVer format.
 - `icon`* (string) is the relative path of icon or square logo.
@@ -72,6 +72,11 @@ The host app always load the package from appdata.
 5. Create a web view (Microsoft Edge WebView2) and set up the virtual host of the app folder.
 6. Navigate to the homepage and bind native extentions.
 
+The default virtual host is in following format.
+
+- `{sub-id}.{org-id}.localwebapp.localhost` if the resource package identifier contains an org identifier. That means, the resource package identifier contains a slash. The `{org-id}` is the org identifier (first part) without `@` prefix; the `{sub-id}` is the package identifier (second part). For example, `sample.contoso.localwebapp.localhost` for ID `@contoso/sample`, `contoso/sample` or `contoso/sample/xxx`.
+- `{package-id}.localwebapp.localhost` if the resource package identifier is a single item without slash. The `{package-id}` is the resource package identifier. For example, `sample.localwebapp.localhost` for ID `sample`.
+
 ## Dev environment
 
 Local web app in dev enviroment uses a project configuration file to manage its asset. The package are in a local path (a directory in local file system) to load. The host app should also enable the debug tools for this scenario.
@@ -105,3 +110,5 @@ When load a dev package, the host app should package it firstly, and then load f
 
 - All components is on `window.localWebApp` object.
 - The return result from native is encapsulated by Promise/A.
+
+See [Type Script definition file](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts) for API details.

@@ -22,13 +22,13 @@
 
 支持的签名算法包括以下这些。
 
-- `RS512` （默认）
+- `RS512`（默认）
 - `RS384`
-- `RS256`
+- `RS256`（推荐）
 
 资源清单包含以下属性。其中的相对路径，均基于前端根目录。
 
-- `id`* _string_：前端资源包 ID。
+- `id`* _string_：前端资源包 ID。如同 `package.json` 中的 `id` 属性。
 - `title`* _string_：名称。
 - `version`* _string_：前端版本号。采用 SemVer（x.y.z）格式。
 - `icon`* _string_：图标相对路径。
@@ -49,7 +49,7 @@
 
 为了确保这一点，前端资源包应该在宿主程序编译之时，即以内容形态被打包进宿主，该前端资源包即为初始包，用于在首次启动时被引用，并被解压到 AppData 中对应位置。
 
-虽然说，大多数情况下，一个宿主程序只会有一个前端资源包，但我们依旧会在 AppData 中，为每个前端资源包都设定其拥有专属独立文件夹。前端资源会被放置于其中的一个子文件夹内，该子文件夹会以版本号和前缀 `v` 命名（例如 `v1.0.0`）。初次之外，该专属独立文件夹还会包含以下子文件夹。
+虽然说，大多数情况下一个宿主程序只会有一个前端资源包，但我们依旧会在 AppData 中，为每个前端资源包都设定其拥有专属独立文件夹。前端资源会被放置于其中的一个子文件夹内，该子文件夹会以版本号和前缀 `v` 命名（例如 `v1.0.0`）。除此之外，该专属独立文件夹还会包含以下子文件夹。
 
 - `data`：用于作为该 LWA 的 AppData。请注意，该文件夹并非宿主程序的 AppData，而是为方便业务层存储任何文件而模拟出的文件夹。
 - `cache`：用于宿主程序为该 LWA 缓存一些临时或永久文件，以及存放设置项的地方。
@@ -71,6 +71,11 @@
 4. 加载资源清单中 `dataRes` 属性和 `strRes` 属性中所列各文件。
 5. 创建 Web View（即 Microsoft Edge WebView2）并将应用所在路径设定为 Virtual Host。
 6. 导航至主页，并绑定原生扩展。
+
+默认 Virtual Host 如下。
+
+- `{sub-id}.{org-id}.localwebapp.localhost`：适用于前端资源包 ID 包含组织信息时，即该 ID 包含斜线。这其中，`{org-id}` 表示组织 ID，但不包含 `@` 前缀；`{sub-id}` 表示包 ID。例如，当 ID 为 `@contoso/sample`、`contoso/sample` 或 `contoso/sample/xxx` 时，其 Virtual Host 均为 `sample.contoso.localwebapp.localhost`。
+- `{package-id}.localwebapp.localhost`：适用于前端资源包 ID 仅为单一包 ID，即不包含斜线时。其中，`{package-id}` 表示该 ID。例如，当 ID 为 `sample` 时，其 Virtual Host 为 `sample.localwebapp.localhost`。
 
 ## 开发环境
 
@@ -99,9 +104,11 @@
 5. 压缩应用所在目录下的所有文件和子文件夹，存储为环境目录下 `localwebapp.zip` 文件。
 6. 如有 `output` 属性设定，则按其描述将压缩包和项目配置文件复制到对应位置。
 
-当需要加载一个开发包时，先完成上述生成过程，然后直接从应用所在目录进行加载，而不再通过 AppData 相关目录。其 `data` 文件夹和 `cache` 文件夹则需创建于环境目录中（这两个文件夹最好被添加至 .gitignore 中）。这样可以确保开发环境和生产环境的隔离。
+当需要加载一个开发包时，先完成上述生成过程，然后直接从应用所在目录进行加载，而不再通过 AppData 相关目录。其 `data` 文件夹和 `cache` 文件夹则需创建于环境目录中（这两个文件夹最好被添加至 `.gitignore` 中）。这样可以确保开发环境和生产环境的隔离。
 
 ## 原生扩展
 
-- 所有组件都绑在 `window.localWebApp` 对象上。
+- 所有组件都绑定在 `window.localWebApp` 对象上。
 - 原生功能均返回 Promise/A 形态结果。
+
+具体接口可参考 [Type Script 定义文件](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts)。

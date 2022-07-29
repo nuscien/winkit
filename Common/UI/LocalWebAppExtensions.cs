@@ -34,16 +34,17 @@ internal static class LocalWebAppExtensions
         var entryAssembly = (LocalWebAppHook.Assembly ?? Assembly.GetEntryAssembly()).GetName();
         var hostInfo = new JsonObjectNode
         {
-            { "appId", manifest?.Id },
             { "hostApp", new JsonObjectNode
             {
+                { "id", LocalWebAppHook.HostId },
                 { "version", entryAssembly?.Version?.ToString() },
                 { "name", entryAssembly?.Name },
                 { "value", entryAssembly?.FullName },
                 { "additional", LocalWebAppHook.HostAdditionalString }
             } },
-            { "intro", new JsonObjectNode
+            { "package", new JsonObjectNode
             {
+                { "id", manifest?.Id },
                 { "icon", manifest?.Icon },
                 { "description", manifest?.Description },
                 { "url", manifest?.Website },

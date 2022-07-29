@@ -439,13 +439,15 @@
      * Host information.
      */
     const hostInfo: {
-        appId: string;
         hostApp: {
+            id: string;
             version: string;
             name: string;
             value: string;
+            additional: string;
         };
         intro: {
+            id: string;
             icon: string | null;
             description: string | null;
             url: string | null;

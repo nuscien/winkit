@@ -2004,7 +2004,7 @@ public class LocalWebAppHost
                     q.Add(k, LocalWebAppHook.GetAssembly()?.GetName()?.Version?.ToString());
                     break;
                 case "fx-kind":
-                    q.Add(k, "WindowsAppSdk");
+                    q.Add(k, "wasdk");
                     break;
                 case "fx-ver":
                     q.Add(k, System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.ToString());

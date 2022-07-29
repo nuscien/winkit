@@ -55,7 +55,7 @@ internal static class LocalWebAppExtensions
             } },
             { "runtime", new JsonObjectNode
             {
-                { "kind", "WindowsAppSdk" },
+                { "kind", "wasdk" },
                 { "version", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() },
                 { "netfx", RuntimeInformation.FrameworkDescription },
                 { "id", RuntimeInformation.RuntimeIdentifier },

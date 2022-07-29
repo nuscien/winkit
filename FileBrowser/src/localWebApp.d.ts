@@ -455,7 +455,7 @@
             tags: string[];
         };
         runtime: {
-            kind: "WindowsAppSdk" | "WPF" | string;
+            kind: "wasdk" | "wpf" | string;
             version: string | null;
             netfx: string | null;
             id: string | null;

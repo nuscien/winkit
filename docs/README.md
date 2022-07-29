@@ -17,27 +17,19 @@ Following are the commonly used controls.
 - `CommentView` with poster information and comment.
 - `BlockHeader` is a header for a group.
 - `TextButton` is a button with different states that you can customize colors.
+- `TextView` is a read-only text view for string with a greate number of line.
 - `SettingsExpanderHeader` is the expander header like the one in Windows Settings.
+- `FileListView` is a lite file browser.
+- `TabbedWebView` is a lite web browser powered by Microsoft Edge WebView2.
 
 And following are some utilities.
 
-- `DependencyObjectProxy`
-- `VisualUtilities`
-- `BaseJsonPagingLoader`
-- `JsonWebCacheClient`
+- `DependencyObjectProxy` is a helper for implementing custom control or user control.
+- `VisualUtility` is a helper class for framework element.
+- `BaseJsonPagingLoader` is a base class to implement the JSON data loader with paging.
+- `JsonWebCacheClient` is a HTTP client with cache management to load JSON data.
 
-## Samples
+## Local web app
 
-The GitHub repository includes a [demo project](https://github.com/nuscien/winkit/tree/main/Demo) with following 3rd-party data sources.
-
-| Source | Copyright |
-| -------------------- | -------------------- |
-| [NBC TV Network](https://www.nbc.com/) | ©2022 NBCUniversal Media, LLC |
-| [bilibili (哔哩哔哩)](https://www.bilibili.com/) | 上海宽娱数码科技有限公司 版权所有 |
-
-Please note that the data sources are NOT parts of this library.
-Their owners reserve all rights and may change the data services without notification.
-The demo here to reference these is to show how to develop with this library.
-
-You can also check the screenshots of iQIYI Windows app (爱奇艺·悦享品质) in the [demo images folder](https://github.com/nuscien/winkit/tree/main/docs/demo/images).
-It uses this library to implement a number of page and part.
+Local web app is an app framework to launch HTML+JS locally with native capability and auto-update.
+[See more](./localwebapp).

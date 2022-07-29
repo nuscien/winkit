@@ -60,7 +60,7 @@ public static class LocalWebAppHook
             if (!string.IsNullOrEmpty(hostId)) return hostId;
             try
             {
-                var assembly = Assembly ?? System.Reflection.Assembly.GetEntryAssembly();
+                var assembly = GetAssembly();
                 if (assembly != null) hostId = assembly.GetName()?.Name;
             }
             catch (InvalidOperationException)
@@ -130,4 +130,27 @@ public static class LocalWebAppHook
     /// Gets or sets the main assembly of the app.
     /// </summary>
     public static System.Reflection.Assembly Assembly { get; set; }
+
+    internal static System.Reflection.Assembly GetAssembly()
+    {
+        if (Assembly != null) return Assembly;
+        try
+        {
+            return System.Reflection.Assembly.GetEntryAssembly();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (MemberAccessException)
+        {
+        }
+        catch (TypeLoadException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+
+        return null;
+    }
 }

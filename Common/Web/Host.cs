@@ -1988,23 +1988,29 @@ public class LocalWebAppHost
             if (string.IsNullOrEmpty(k) || string.IsNullOrEmpty(v)) continue;
             switch (v)
             {
-                case "version":
+                case "package-version":
                     q.Add(k, Manifest?.Version);
                     break;
-                case "id":
+                case "package-id":
                     q.Add(k, ResourcePackageId);
                     break;
-                case "kind":
+                case "host-id":
+                    q.Add(k, LocalWebAppHook.HostId);
+                    break;
+                case "host-additional":
+                    q.Add(k, LocalWebAppHook.HostAdditionalString);
+                    break;
+                case "host-version":
+                    q.Add(k, LocalWebAppHook.GetAssembly()?.GetName()?.Version?.ToString());
+                    break;
+                case "fx-kind":
                     q.Add(k, "WindowsAppSdk");
+                    break;
+                case "fx-ver":
+                    q.Add(k, System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.ToString());
                     break;
                 case "guid":
                     q.Add(k, Guid.NewGuid().ToString());
-                    break;
-                case "host":
-                    q.Add(k, LocalWebAppHook.HostId);
-                    break;
-                case "additional":
-                    q.Add(k, LocalWebAppHook.HostAdditionalString);
                     break;
             }
         }

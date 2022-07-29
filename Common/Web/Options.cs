@@ -206,6 +206,12 @@ public class LocalWebAppPackageUpdateInfo
     /// </summary>
     [JsonPropertyName("prop")]
     public string ResponseProperty { get; set; }
+
+    /// <summary>
+    /// Gets or sets the additional settings.
+    /// </summary>
+    [JsonPropertyName("settings")]
+    public JsonObjectNode Settings { get; set; }
 }
 
 /// <summary>

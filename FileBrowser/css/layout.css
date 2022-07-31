@@ -480,6 +480,10 @@ a.link-button > svg, a.link-button:visited > svg {
 }
 
 /* Others */
+body > main {
+    margin: 20px auto;
+    max-width: 1000px;
+}
 #mainElement {
     min-height: 640px;
     margin-bottom: 60px; 

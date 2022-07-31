@@ -1,3 +1,5 @@
+This spec is about the workflow the framework works. See [documentation](../localwebapp/) for usages.
+
 # Local Web App
 
 Host app should load the resource package from appdata to show the local web app to end-users.

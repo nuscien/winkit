@@ -1,3 +1,5 @@
+本文档描述框架执行逻辑；如需了解使用方式，请查阅[说明文档](../localwebapp/)。
+
 # Local Web App
 
 宿主应用通常都会从其 AppData 中加载 LWA 资源包。

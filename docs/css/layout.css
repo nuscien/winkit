@@ -193,7 +193,8 @@ body > footer > section > div.x-copyright > img:first-child + span {
 body > section > section,
 body > section > h1,
 body > section > h2,
-body > section > h3 {
+body > section > h3,
+body > main {
     font-weight: normal;
     max-width: 1000px;
     padding: 0;

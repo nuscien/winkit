@@ -1,4 +1,4 @@
-[!(Trivial.WindowsKit)](./assets/logo.png)
+![Trivial.WindowsKit](./assets/logo.png)
 
 # Trivial.WindowsKit
 

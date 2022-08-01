@@ -18,9 +18,5 @@
         <HyperlinkButton Content="Read more…" NavigateUri="https://github.com/nuscien/winkit/tree/main/Demo" />
         <controls:TextView x:Name="TextViewElement" Height="200" />
         <controls:FileListView x:Name="FileBrowserElement" Height="200" />
-        <StackPanel Orientation="Horizontal" Spacing="8" >
-            <Button Content="Standalone web app demo" Click="LaunchWebAppClick" />
-            <Button Content="Sign &amp; package" Click="SignWebAppClick" />
-        </StackPanel>
     </StackPanel>
 </Page>

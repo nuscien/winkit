@@ -532,7 +532,7 @@ public class LocalWebAppHost
     public static async Task<LocalWebAppHost> LoadAsync(string resourcePackageId, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         var info = await GetPackageAsync(resourcePackageId);
-        return await LoadAsync(info.GetOptions(), skipVerificationException, cancellationToken);
+        return await LoadAsync(info?.GetOptions(), skipVerificationException, cancellationToken);
     }
 
     /// <summary>
@@ -1216,6 +1216,55 @@ public class LocalWebAppHost
             File.WriteAllText(manifestPath, manifestStr);
         }
 
+        // Copy source.
+        if (config.TryGetObjectValue("dev", out var devConfig))
+        {
+            if (devConfig.TryGetArrayValue("copy", out var copyItems))
+            {
+                foreach (var item in copyItems.OfType<JsonObjectNode>())
+                {
+                    var src = item?.TryGetStringValue("src")?.Trim();
+                    var dist = item?.TryGetStringValue("dist")?.Trim();
+                    if (string.IsNullOrEmpty(src) || string.IsNullOrEmpty(dist) || item.TryGetBooleanValue("disable") == true) continue;
+                    try
+                    {
+                        if (item.TryGetBooleanValue("file") == true)
+                        {
+                            var sourceFile = GetFileInfoByRelative(dir, src);
+                            var distFile = GetFileInfoByRelative(appDir, dist);
+                            if (sourceFile == null || !sourceFile.Exists || distFile == null) continue;
+                            sourceFile.CopyTo(distFile.FullName, true);
+                        }
+                        else
+                        {
+                            var sourceDir = GetDirectoryInfoByRelative(dir, src);
+                            var distDir = GetDirectoryInfoByRelative(appDir, dist);
+                            if (sourceDir == null || !sourceDir.Exists || distDir == null) continue;
+                            sourceDir.TryCopyTo(distDir.FullName);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
+                    catch (SecurityException)
+                    {
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                    catch (NotSupportedException)
+                    {
+                    }
+                    catch (ExternalException)
+                    {
+                    }
+                }
+            }
+        }
+
         // Sign.
         Sign(appDir, options);
 
@@ -1380,8 +1429,9 @@ public class LocalWebAppHost
     /// Removes a specific resource package.
     /// </summary>
     /// <param name="resourcePackageId">The resource package identifier to remove.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <returns>true if the resource package exists and is removed; otherwise, false.</returns>
-    public static async Task<bool> RemovePackageAsync(string resourcePackageId)
+    public static async Task<bool> RemovePackageAsync(string resourcePackageId, bool dev = false)
     {
         if (string.IsNullOrWhiteSpace(resourcePackageId)) return false;
         var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
@@ -1397,11 +1447,15 @@ public class LocalWebAppHost
 
         var dir = await GetSettingsDirAsync();
         var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
-        var apps = settings.TryGetArrayValue("apps")?.OfType<JsonObjectNode>();
+        var prop = dev ? "devapps" : "apps";
+        var apps = settings.TryGetArrayValue(prop)?.OfType<JsonObjectNode>();
         if (apps == null) return false;
         var json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == resourcePackageId);
         if (json == null) return false;
-        settings.TryGetArrayValue("apps").Remove(json);
+        settings.TryGetArrayValue(prop).Remove(json);
+        json = apps.FirstOrDefault(ele => ele.TryGetStringValue("id") == resourcePackageId);
+        if (json != null) settings.TryGetArrayValue(prop).Remove(json);
+        await TrySaveSettingsAsync(dir, settings);
         return true;
     }
 
@@ -1409,14 +1463,15 @@ public class LocalWebAppHost
     /// Removes the specific resource packages.
     /// </summary>
     /// <param name="resourcePackageIds">The list of the resource package identifier to remove.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <returns>The count of the resource package removed..</returns>
-    public static async Task<int> RemovePackageAsync(IEnumerable<string> resourcePackageIds)
+    public static async Task<int> RemovePackageAsync(IEnumerable<string> resourcePackageIds, bool dev = false)
     {
         if (resourcePackageIds == null) return 0;
         var i = 0;
         foreach (var id in resourcePackageIds)
         {
-            if (await RemovePackageAsync(id)) i++;
+            if (await RemovePackageAsync(id, dev)) i++;
         }
 
         return i;
@@ -1426,12 +1481,13 @@ public class LocalWebAppHost
     /// Removes the specific resource packages.
     /// </summary>
     /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
     /// <returns>The count of the resource package removed..</returns>
-    public static async Task<int> RemovePackageAsync(Func<LocalWebAppInfo, bool> predicate)
+    public static async Task<int> RemovePackageAsync(Func<LocalWebAppInfo, bool> predicate, bool dev = false)
     {
         if (predicate == null) return 0;
-        var packages = await ListPackageAsync();
-        var ids = packages.Where(predicate).Select(ele => ele.ResourcePackageId);
+        var packages = await ListPackageAsync(dev);
+        var ids = packages.Where(predicate).Select(ele => ele.ResourcePackageId).ToList();
         return await RemovePackageAsync(ids);
     }
 
@@ -1546,7 +1602,13 @@ public class LocalWebAppHost
         var settings = await TryGetSettingsAsync(dir) ?? new JsonObjectNode();
         var property = dev ? "devapps" : "apps";
         var arr = settings.TryGetArrayValue(property);
-        var apps = arr?.OfType<JsonObjectNode>();
+        if (arr == null)
+        {
+            arr = new JsonArrayNode();
+            settings.SetValue(property, arr);
+        }
+
+        var apps = arr.OfType<JsonObjectNode>();
         if (apps == null)
         {
             apps = new List<JsonObjectNode>();

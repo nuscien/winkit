@@ -318,6 +318,26 @@ public sealed partial class TabbedWebView : UserControl
     }
 
     /// <summary>
+    /// Adds a new tab.
+    /// </summary>
+    /// <param name="title">The tab header.</param>
+    /// <param name="content">The content of the tab.</param>
+    /// <param name="icon">An optional icon.</param>
+    /// <returns>The tab view item instance.</returns>
+    public TabViewItem Add(string title, UIElement content, IconSource icon = null)
+    {
+        var tab = new TabViewItem
+        {
+            Header = title,
+            Content = content,
+            IconSource = icon,
+            IsSelected = true
+        };
+        HostElement.TabItems.Add(tab);
+        return tab;
+    }
+
+    /// <summary>
     /// Adds a new web view.
     /// </summary>
     /// <param name="source">The source URI.</param>

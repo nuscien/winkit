@@ -256,6 +256,16 @@ public sealed partial class TabbedWebViewWindow : Window
         => HostElement.Add(tab);
 
     /// <summary>
+    /// Adds a new tab.
+    /// </summary>
+    /// <param name="title">The tab header.</param>
+    /// <param name="content">The content of the tab.</param>
+    /// <param name="icon">An optional icon.</param>
+    /// <returns>The tab view item instance.</returns>
+    public TabViewItem Add(string title, UIElement content, IconSource icon = null)
+        => HostElement.Add(title, content, icon);
+
+    /// <summary>
     /// Adds a new web view.
     /// </summary>
     /// <param name="source">The source URI.</param>

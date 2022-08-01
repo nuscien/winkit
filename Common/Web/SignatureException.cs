@@ -60,7 +60,7 @@ public enum LocalWebAppSignatureErrorTypes : byte
 /// <summary>
 /// The exception for local web app signature.
 /// </summary>
-public class LocalWebAppSignatureException : Exception
+public class LocalWebAppSignatureException : InvalidOperationException
 {
     /// <summary>
     /// Initializes a new instance of the LocalWebAppSignatureException class.

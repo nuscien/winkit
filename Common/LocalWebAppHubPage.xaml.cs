@@ -65,6 +65,15 @@ public sealed partial class LocalWebAppHubPage : Page
     }
 
     /// <summary>
+    /// Gets or sets the content of more items.
+    /// </summary>
+    public UIElement MoreContent
+    {
+        get => MoreItemsContainer.Child;
+        set => MoreItemsContainer.Child = value;
+    }
+
+    /// <summary>
     /// Gets or sets the handler to open local web app.
     /// </summary>
     public Func<LocalWebAppInfo, bool, Task> OpenHandler { get; set; }
@@ -74,10 +83,32 @@ public sealed partial class LocalWebAppHubPage : Page
     /// </summary>
     public Func<Task<DirectoryInfo>> SelectDevAppHandler { get; set; }
 
-    private async Task OnInitAsync()
+    /// <summary>
+    /// Reloads the page.
+    /// </summary>
+    public void Refresh()
+        => _ = OnInitAsync();
+
+    /// <summary>
+    /// Shows dev panel or not.
+    /// </summary>
+    /// <param name="value">true if show dev panel; otherwise, false.</param>
+    public void ShowDevPanel(bool value)
+    {
+        DevShowButton.Visibility = value ? Visibility.Collapsed : Visibility.Visible;
+        DevList.Visibility = MoreItemsContainer.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async Task OnInitAsync(Task previous = null)
     {
         UpdateText(DevShowButtonText, LocalWebAppHook.CustomizedLocaleStrings.DevModeShowTitle);
         UpdateText(DevTitleText, LocalWebAppHook.CustomizedLocaleStrings.DevModeTitle);
+        if (previous != null)
+        {
+            await previous;
+            await Task.Delay(100);
+        }
+
         (var list1, var list2) = await LocalWebAppHost.ListAllPackageAsync();
         InstalledList.ItemsSource = FormatList(list1);
         AddPlus(list2);
@@ -138,15 +169,52 @@ public sealed partial class LocalWebAppHubPage : Page
         _ = OnDevItemButtonClickAsync(info);
     }
 
+    private void OnItemRemoveButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
+        _ = OnInitAsync(LocalWebAppHost.RemovePackageAsync(info.ResourcePackageId));
+    }
+
     private async Task<bool> OnDevItemButtonClickAsync(LocalWebAppInfo info)
     {
         var h = OpenHandler;
         DirectoryInfo dir;
+        var needRefresh = false;
         if (info.ResourcePackageId == "+" && info.LocalPath == "+")
         {
             if (SelectDevAppHandler == null) return false;
             dir = await SelectDevAppHandler();
             if (dir == null || !dir.Exists) return false;
+            try
+            {
+                info.LocalPath = dir.FullName;
+                info.ResourcePackageId = null;
+                needRefresh = true;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (System.Security.SecurityException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                return false;
+            }
         }
         else
         {
@@ -155,7 +223,8 @@ public sealed partial class LocalWebAppHubPage : Page
 
         if (h != null)
         {
-            _ = h(info, true);
+            await h(info, true);
+            Refresh();
             return true;
         }
 
@@ -167,6 +236,7 @@ public sealed partial class LocalWebAppHubPage : Page
             var list = await LocalWebAppHost.ListPackageAsync(true);
             AddPlus(list);
             DevList.ItemsSource = FormatList(list);
+            Refresh();
             return true;
         }
         else if (!string.IsNullOrWhiteSpace(info.ResourcePackageId))
@@ -180,11 +250,14 @@ public sealed partial class LocalWebAppHubPage : Page
         return false;
     }
 
-    private void OnDevShowButtonClick(object sender, RoutedEventArgs e)
+    private void OnDevItemRemoveButtonClick(object sender, RoutedEventArgs e)
     {
-        DevShowButton.Visibility = Visibility.Collapsed;
-        DevList.Visibility = Visibility.Visible;
+        if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
+        _ = OnInitAsync(LocalWebAppHost.RemovePackageAsync(info.ResourcePackageId, true));
     }
+
+    private void OnDevShowButtonClick(object sender, RoutedEventArgs e)
+        => ShowDevPanel(true);
 
     private static bool UpdateText(TextBlock element, string defaultValue)
     {

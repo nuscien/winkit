@@ -16,5 +16,28 @@
     "sign": "RS256"
   },
   "dev": {
+    "copy": [
+      {
+        "src": "..\\index.html",
+        "file": true,
+        "dist": "index.html"
+      },
+      {
+        "src": "..\\css",
+        "dist": "css"
+      },
+      {
+        "src": "..\\dist",
+        "dist": "dist"
+      },
+      {
+        "src": "..\\images",
+        "dist": "images"
+      },
+      {
+        "src": "..\\data",
+        "dist": "data"
+      }
+    ]
   }
 }

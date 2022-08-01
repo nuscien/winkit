@@ -12,6 +12,20 @@
         <ResourceDictionary>
             <DataTemplate x:Key="StandardGridViewItemTemplate" x:DataType="web:LocalWebAppInfo" >
                 <Button Background="Transparent" Padding="4" BorderBrush="Transparent" Click="OnItemButtonClick" ToolTipService.ToolTip="{x:Bind Description}" >
+                    <Button.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="Open" Click="OnItemButtonClick" >
+                                <MenuFlyoutItem.Icon>
+                                    <SymbolIcon Symbol="NewWindow" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Remove" Click="OnItemRemoveButtonClick" >
+                                <MenuFlyoutItem.Icon>
+                                    <SymbolIcon Symbol="Delete" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.ContextFlyout>
                     <Grid Width="90" Height="80" >
                         <ImageIcon Source="{x:Bind Icon}" Width="32" Height="32" Margin="8" HorizontalAlignment="Center" VerticalAlignment="Top" >
                         </ImageIcon>
@@ -21,6 +35,20 @@
             </DataTemplate>
             <DataTemplate x:Key="DevGridViewItemTemplate" x:DataType="web:LocalWebAppInfo" >
                 <Button Background="Transparent" Padding="4" BorderBrush="Transparent" Click="OnDevItemButtonClick" ToolTipService.ToolTip="{x:Bind LocalPath}" >
+                    <Button.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="Open" Click="OnDevItemButtonClick" >
+                                <MenuFlyoutItem.Icon>
+                                    <SymbolIcon Symbol="NewWindow" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Remove" Click="OnDevItemRemoveButtonClick" >
+                                <MenuFlyoutItem.Icon>
+                                    <SymbolIcon Symbol="Delete" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.ContextFlyout>
                     <Grid Width="90" Height="80" >
                         <ImageIcon Source="{x:Bind Icon}" Width="32" Height="32" Margin="8" HorizontalAlignment="Center" VerticalAlignment="Top" >
                         </ImageIcon>
@@ -49,6 +77,7 @@
                     <TextBlock x:Name="DevTitleText" Text="Dev Mode" FontSize="14" Margin="10" />
                 </GridView.Header>
             </GridView>
+            <Border x:Name="MoreItemsContainer" HorizontalAlignment="Stretch" Visibility="Collapsed" />
             <Border x:Name="FooterContainer" HorizontalAlignment="Stretch" />
         </StackPanel>
     </ScrollViewer>

@@ -179,6 +179,9 @@ public class LocalWebAppOptions
             "RS512" => RSASignatureProvider.CreateRS512(SignatureKey),
             "RS384" => RSASignatureProvider.CreateRS384(SignatureKey),
             "RS256" => RSASignatureProvider.CreateRS256(SignatureKey),
+            "HS512" => HashSignatureProvider.CreateHS512(SignatureKey),
+            "HS384" => HashSignatureProvider.CreateHS384(SignatureKey),
+            "HS256" => HashSignatureProvider.CreateHS256(SignatureKey),
             _ => null,
         };
     }

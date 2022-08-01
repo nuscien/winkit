@@ -28,6 +28,9 @@ namespace Trivial.UI;
 /// </summary>
 public sealed partial class LocalWebAppHubPage : Page
 {
+    private bool devModeDisabled;
+    private bool noAdd;
+
     /// <summary>
     /// Initializes a new instance of the LocalWebAppHubPage class.
     /// </summary>
@@ -35,6 +38,23 @@ public sealed partial class LocalWebAppHubPage : Page
     {
         InitializeComponent();
         _ = OnInitAsync();
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether need to hide the button which is to enable dev mode.
+    /// </summary>
+    public bool IsDevModeButtonHidden
+    {
+        get
+        {
+            return devModeDisabled;
+        }
+
+        set
+        {
+            devModeDisabled = value;
+            DevShowButton.Visibility = value || DevList.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        }
     }
 
     /// <summary>
@@ -74,6 +94,11 @@ public sealed partial class LocalWebAppHubPage : Page
     }
 
     /// <summary>
+    /// Gets or sets the handler to prevent app opening.
+    /// </summary>
+    public Func<LocalWebAppInfo, bool, bool> PreventAppHandler { get; set; }
+
+    /// <summary>
     /// Gets or sets the handler to open local web app.
     /// </summary>
     public Func<LocalWebAppInfo, bool, Task> OpenHandler { get; set; }
@@ -95,7 +120,7 @@ public sealed partial class LocalWebAppHubPage : Page
     /// <param name="value">true if show dev panel; otherwise, false.</param>
     public void ShowDevPanel(bool value)
     {
-        DevShowButton.Visibility = value ? Visibility.Collapsed : Visibility.Visible;
+        DevShowButton.Visibility = devModeDisabled || value ? Visibility.Collapsed : Visibility.Visible;
         DevList.Visibility = MoreItemsContainer.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -111,8 +136,16 @@ public sealed partial class LocalWebAppHubPage : Page
 
         (var list1, var list2) = await LocalWebAppHost.ListAllPackageAsync();
         InstalledList.ItemsSource = FormatList(list1);
-        AddPlus(list2);
-        DevList.ItemsSource = FormatList(list2);
+        if (!noAdd) AddPlus(list2);
+        list2 = FormatList(list2);
+        var list3 = new List<LocalWebAppInfo>(FormatList(LocalWebAppHook.AdditionalDevApps, true));
+        foreach (var item in list3)
+        {
+            if (string.IsNullOrWhiteSpace(item?.ResourcePackageId) || string.IsNullOrWhiteSpace(item?.DisplayName) || list2.Contains(item)) continue;
+            list2.Add(item);
+        }
+
+        DevList.ItemsSource = list2;
     }
 
     private void AddPlus(List<LocalWebAppInfo> list)
@@ -124,18 +157,18 @@ public sealed partial class LocalWebAppHubPage : Page
             ResourcePackageId = "+",
             LocalPath = "+",
             Icon = icon,
-            DisplayName = LocalWebAppHook.CustomizedLocaleStrings.DevModeAddTitle
+            DisplayName = GetString(LocalWebAppHook.CustomizedLocaleStrings.DevModeAddTitle, "Open")
         });
     }
 
-    private List<LocalWebAppInfo> FormatList(List<LocalWebAppInfo> list)
+    private List<LocalWebAppInfo> FormatList(List<LocalWebAppInfo> list, bool doNotReverse = false)
     {
         if (list == null) return null;
-        list.Reverse();
+        if (!doNotReverse) list.Reverse();
         var defaultIcon = new Uri(BaseUri, "Assets\\DefaultLwa_128.png").OriginalString;
         foreach (var item in list)
         {
-            if (item == null) continue;
+            if (string.IsNullOrWhiteSpace(item?.ResourcePackageId)) continue;
             if (string.IsNullOrWhiteSpace(item.DisplayName)) item.DisplayName = item.ResourcePackageId;
             if (string.IsNullOrEmpty(item.Icon) || (!item.Icon.Contains("://") && !File.Exists(item.Icon)))
             {
@@ -151,6 +184,7 @@ public sealed partial class LocalWebAppHubPage : Page
     {
         if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
         if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) return;
+        if (PreventAppHandler?.Invoke(info, false) == true) return;
         var h = OpenHandler;
         if (h != null)
         {
@@ -187,8 +221,10 @@ public sealed partial class LocalWebAppHubPage : Page
             if (dir == null || !dir.Exists) return false;
             try
             {
-                info.LocalPath = dir.FullName;
-                info.ResourcePackageId = null;
+                info = new()
+                {
+                    LocalPath = dir.FullName
+                };
                 needRefresh = true;
             }
             catch (IOException)
@@ -221,6 +257,7 @@ public sealed partial class LocalWebAppHubPage : Page
             dir = IO.FileSystemInfoUtility.TryGetDirectoryInfo(info.LocalPath);
         }
 
+        if (PreventAppHandler?.Invoke(info, true) == true) return false;
         if (h != null)
         {
             await h(info, true);
@@ -253,11 +290,16 @@ public sealed partial class LocalWebAppHubPage : Page
     private void OnDevItemRemoveButtonClick(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
+        LocalWebAppHook.AdditionalDevApps.Remove(info);
+        if (info.ResourcePackageId == "+" && info.LocalPath == "+") noAdd = true;
         _ = OnInitAsync(LocalWebAppHost.RemovePackageAsync(info.ResourcePackageId, true));
     }
 
     private void OnDevShowButtonClick(object sender, RoutedEventArgs e)
         => ShowDevPanel(true);
+
+    private static string GetString(string value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value;
 
     private static bool UpdateText(TextBlock element, string defaultValue)
     {

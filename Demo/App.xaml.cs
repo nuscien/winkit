@@ -52,6 +52,24 @@ namespace Trivial.Demo
         private static async Task OnInitAsync()
         {
             LocalWebAppHost.SetHostId("WinKitDemo");
+            LocalWebAppHook.AdditionalDevApps.Add(new()
+            {
+                ResourcePackageId = "@",
+                DisplayName = "List & Files",
+                LocalPath = "List & Files"
+            });
+            LocalWebAppHook.AdditionalDevApps.Add(new()
+            {
+                ResourcePackageId = "@",
+                DisplayName = "NBC",
+                LocalPath = "NBC"
+            });
+            LocalWebAppHook.AdditionalDevApps.Add(new()
+            {
+                ResourcePackageId = "@",
+                DisplayName = "Bilibili",
+                LocalPath = "Bilibili"
+            });
             await LocalWebAppHost.LoadAsync(null as System.Reflection.Assembly);
             var win = UI.LocalWebAppHubPage.CreateWindow(null, out var page);
             var panel = new StackPanel
@@ -61,6 +79,40 @@ namespace Trivial.Demo
                 Margin = new Thickness(0, 10, 0, 10)
             };
             page.MoreContent = panel;
+            page.PreventAppHandler = (info, dev) =>
+            {
+                if (info?.ResourcePackageId != "@") return false;
+                var key = info.LocalPath?.Trim().ToLowerInvariant();
+                if (string.IsNullOrEmpty(key)) return true;
+                switch (key)
+                {
+                    case "list & files":
+                        win.Add("List & Files", new HomePage());
+                        break;
+                    case "nbc":
+                        win.Add("NBC", new Nbc.NewsPage());
+                        break;
+                    case "bilibili":
+                        win.Add("Bilibili", new Bilibili.ChannelPage());
+                        break;
+                    case "refresh":
+                        try
+                        {
+                            page.Refresh();
+                            page.ShowDevPanel(false);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                        }
+                        catch (NullReferenceException)
+                        {
+                        }
+
+                        break;
+                }
+
+                return true;
+            };
             AddHyperlinkButton(panel, "Refresh", (sender, ev) =>
             {
                 try
@@ -74,18 +126,6 @@ namespace Trivial.Demo
                 catch (NullReferenceException)
                 {
                 }
-            });
-            AddHyperlinkButton(panel, "List & Files", (sender, ev) =>
-            {
-                win.Add("List & Files", new HomePage());
-            });
-            AddHyperlinkButton(panel, "NBC", (sender, ev) =>
-            {
-                win.Add("NBC", new Nbc.NewsPage());
-            });
-            AddHyperlinkButton(panel, "Bilibili", (sender, ev) =>
-            {
-                win.Add("Bilibili", new Bilibili.ChannelPage());
             });
             win.Activate();
         }

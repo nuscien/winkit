@@ -98,6 +98,11 @@ public class LocalWebAppHost
     public JsonObjectNode DataResources { get; } = new();
 
     /// <summary>
+    /// Gets or sets a value indicating whether need to disable auto update in standard mode.
+    /// </summary>
+    public bool IsAutoUpdateDisabled { get; set; }
+
+    /// <summary>
     /// Gets the static data strings.
     /// </summary>
     public IDictionary<string, string> DataStrings { get; } = new Dictionary<string, string>();
@@ -1436,6 +1441,7 @@ public class LocalWebAppHost
         if (string.IsNullOrWhiteSpace(resourcePackageId)) return false;
         var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
         var appId = FormatResourcePackageId(resourcePackageId);
+        if (string.IsNullOrWhiteSpace(appId) || appId == "_settings") return false;
         try
         {
             appDataFolder = await appDataFolder.GetFolderAsync(appId);

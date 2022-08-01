@@ -224,7 +224,7 @@ public sealed partial class LocalWebAppHubPage : Page
         if (h != null)
         {
             await h(info, true);
-            Refresh();
+            if (needRefresh) Refresh();
             return true;
         }
 
@@ -236,7 +236,7 @@ public sealed partial class LocalWebAppHubPage : Page
             var list = await LocalWebAppHost.ListPackageAsync(true);
             AddPlus(list);
             DevList.ItemsSource = FormatList(list);
-            Refresh();
+            if (needRefresh) Refresh();
             return true;
         }
         else if (!string.IsNullOrWhiteSpace(info.ResourcePackageId))

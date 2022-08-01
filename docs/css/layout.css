@@ -97,7 +97,9 @@ body > header:first-child > section:first-child > h1 + ul > li {
     vertical-align: top;
 }
 body > header:first-child > section:first-child a,
-body > header:first-child > section:first-child a:visited {
+body > header:first-child > section:first-child a:visited,
+body > header:first-child > section:first-child > h1 > strong,
+body > header:first-child > section:first-child > h1 > span {
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     transition: 0.6s;
@@ -162,6 +164,9 @@ body > script + footer {
     background-image: url(../images/bg/bottom.jpg);
     background-position: center;
     background-repeat: no-repeat;
+}
+body > main + footer {
+    margin-top: 80px;
 }
 body > footer > section > div.x-copyright {
     width: 275px;

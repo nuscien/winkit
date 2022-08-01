@@ -28,7 +28,7 @@ Only supports following signature algorithms.
 - `RS384`
 - `RS256`
 
-The manifest include following properties. The relative paths mentioned below are based on the root path of the package.
+The manifest `localwebapp.json` include following properties. The relative paths mentioned below are based on the root path of the package.
 
 - `id`* (string) is the resource package identifier, like `id` property in `package.json`.
 - `title`* (string) is the display name.
@@ -55,6 +55,22 @@ Each package should has its own folder in appdata directory, although most of ho
 
 - `data`, its own appdata used by local web app. Note that it is NOT the appdata of the host app.
 - `cache`, cache and settings used by host app.
+
+So overall, the directories may look like following, the example is about app1 version 1.0.0 produced by Contoso Company.
+
+- `appdata\localwebapp` Root directory in appdata for all local web apps
+  - `contoso_app1` For a local web app (named by its identifier formatted)
+    - `data` Used like appdata for the local web app
+    - `cache`
+      - `settings.json` A JSON format file with installation info and others
+      - `*.*` Other files for runtime and installation/update
+    - `v1.0.0` App directory (named by version and prefix `v`)
+      - `localwebapp.json` The manifest
+      - `localwebapp.files.json` Signatures
+      - `index.html` Homepage
+      - `*.js`/`*.css`/`*.webp`/`*.svg`/`*.*` Script and resource files
+  - `contoso_app2` Another local web app (if exists)
+    - `data` & `cache` & `v1.0.0` Same as above
 
 The host app should check appdata to determine if it has initialize. If no, initialize.
 

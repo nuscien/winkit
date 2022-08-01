@@ -28,7 +28,7 @@
 - `RS384`
 - `RS256`（推荐）
 
-资源清单包含以下属性。其中的相对路径，均基于前端根目录。
+资源清单 `localwebapp.json` 包含以下属性。其中的相对路径，均基于前端根目录。
 
 - `id`* _string_：前端资源包 ID。如同 `package.json` 中的 `id` 属性。
 - `title`* _string_：名称。
@@ -55,6 +55,22 @@
 
 - `data`：用于作为该 LWA 的 AppData。请注意，该文件夹并非宿主程序的 AppData，而是为方便业务层存储任何文件而模拟出的文件夹。
 - `cache`：用于宿主程序为该 LWA 缓存一些临时或永久文件，以及存放设置项的地方。
+
+所以，纵观全局，AppData 相关文件结构可能如下，以 Contoso 公司发布的 app1 的 1.0.0 版为例。
+
+- `appdata\localwebapp` AppData 中存储 LWA 相关能力的根目录
+  - `contoso_app1` 具体其中一个 LWA 的根目录（以其 ID 格式化后命名）
+    - `data` LWA 因业务需要存放数据文件的专有根目录
+    - `cache`
+      - `settings.json` JSON 格式的设置文件以存储安装信息和其它设置信息
+      - `*.*` 其它运行时或安装（包括更新）时所用文件
+    - `v1.0.0` 应用所在目录（以前缀 `v` 加版本号命名）
+      - `localwebapp.json` 前端资源清单文件
+      - `localwebapp.files.json` 签名文件
+      - `index.html` 主页
+      - `*.js`/`*.css`/`*.webp`/`*.svg`/`*.*` 脚本和资源文件
+  - `contoso_app2` 另一个 LWA（如果有）
+    - `data` & `cache` & `v1.0.0` 同上
 
 宿主程序在每次加载前端资源包时，需要先检查宿主程序的 AppData 相关目录，以确定是否需要进行初始化。如果没有对应的 LWA 专属文件夹，那么即意味着需要完成初始化，具体如下。
 

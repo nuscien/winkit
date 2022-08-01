@@ -157,6 +157,7 @@ body > header:first-child + header {
 
 /* Footer */
 body > section + footer,
+body > main + footer,
 body > script + footer {
     height: 340px;
     margin: 0;

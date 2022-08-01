@@ -1,3 +1,5 @@
+[!(Trivial.WindowsKit)](./assets/logo.png)
+
 # Trivial.WindowsKit
 
 [![NuGet package](https://img.shields.io/nuget/dt/Trivial.WindowsKit?label=nuget+downloads)](https://www.nuget.org/packages/Trivial.WindowsKit)

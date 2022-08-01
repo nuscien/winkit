@@ -375,7 +375,10 @@ public sealed partial class TabbedWebViewWindow : Window
             var dir = IO.FileSystemInfoUtility.TryGetDirectoryInfo(info.LocalPath);
             if (dir != null && dir.Exists)
             {
-                await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir));
+                await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir), (tab, page) =>
+                {
+                    page.IsDevEnvironmentEnabled = true;
+                });
                 return;
             }
         }

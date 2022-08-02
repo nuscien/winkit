@@ -34,7 +34,7 @@ namespace Trivial.UI;
 public sealed partial class LocalWebAppPage : Page
 {
     private LocalWebAppHost host;
-    private readonly Dictionary<string, ILocalWebAppMessageHandler> proc = new();
+    private readonly Dictionary<string, ILocalWebAppCommandHandler> proc = new();
     private readonly LocalWebAppBrowserMessageHandler messageHandler;
     private TabbedWebViewWindow tabbedWebViewWindowInstance;
 
@@ -527,48 +527,48 @@ public sealed partial class LocalWebAppPage : Page
         => Browser.Focus(value);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier.
+    /// Tests if there is the command handler of given identifier.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <returns>true if exists; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public bool ContainsMessageHandler(string id)
+    public bool ContainsCommandHandler(string id)
         => proc.ContainsKey(id);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier.
+    /// Tries to get the specific command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <param name="handler">The message handler.</param>
+    /// <param name="handler">The command handler.</param>
     /// <returns>true if exists; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public bool TryGetMessageHandler(string id, out ILocalWebAppMessageHandler handler)
+    public bool TryGetCommandHandler(string id, out ILocalWebAppCommandHandler handler)
         => proc.TryGetValue(id, out handler);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier.
+    /// Tries to get the specific command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <returns>The message handler..</returns>
+    /// <returns>The command handler..</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public ILocalWebAppMessageHandler TryGetMessageHandler(string id)
+    public ILocalWebAppCommandHandler TryGetCommandHandler(string id)
         => proc.TryGetValue(id, out var callback) ? callback : null;
 
     /// <summary>
-    /// Registers a message handler. It will override the existed one.
+    /// Registers a command handler. It will override the existed one.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <param name="handler">The message handler.</param>
+    /// <param name="handler">The command handler.</param>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public void RegisterMessageHandler(string id, ILocalWebAppMessageHandler handler)
+    public void RegisterCommandHandler(string id, ILocalWebAppCommandHandler handler)
         => proc[id] = handler;
 
     /// <summary>
-    /// Removes the message handler.
+    /// Removes the command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <returns>true if remove succeeded; otherwise, false.</returns>
-    public bool RemoveMessageHandler(string id)
+    public bool RemoveCommandHandler(string id)
         => proc.Remove(id);
 
     /// <inheritdoc />

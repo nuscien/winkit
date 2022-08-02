@@ -180,17 +180,17 @@ public class LocalWebAppNotificationMessage
 }
 
 /// <summary>
-/// The request message for local standalone web app.
+/// The command handler for local standalone web app.
 /// </summary>
-public interface ILocalWebAppMessageHandler
+public interface ILocalWebAppCommandHandler
 {
     /// <summary>
-    /// Gets or sets the description of the message handler.
+    /// Gets or sets the description of the command handler.
     /// </summary>
     public string Description { get; set; }
 
     /// <summary>
-    /// Gets or sets the version of the message handler.
+    /// Gets or sets the version of the command handler.
     /// </summary>
     public string Version { get; set; }
 

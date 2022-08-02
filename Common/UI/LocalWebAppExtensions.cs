@@ -97,7 +97,7 @@ internal static class LocalWebAppExtensions
         return hostInfo;
     }
 
-    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, ILocalWebAppMessageHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
+    public static async Task<JsonObjectNode> OnWebMessageReceivedAsync(LocalWebAppHost host, JsonObjectNode json, Uri uri, Dictionary<string, ILocalWebAppCommandHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (json == null) return null;
         var req = new LocalWebAppRequestMessage
@@ -912,7 +912,7 @@ internal static class LocalWebAppExtensions
         }, info);
     }
 
-    public static LocalWebAppResponseMessage GetMessageHandlers(Dictionary<string, ILocalWebAppMessageHandler> handlers)
+    public static LocalWebAppResponseMessage GetMessageHandlers(Dictionary<string, ILocalWebAppCommandHandler> handlers)
     {
         var arr = new JsonArrayNode();
         foreach (var handler in handlers)
@@ -932,7 +932,7 @@ internal static class LocalWebAppExtensions
         });
     }
 
-    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, Dictionary<string, ILocalWebAppMessageHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
+    private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, Dictionary<string, ILocalWebAppCommandHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
         switch (request.Command.ToLowerInvariant())

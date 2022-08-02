@@ -1996,7 +1996,7 @@ public class LocalWebAppHost
     private async Task<string> UpdateRegisteredAsync()
     {
         if (IsVerified) await RegisterPackageAsync(new LocalWebAppInfo(this));
-        return await UpdateAsync();
+        return IsAutoUpdateDisabled ? null : await UpdateAsync();
     }
 
     private static string GetSubFileName(string name, string sub, string ext = null)

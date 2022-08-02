@@ -346,40 +346,49 @@ public sealed partial class LocalWebAppWindow : Window
         => MainElement.Focus(value);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier..
+    /// Tests if there is the command handler of given identifier.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <returns>true if exists; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public bool ContainsMessageHandler(string id)
-        => MainElement.ContainsMessageHandler(id);
+    public bool ContainsCommandHandler(string id)
+        => MainElement.ContainsCommandHandler(id);
 
     /// <summary>
-    /// Tests if there is the message handler of given identifier..
+    /// Tries to get the specific command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <param name="handler">The process handler.</param>
     /// <returns>true if exists; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public bool TryGetMessageHandler(string id, out ILocalWebAppMessageHandler handler)
-        => MainElement.TryGetMessageHandler(id, out handler);
+    public bool TryGetCommandHandler(string id, out ILocalWebAppCommandHandler handler)
+        => MainElement.TryGetCommandHandler(id, out handler);
 
     /// <summary>
-    /// Registers a message handler. It will override the existed one.
+    /// Tries to get the specific command handler.
+    /// </summary>
+    /// <param name="id">The handler identifier.</param>
+    /// <returns>The command handler..</returns>
+    /// <exception cref="ArgumentNullException">id was null.</exception>
+    public ILocalWebAppCommandHandler TryGetCommandHandler(string id)
+        => MainElement.TryGetCommandHandler(id);
+
+    /// <summary>
+    /// Registers a command handler. It will override the existed one.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <param name="handler">The process handler.</param>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public void RegisterMessageHandler(string id, ILocalWebAppMessageHandler handler)
-        => MainElement.RegisterMessageHandler(id, handler);
+    public void RegisterCommandHandler(string id, ILocalWebAppCommandHandler handler)
+        => MainElement.RegisterCommandHandler(id, handler);
 
     /// <summary>
-    /// Removes the message handler.
+    /// Removes the command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <returns>true if remove succeeded; otherwise, false.</returns>
-    public bool RemoveMessageHandler(string id)
-        => MainElement.RemoveMessageHandler(id);
+    public bool RemoveCommandHandler(string id)
+        => MainElement.RemoveCommandHandler(id);
 
     internal void SetFullScreen(bool value)
     {

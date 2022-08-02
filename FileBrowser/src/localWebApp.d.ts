@@ -407,8 +407,11 @@
 
         /**
          * Gets theme information.
+         * @param options The options.
          */
-        theme(): HandlerResponse<{
+        theme(options?: {
+            context?: HandlerInfoContract
+        }): HandlerResponse<{
             brightness: "dark" | "light";
         }>;
 
@@ -423,6 +426,10 @@
             has: boolean;
         }>;
 
+        /**
+         * Gets or sets the window state.
+         * @param value The optional state to set.
+         */
         window(value?: WindowStates | {
             state?: WindowStates;
             width?: number;
@@ -433,6 +440,20 @@
             physical?: boolean;
             context?: HandlerInfoContract;
         } | null): HandlerResponse<WindowStateInfoContract>;
+
+        /**
+         * Lists information of all command handler.
+         * @param options The options.
+         */
+        handlers(options?: {
+            context?: HandlerInfoContract
+        }): HandlerResponse<{
+            collection: {
+                id: string;
+                description: string;
+                version: string;
+            }[];
+        }>;
     };
 
     /**

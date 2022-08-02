@@ -385,7 +385,8 @@ public sealed partial class LocalWebAppPage : Page
     /// </summary>
     /// <param name="hostTask">The standalone local web app host.</param>
     /// <param name="callback">The callback.</param>
-    public async Task LoadAsync(Task<LocalWebAppHost> hostTask, Action<LocalWebAppHost> callback = null)
+    /// <param name="error">The error handling.</param>
+    public async Task LoadAsync(Task<LocalWebAppHost> hostTask, Action<LocalWebAppHost> callback = null, Action<Exception> error = null)
     {
         if (hostTask == null)
         {
@@ -401,14 +402,21 @@ public sealed partial class LocalWebAppPage : Page
         catch (Exception ex)
         {
             OnLoadError(ex);
+            error?.Invoke(ex);
             throw;
         }
 
         if (host == null)
-            OnLoadError(new InvalidOperationException("Failed to load app."));
+        {
+            var ex = new InvalidOperationException("Failed to load app.");
+            OnLoadError(ex);
+            error?.Invoke(ex);
+        }
         else
+        {
             await LoadAsync(host);
-        callback?.Invoke(host);
+            callback?.Invoke(host);
+        }
     }
 
     /// <summary>
@@ -600,14 +608,16 @@ public sealed partial class LocalWebAppPage : Page
     private void OnLoadError(Exception ex)
     {
         if (ex == null) return;
-        NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle;
+        var title = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle;
         var message = ex is LocalWebAppSignatureException signEx ? LocalWebAppHook.SignErrorMessage?.Invoke(signEx) : null;
+        NotificationBar.Title = title;
         NotificationBar.Message = string.IsNullOrWhiteSpace(message) ? ex?.Message : message;
         NotificationBar.Severity = InfoBarSeverity.Error;
         NotificationBar.IsOpen = true;
         ProgressElement.IsActive = false;
         MonitorSingleton?.OnErrorNotification(this, NotificationBar, ex);
         LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
+        TitleChanged?.Invoke(this, new DataEventArgs<string>(title));
     }
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)

@@ -30,6 +30,7 @@ public sealed partial class LocalWebAppHubPage : Page
 {
     private bool devModeDisabled;
     private bool noAdd;
+    private readonly List<LocalWebAppInfo> additionalDevApps = new();
 
     /// <summary>
     /// Initializes a new instance of the LocalWebAppHubPage class.
@@ -96,17 +97,22 @@ public sealed partial class LocalWebAppHubPage : Page
     /// <summary>
     /// Gets or sets the handler to prevent app opening.
     /// </summary>
-    public Func<LocalWebAppInfo, bool, bool> PreventAppHandler { get; set; }
+    public Func<LocalWebAppHubPage, LocalWebAppInfo, bool, bool> PreventAppHandler { get; set; }
 
     /// <summary>
     /// Gets or sets the handler to open local web app.
     /// </summary>
-    public Func<LocalWebAppInfo, bool, Task> OpenHandler { get; set; }
+    public Func<LocalWebAppHubPage, LocalWebAppInfo, bool, Task> OpenHandler { get; set; }
 
     /// <summary>
     /// Gets or sets the handler to open a dialog to load a dev app.
     /// </summary>
-    public Func<Task<DirectoryInfo>> SelectDevAppHandler { get; set; }
+    public Func<LocalWebAppHubPage, Task<DirectoryInfo>> SelectDevAppHandler { get; set; }
+
+    /// <summary>
+    /// Gets or sets the handler to open a dialog to create a dev app.
+    /// </summary>
+    public Func<LocalWebAppHubPage, LocalWebAppPage, bool> CreateDevAppHandler { get; set; }
 
     /// <summary>
     /// Reloads the page.
@@ -124,6 +130,37 @@ public sealed partial class LocalWebAppHubPage : Page
         DevList.Visibility = MoreItemsContainer.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    /// <summary>
+    /// Adds an additional dev local web app.
+    /// </summary>
+    /// <param name="info">The information of the dev local web app.</param>
+    /// <returns>true if add succeeded; otherwise, false.</returns>
+    public bool AddAdditionalDevApp(LocalWebAppInfo info)
+    {
+        if (string.IsNullOrWhiteSpace(info?.ResourcePackageId) || additionalDevApps.Contains(info)) return false;
+        additionalDevApps.Add(info);
+        return true;
+    }
+
+    /// <summary>
+    /// Removes an additional dev local web app.
+    /// </summary>
+    /// <param name="info">The information of the dev local web app.</param>
+    /// <returns>true if item is successfully removed; otherwise, false. This method also returns false if item was not found in the collection.</returns>
+    public bool RemoveAdditionalDevApp(LocalWebAppInfo info)
+    {
+        if (info == null) return false;
+        return additionalDevApps.Remove(info);
+    }
+
+    /// <summary>
+    /// Removes an additional dev local web app.
+    /// </summary>
+    /// <param name="id">The identifier of the dev local web app.</param>
+    /// <returns>The number of elements removed from the collection.</returns>
+    public int RemoveAdditionalDevApp(string id)
+        => additionalDevApps.RemoveAll(ele => ele.ResourcePackageId == id);
+
     private async Task OnInitAsync(Task previous = null)
     {
         UpdateText(DevShowButtonText, LocalWebAppHook.CustomizedLocaleStrings.DevModeShowTitle);
@@ -138,7 +175,7 @@ public sealed partial class LocalWebAppHubPage : Page
         InstalledList.ItemsSource = FormatList(list1);
         if (!noAdd) AddPlus(list2);
         list2 = FormatList(list2);
-        var list3 = new List<LocalWebAppInfo>(FormatList(LocalWebAppHook.AdditionalDevApps, true));
+        var list3 = new List<LocalWebAppInfo>(FormatList(additionalDevApps, true));
         foreach (var item in list3)
         {
             if (string.IsNullOrWhiteSpace(item?.ResourcePackageId) || string.IsNullOrWhiteSpace(item?.DisplayName) || list2.Contains(item)) continue;
@@ -184,11 +221,11 @@ public sealed partial class LocalWebAppHubPage : Page
     {
         if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
         if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) return;
-        if (PreventAppHandler?.Invoke(info, false) == true) return;
+        if (PreventAppHandler?.Invoke(this, info, false) == true) return;
         var h = OpenHandler;
         if (h != null)
         {
-            _ = h(info, false);
+            _ = h(this, info, false);
             return;
         }
 
@@ -217,7 +254,7 @@ public sealed partial class LocalWebAppHubPage : Page
         if (info.ResourcePackageId == "+" && info.LocalPath == "+")
         {
             if (SelectDevAppHandler == null) return false;
-            dir = await SelectDevAppHandler();
+            dir = await SelectDevAppHandler(this);
             if (dir == null || !dir.Exists) return false;
             try
             {
@@ -257,10 +294,10 @@ public sealed partial class LocalWebAppHubPage : Page
             dir = IO.FileSystemInfoUtility.TryGetDirectoryInfo(info.LocalPath);
         }
 
-        if (PreventAppHandler?.Invoke(info, true) == true) return false;
+        if (PreventAppHandler?.Invoke(this, info, true) == true) return false;
         if (h != null)
         {
-            await h(info, true);
+            await h(this, info, true);
             if (needRefresh) Refresh();
             return true;
         }
@@ -290,7 +327,7 @@ public sealed partial class LocalWebAppHubPage : Page
     private void OnDevItemRemoveButtonClick(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
-        LocalWebAppHook.AdditionalDevApps.Remove(info);
+        additionalDevApps.Remove(info);
         if (info.ResourcePackageId == "+" && info.LocalPath == "+") noAdd = true;
         _ = OnInitAsync(LocalWebAppHost.RemovePackageAsync(info.ResourcePackageId, true));
     }
@@ -320,7 +357,7 @@ public sealed partial class LocalWebAppHubPage : Page
         page = new LocalWebAppHubPage
         {
             OpenHandler = win.OpenLocalWebApp,
-            SelectDevAppHandler = () => VisualUtility.SelectFolderAsync(win)
+            SelectDevAppHandler = p => VisualUtility.SelectFolderAsync(win)
         };
         if (string.IsNullOrWhiteSpace(title)) title = "Apps";
         win.Add(new TabViewItem

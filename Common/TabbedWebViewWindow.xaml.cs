@@ -356,7 +356,7 @@ public sealed partial class TabbedWebViewWindow : Window
     public bool Contains(LocalWebAppPage webview)
         => HostElement.Contains(webview);
 
-    internal async Task OpenLocalWebApp(Web.LocalWebAppInfo info, bool dev)
+    internal async Task OpenLocalWebApp(LocalWebAppHubPage p, Web.LocalWebAppInfo info, bool dev)
     {
         var id = info?.ResourcePackageId;
         var page = GetLocalWebAppPage(id);
@@ -375,10 +375,21 @@ public sealed partial class TabbedWebViewWindow : Window
             var dir = IO.FileSystemInfoUtility.TryGetDirectoryInfo(info.LocalPath);
             if (dir != null && dir.Exists)
             {
-                await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir), (tab, page) =>
+                LocalWebAppPage p2 = null;
+                try
                 {
-                    page.IsDevEnvironmentEnabled = true;
-                });
+                    await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir), (tab, page) =>
+                    {
+                        p2 = page;
+                        page.IsDevEnvironmentEnabled = true;
+                    });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    if (ex.Message != "Miss config file.") throw;
+                    if (p.CreateDevAppHandler?.Invoke(p, p2) != true) throw;
+                }
+
                 return;
             }
         }

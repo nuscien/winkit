@@ -150,7 +150,20 @@ LWA 运行后，随即检查更新。
 
 ## 原生扩展
 
-- 所有组件都绑定在 `window.localWebApp` 对象上。
-- 原生功能均返回 Promise/A 形态结果。
+宿主程序通过 JS Bridge 的方式将原生能力扩展给内嵌网页使用。所有相关组件均绑定在 `window.localWebApp` 对象上。大部分防范都通过返回 Promise/A 的方式异步工作。
 
-具体接口可参考 [Type Script 定义文件](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts)。
+其主要包含以下扩展能力。
+
+- `files` 一套提供文件和目录，以及下载文件访问能力的原生 API 集合。
+- `cryptography` 一套提供对称加密和哈希的原生 API 集合。
+- `text` 一套文本编解码函数集合。
+- `hostApp` 一套提供主题、更新、窗口等访问的原生 API 集合。
+
+其也包含以下属性。
+
+- `hostInfo` 所有环境和相关信息。
+- `dataRes` & `strRes` 在前端资源清单中申明绑定的文件内容集合。
+
+宿主程序也支持进行原生自定义扩展。其在 JS 层暴露 `getCommandHandler` 函数，需传入对应 ID，将返回对应原生扩展实现的前端代理，包含发送请求和获取结果的能力。原生程序开发需要实现对应的接口，并将实例诸如到对应页面或窗口中。
+
+完整接口可参考 [Type Script 定义文件](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts)。

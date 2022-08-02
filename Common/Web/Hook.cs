@@ -102,11 +102,6 @@ public static class LocalWebAppHook
     public static string SelectDevAppIconPath { get; set; }
 
     /// <summary>
-    /// Gets the additional dev apps.
-    /// </summary>
-    public static List<LocalWebAppInfo> AdditionalDevApps { get; } = new();
-
-    /// <summary>
     /// Gets or sets the handler to generate the default virtual host.
     /// </summary>
     public static Func<LocalWebAppManifest, LocalWebAppOptions, string> VirtualHostGenerator { get; set; }

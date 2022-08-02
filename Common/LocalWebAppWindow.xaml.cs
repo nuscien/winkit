@@ -304,8 +304,9 @@ public sealed partial class LocalWebAppWindow : Window
     /// </summary>
     /// <param name="host">The standalone local web app host.</param>
     /// <param name="callback">The callback.</param>
-    public Task LoadAsync(Task<LocalWebAppHost> host, Action<LocalWebAppHost> callback = null)
-        => MainElement.LoadAsync(host, callback);
+    /// <param name="error">The error handling.</param>
+    public Task LoadAsync(Task<LocalWebAppHost> host, Action<LocalWebAppHost> callback = null, Action<Exception> error = null)
+        => MainElement.LoadAsync(host, callback, error);
 
     /// <summary>
     /// Updates the resource package.

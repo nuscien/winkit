@@ -52,26 +52,26 @@ namespace Trivial.Demo
         private static async Task OnInitAsync()
         {
             LocalWebAppHost.SetHostId("WinKitDemo");
-            LocalWebAppHook.AdditionalDevApps.Add(new()
+            await LocalWebAppHost.LoadAsync(null as System.Reflection.Assembly);
+            var win = UI.LocalWebAppHubPage.CreateWindow(null, out var page);
+            page.AddAdditionalDevApp(new()
             {
                 ResourcePackageId = "@",
                 DisplayName = "List & Files",
                 LocalPath = "List & Files"
             });
-            LocalWebAppHook.AdditionalDevApps.Add(new()
+            page.AddAdditionalDevApp(new()
             {
                 ResourcePackageId = "@",
                 DisplayName = "NBC",
                 LocalPath = "NBC"
             });
-            LocalWebAppHook.AdditionalDevApps.Add(new()
+            page.AddAdditionalDevApp(new()
             {
                 ResourcePackageId = "@",
                 DisplayName = "Bilibili",
                 LocalPath = "Bilibili"
             });
-            await LocalWebAppHost.LoadAsync(null as System.Reflection.Assembly);
-            var win = UI.LocalWebAppHubPage.CreateWindow(null, out var page);
             var panel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -79,7 +79,7 @@ namespace Trivial.Demo
                 Margin = new Thickness(0, 10, 0, 10)
             };
             page.MoreContent = panel;
-            page.PreventAppHandler = (info, dev) =>
+            page.PreventAppHandler = (p, info, dev) =>
             {
                 if (info?.ResourcePackageId != "@") return false;
                 var key = info.LocalPath?.Trim().ToLowerInvariant();

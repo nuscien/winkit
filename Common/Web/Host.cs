@@ -1203,7 +1203,8 @@ public class LocalWebAppHost
             if (dir != null) config = LoadBuildConfig(dir, out configFile);
         }
 
-        if (config == null || configFile == null) throw new InvalidOperationException("Parse the config file failed.");
+        if (configFile == null) throw new InvalidOperationException("Miss config file.");
+        if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
         var options = LoadOptions(config, keyFile);

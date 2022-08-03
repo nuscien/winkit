@@ -26,6 +26,7 @@
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>ui tiles</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 

@@ -64,12 +64,14 @@ namespace Trivial.Demo
             {
                 ResourcePackageId = "@",
                 DisplayName = "NBC",
+                Icon = "ms-appx:///Nbc/nbc_logo.png",
                 LocalPath = "NBC"
             });
             page.AddAdditionalDevApp(new()
             {
                 ResourcePackageId = "@",
                 DisplayName = "Bilibili",
+                Icon = "ms-appx:///Bilibili/bilibili_logo.png",
                 LocalPath = "Bilibili"
             });
             var panel = new StackPanel

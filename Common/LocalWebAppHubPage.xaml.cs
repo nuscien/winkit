@@ -161,6 +161,24 @@ public sealed partial class LocalWebAppHubPage : Page
     public int RemoveAdditionalDevApp(string id)
         => additionalDevApps.RemoveAll(ele => ele.ResourcePackageId == id);
 
+    /// <inheritdoc />
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        if (e.Parameter is not LocalWebAppHubPageNavigationOptions options) return;
+        IsDevModeButtonHidden = options.IsDevModeDisabled;
+        options.AdditionalDevApps.Clear();
+        foreach (var item in options.AdditionalDevApps)
+        {
+            AddAdditionalDevApp(item);
+        }
+
+        PreventAppHandler = options.PreventAppHandler;
+        OpenHandler = options.OpenHandler;
+        SelectDevAppHandler = options.SelectDevAppHandler;
+        CreateDevAppHandler = options.CreateDevAppHandler;
+    }
+
     private async Task OnInitAsync(Task previous = null)
     {
         UpdateText(DevShowButtonText, LocalWebAppHook.CustomizedLocaleStrings.DevModeShowTitle);

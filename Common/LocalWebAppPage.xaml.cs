@@ -602,6 +602,10 @@ public sealed partial class LocalWebAppPage : Page
             _ = LoadAsync(host);
         else if (e.Parameter is LocalWebAppOptions options)
             _ = LoadAsync(options);
+        else if (e.Parameter is string id)
+            _ = LoadAsync(id);
+        else if (e.Parameter is DirectoryInfo dir)
+            _ = LoadDevPackageAsync(dir);
         MonitorSingleton?.OnNavigatedTo(this, e);
     }
 

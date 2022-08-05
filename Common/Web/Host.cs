@@ -730,13 +730,8 @@ public class LocalWebAppHost
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, Uri uri, CancellationToken cancellationToken = default)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
         if (uri == null) throw new ArgumentNullException(nameof(uri));
-        if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
-        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-        var appId = FormatResourcePackageId(options.ResourcePackageId);
-        appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
-        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        var dir = await GetAppRootDirectoryAsync(options);
         var cacheDir = Directory.CreateDirectory(Path.Combine(dir.FullName, "cache"));
         var path = Path.Combine(cacheDir.FullName, "TempResourcePackage.zip");
         TryDeleteDirectory(path);
@@ -770,7 +765,7 @@ public class LocalWebAppHost
         }
 
         await UpdateAsync(options, dir, null, FileSystemInfoUtility.TryGetFileInfo(path), true, cancellationToken);
-        var host = await LoadAsync(dir, options, true, null, cancellationToken);
+        var host = await LoadAsync(dir, options, false, null, cancellationToken);
         if (host.ResourcePackageId != options.ResourcePackageId) throw new InvalidOperationException("The app is not the expect one.");
         if (host.IsVerified) await RegisterPackageAsync(new LocalWebAppInfo(host));
         return host;
@@ -796,6 +791,30 @@ public class LocalWebAppHost
         if (uri == null) throw new ArgumentNullException(nameof(uri));
         if (string.IsNullOrWhiteSpace(info.ResourcePackageId)) throw new ArgumentException("The resource package identifier should not be empty.", nameof(info));
         return await LoadAsync(info?.GetOptions(), uri, cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="options">The options to parse.</param>
+    /// <param name="zip">The path of the compressed resource package file.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web app host.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, FileInfo zip, CancellationToken cancellationToken = default)
+    {
+        var dir = await GetAppRootDirectoryAsync(options);
+        await UpdateAsync(options, dir, null, zip, false, cancellationToken);
+        var host = await LoadAsync(dir, options, false, null, cancellationToken);
+        if (host.ResourcePackageId != options.ResourcePackageId) throw new InvalidOperationException("The app is not the expect one.");
+        if (host.IsVerified) await RegisterPackageAsync(new LocalWebAppInfo(host));
+        return host;
     }
 
     /// <summary>
@@ -1593,6 +1612,28 @@ public class LocalWebAppHost
         }
 
         return relative == ".." || relative == "." ? null : FileSystemInfoUtility.TryGetFileInfo(root.FullName, relative);
+    }
+
+    /// <summary>
+    /// Gets the root directory of the app.
+    /// </summary>
+    /// <param name="options">The options to load.</param>
+    /// <returns>The root directory of the app.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    private static async Task<DirectoryInfo> GetAppRootDirectoryAsync(LocalWebAppOptions options)
+    {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
+        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
+        var appId = FormatResourcePackageId(options.ResourcePackageId);
+        appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
+        return FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
     }
 
     /// <summary>

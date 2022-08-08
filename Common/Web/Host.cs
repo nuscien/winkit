@@ -1231,6 +1231,14 @@ public class LocalWebAppHost
 
         // Create manifest.
         var appDir = GetDirectoryInfoByRelative(dir, refConfig.TryGetStringValue("path")?.Trim()) ?? dir;
+        try
+        {
+            if (!appDir.Exists) appDir.Create();
+        }
+        catch (IOException)
+        {
+        }
+
         var manifestPath = Path.Combine(appDir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
         var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
         if (manifestJson != null)
@@ -1459,16 +1467,20 @@ public class LocalWebAppHost
     public static async Task<bool> RemovePackageAsync(string resourcePackageId, bool dev = false)
     {
         if (string.IsNullOrWhiteSpace(resourcePackageId)) return false;
-        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
         var appId = FormatResourcePackageId(resourcePackageId);
-        if (string.IsNullOrWhiteSpace(appId) || appId == "_settings") return false;
-        try
+        if (string.IsNullOrWhiteSpace(appId)) return false;
+        if (!dev)
         {
-            appDataFolder = await appDataFolder.GetFolderAsync(appId);
-            if (appDataFolder != null) await appDataFolder.DeleteAsync();
-        }
-        catch (IOException)
-        {
+            if (appId == "_settings") return false;
+            try
+            {
+                var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
+                appDataFolder = await appDataFolder.GetFolderAsync(appId);
+                if (appDataFolder != null) await appDataFolder.DeleteAsync();
+            }
+            catch (IOException)
+            {
+            }
         }
 
         var dir = await GetSettingsDirAsync();
@@ -1605,6 +1617,8 @@ public class LocalWebAppHost
             relative = relative[..^1];
         if (relative.Length < 1 || relative == "." || relative == "~")
             return null;
+        if (relative.StartsWith("./") || relative.StartsWith(".\\"))
+            relative = relative[2..];
         while (relative.StartsWith("../") || relative.StartsWith("..\\"))
         {
             root = root.Parent;

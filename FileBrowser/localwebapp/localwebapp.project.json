@@ -12,7 +12,7 @@
     "update": {
       "url": "http://localhost/install/Test/LocalWebApp.json"
     },
-    "path": "..\\..\\bin\\LocalWebApp\\app",
+    "path": "..\\..\\bin\\LocalWebApp\\filebrowser\\app",
     "sign": "RS256"
   },
   "dev": {

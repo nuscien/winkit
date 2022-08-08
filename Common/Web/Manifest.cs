@@ -297,21 +297,21 @@ public class LocalWebAppInfo
     public DateTime LastModificationTime { get; set; }
 
     /// <summary>
-    /// Gets the update virtual host.
+    /// Gets the customized virtual host.
     /// </summary>
     [JsonPropertyName("server")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string CustomizedVirtualHost { get; set; }
 
     /// <summary>
-    /// Gets the update virtual host.
+    /// Gets the URL of the update service.
     /// </summary>
     [JsonPropertyName("manifest")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string CustomizedManifestFileName { get; set; }
 
     /// <summary>
-    /// Gets the update virtual host.
+    /// Gets the optional local path.
     /// </summary>
     [JsonPropertyName("local")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -325,31 +325,19 @@ public class LocalWebAppInfo
         => GetOptions()?.GetSignatureProvider();
 
     /// <summary>
-    /// Sets the manifest.
+    /// Ensures absolute icon path.
     /// </summary>
-    /// <param name="manifest">The manifest.</param>
     /// <param name="appDir">The directory of the local web app.</param>
-    public void Set(LocalWebAppManifest manifest, DirectoryInfo appDir = null)
+    public void FormatAbsoluteIconPath(DirectoryInfo appDir)
     {
-        if (manifest == null) return;
-        ResourcePackageId = manifest.Id;
-        DisplayName = manifest.DisplayName;
-        Icon = manifest.Icon;
-        Version = manifest.Version;
-        Description = manifest.Description;
-        PublisherName = manifest.PublisherName;
-        Copyright = manifest.Copyright;
-        Website = manifest.Website;
-        Tags = manifest.Tags;
         if (appDir == null || !appDir.Exists) return;
+        var s = Icon;
+        if (string.IsNullOrWhiteSpace(s) || s.Contains("://")) return;
         try
         {
-            if (!string.IsNullOrWhiteSpace(manifest.Icon) && !manifest.Icon.Contains("://"))
-            {
-                var file = LocalWebAppHost.GetFileInfoByRelative(appDir, manifest.Icon);
-                if (file == null || !file.Exists || string.IsNullOrWhiteSpace(file.FullName)) return;
-                Icon = file.FullName;
-            }
+            var file = LocalWebAppHost.GetFileInfoByRelative(appDir, s);
+            if (file == null || !file.Exists || string.IsNullOrWhiteSpace(file.FullName)) return;
+            Icon = file.FullName;
         }
         catch (IOException)
         {
@@ -369,6 +357,26 @@ public class LocalWebAppInfo
         catch (ExternalException)
         {
         }
+    }
+
+    /// <summary>
+    /// Sets the manifest.
+    /// </summary>
+    /// <param name="manifest">The manifest.</param>
+    /// <param name="appDir">The directory of the local web app.</param>
+    public void Set(LocalWebAppManifest manifest, DirectoryInfo appDir = null)
+    {
+        if (manifest == null) return;
+        ResourcePackageId = manifest.Id;
+        DisplayName = manifest.DisplayName;
+        Icon = manifest.Icon;
+        Version = manifest.Version;
+        Description = manifest.Description;
+        PublisherName = manifest.PublisherName;
+        Copyright = manifest.Copyright;
+        Website = manifest.Website;
+        Tags = manifest.Tags;
+        FormatAbsoluteIconPath(appDir);
     }
 
     /// <summary>

@@ -138,6 +138,28 @@ public class LocalWebAppOptions
     }
 
     /// <summary>
+    /// Initializes a new instance of the LocalWebAppOptions class.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier.</param>
+    /// <param name="options">The options to copy.</param>
+    public LocalWebAppOptions(string resourcePackageId, LocalWebAppOptions options)
+        : this(resourcePackageId, options.SignatureAlgorithm, options.SignatureKey, options.Update, options.ManifestFileName)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppOptions class.
+    /// </summary>
+    /// <param name="resourcePackageId">The resource package identifier.</param>
+    /// <param name="options">The options to copy.</param>
+    /// <param name="virtualHost">The customized virtual host.</param>
+    public LocalWebAppOptions(string resourcePackageId, LocalWebAppOptions options, string virtualHost)
+        : this(resourcePackageId, options)
+    {
+        if (!string.IsNullOrWhiteSpace(virtualHost)) CustomizedVirtualHost = virtualHost;
+    }
+
+    /// <summary>
     /// Gets the file name of the manifest.
     /// </summary>
     public string ManifestFileName { get; }

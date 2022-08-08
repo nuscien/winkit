@@ -600,6 +600,8 @@ public sealed partial class LocalWebAppPage : Page
         base.OnNavigatedTo(e);
         if (e.Parameter is LocalWebAppHost host)
             _ = LoadAsync(host);
+        else if (e.Parameter is Task<LocalWebAppHost> hostTask)
+            _ = LoadAsync(hostTask);
         else if (e.Parameter is LocalWebAppOptions options)
             _ = LoadAsync(options);
         else if (e.Parameter is string id)

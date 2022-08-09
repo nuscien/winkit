@@ -137,16 +137,16 @@ public class LocalWebAppHost
     {
         var host = ResourcePackageDirectory?.FullName;
         if (localRelativePath.StartsWith("..")) localRelativePath = GetResourcePackageParentPath(localRelativePath);
-        else if (localRelativePath.StartsWith('~')) localRelativePath = localRelativePath[1..];
-        else if (localRelativePath.StartsWith(".asset:")) localRelativePath = localRelativePath[7..];
-        else if (localRelativePath.StartsWith(".data:")) return Path.Combine(DataDirectory?.FullName ?? host, localRelativePath[6..]);
-        else if (localRelativePath.StartsWith(".doc:")) return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), localRelativePath[6..]);
-        else if (localRelativePath.StartsWith("./")) localRelativePath = localRelativePath[2..];
+        else if (localRelativePath.StartsWith('~')) localRelativePath = CombinePath(DataDirectory?.FullName ?? host, localRelativePath[1..]);
+        else if (localRelativePath.StartsWith(".asset:")) localRelativePath = GetResourcePackagePath(localRelativePath[7..]);
+        else if (localRelativePath.StartsWith(".data:")) return CombinePath(DataDirectory?.FullName ?? host, localRelativePath[6..]);
+        else if (localRelativePath.StartsWith(".doc:")) return CombinePath(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), localRelativePath[6..]);
+        else if (localRelativePath.StartsWith("./") || localRelativePath.StartsWith(".\\")) localRelativePath = GetResourcePackagePath(localRelativePath[2..]);
         else if (localRelativePath.StartsWith('.')) return null;
         else if (localRelativePath.StartsWith('%')) localRelativePath = FileSystemInfoUtility.GetLocalPath(localRelativePath);
         else if (localRelativePath.Contains("://")) return localRelativePath;
         else if (test) return localRelativePath;
-        return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath);
+        return string.IsNullOrEmpty(host) ? null : CombinePath(host, localRelativePath);
     }
 
     /// <summary>
@@ -1741,7 +1741,24 @@ public class LocalWebAppHost
     private string GetResourcePackageParentPath(string localRelativePath)
     {
         var host = ResourcePackageDirectory?.Parent?.FullName;
-        return string.IsNullOrEmpty(host) ? null : Path.Combine(host, localRelativePath.TrimStart('.'));
+        return string.IsNullOrEmpty(host) ? null : CombinePath(host, localRelativePath.TrimStart('.'));
+    }
+
+    /// <summary>
+    /// Gets the parent path of resource package.
+    /// </summary>
+    /// <param name="localRelativePath">The relative path.</param>
+    /// <returns>The path.</returns>
+    private string GetResourcePackagePath(string localRelativePath)
+    {
+        var host = ResourcePackageDirectory?.FullName;
+        return string.IsNullOrEmpty(host) ? null : CombinePath(host, localRelativePath.TrimStart('.'));
+    }
+
+    private static string CombinePath(string parent, string folder)
+    {
+        if (folder.StartsWith('/') || folder.StartsWith('\\')) folder = folder[1..];
+        return Path.Combine(parent, folder);
     }
 
     private static async Task<DirectoryInfo> GetSettingsDirAsync()

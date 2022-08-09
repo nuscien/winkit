@@ -28,7 +28,7 @@ internal static class LocalWebAppExtensions
     internal const string DefaultManifestGeneratedFileName = "localwebapp.files.json";
     internal const string VirtualRootDomain = "localwebapp.localhost";
 
-    public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest, bool isDebug = false)
+    public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest)
     {
         var eas = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
         var entryAssembly = (LocalWebAppHook.Assembly ?? Assembly.GetEntryAssembly()).GetName();
@@ -93,7 +93,6 @@ internal static class LocalWebAppExtensions
                 { "productSku", eas.SystemSku }
             } }
         };
-        if (isDebug) hostInfo.SetValue("devEnv", true);
         return hostInfo;
     }
 
@@ -691,7 +690,7 @@ internal static class LocalWebAppExtensions
             { "encode", "hex" }
         };
         var test = request.Data.TryGetStringValue("test");
-        if (!string.IsNullOrWhiteSpace(test)) json.SetValue("verify", test == s);
+        if (!string.IsNullOrWhiteSpace(test)) json.SetValue("verify", test.Equals(s, StringComparison.OrdinalIgnoreCase));
         var info = new JsonObjectNode
         {
             { "input", input },
@@ -711,13 +710,13 @@ internal static class LocalWebAppExtensions
         if (string.IsNullOrEmpty(alg)) return new("The algorithm should not be null or empty.");
         s = (request.Data.TryGetBooleanValue("decrypt") ?? false) ? alg switch
         {
-            "AES" => SymmetricUtility.Encrypt(Aes.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
-            "3DES" => SymmetricUtility.Encrypt(TripleDES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "AES" => SymmetricUtility.DecryptText(Aes.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "3DES" => SymmetricUtility.DecryptText(TripleDES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
             _ => null
         } : alg switch
         {
-            "AES" => SymmetricUtility.DecryptText(Aes.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
-            "3DES" => SymmetricUtility.DecryptText(TripleDES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "AES" => SymmetricUtility.Encrypt(Aes.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "3DES" => SymmetricUtility.Encrypt(TripleDES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
             _ => null
         };
         if (s == null) return new("The algorithm is not supported.");
@@ -727,6 +726,78 @@ internal static class LocalWebAppExtensions
             { "algorithm", alg },
             { "encode", "hex" }
         });
+    }
+
+    public static LocalWebAppResponseMessage Signature(LocalWebAppRequestMessage request, LocalWebAppHost host = null, bool verify = false)
+    {
+        var s = request?.Data?.TryGetStringValue("value");
+        if (s == null) return new("Miss input value.");
+        var alg = request.Data.TryGetStringValue("alg")?.Trim()?.ToUpperInvariant();
+        if (string.IsNullOrEmpty(alg)) return new("The algorithm should not be null or empty.");
+        var secret = request.Data.TryGetStringValue("key");
+        if (string.IsNullOrWhiteSpace(secret)) return new("Miss key.");
+        ISignatureProvider sign = alg switch
+        {
+            "RS256" => RSASignatureProvider.CreateRS256(secret),
+            "RS384" => RSASignatureProvider.CreateRS384(secret),
+            "RS512" => RSASignatureProvider.CreateRS512(secret),
+            "HS256" => HashSignatureProvider.CreateHS256(secret),
+            "HS384" => HashSignatureProvider.CreateHS384(secret),
+            "HS512" => HashSignatureProvider.CreateHS512(secret),
+            _ => null
+        };
+        if (sign == null) return new("The algorithm is not supported.");
+        var test = verify ? request.Data.TryGetStringValue("test") : null;
+        var type = request.Data.TryGetStringValue("type")?.Trim()?.ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(test))
+        {
+            if (verify) return new("Miss test signature to verify.");
+            if (type == "file")
+            {
+                if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
+                if (host != null) s = host.GetLocalPath(s, true);
+                var file = FileSystemInfoUtility.TryGetFileInfo(s);
+                if (file == null || !file.Exists) return new("Not found.");
+                using var stream = file.OpenRead();
+                test = WebFormat.Base64UrlEncode(sign.Sign(stream));
+            }
+            else
+            {
+                test = WebFormat.Base64UrlEncode(sign.Sign(s));
+            }
+
+            return new(new JsonObjectNode()
+            {
+                { "sign", test },
+                { "algorithm", alg },
+                { "encode", "base64url" }
+            });
+        }
+        else
+        {
+            var bytes = WebFormat.Base64UrlDecode(test);
+            var data = Encoding.UTF8.GetBytes(s);
+            var result = false;
+            if (type == "file")
+            {
+                if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
+                if (host != null) s = host.GetLocalPath(s, true);
+                var file = FileSystemInfoUtility.TryGetFileInfo(s);
+                if (file == null || !file.Exists) return new("Not found.");
+                using var stream = file.OpenRead();
+                result = sign.Verify(stream, bytes);
+            }
+            else
+            {
+                result = sign.Verify(data, bytes);
+            }
+
+            return new(new JsonObjectNode()
+            {
+                { "verify", result },
+                { "algorithm", alg }
+            });
+        }
     }
 
     public static async Task<LocalWebAppResponseMessage> OpenFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host = null)
@@ -953,6 +1024,10 @@ internal static class LocalWebAppExtensions
                 return Hash(request, host);
             case "symmetric":
                 return Symmetric(request);
+            case "sign":
+                return Signature(request, host, false);
+            case "verify":
+                return Signature(request, host, true);
             case "open":
                 return await OpenFileAsync(request, host);
             case "download-list":

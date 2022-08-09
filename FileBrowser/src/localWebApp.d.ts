@@ -106,6 +106,11 @@
         };
     }
 
+    interface HandlerProcessingReferenceContract {
+        trace?: string | undefined;
+        response?: HandlerResponseContract<any> | undefined;
+    }
+
     interface FileInfoContract {
         name: string;
         modified: string;
@@ -211,6 +216,7 @@
             q?: string;
             showHidden?: boolean | null;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | string | undefined | null): HandlerResponse<FileListResponseContract>;
 
         /**
@@ -220,6 +226,7 @@
          listDrives(options?: {
             fixed?: boolean | null;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | string | undefined | null): HandlerResponse<{
             drives: DriveInfoContract[]
         }>;
@@ -234,6 +241,7 @@
             read?: boolean | "none" | "text" | "json" | "base64";
             maxLength?: number;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<FileGetResponseContract>;
 
         /**
@@ -245,6 +253,7 @@
         write(path: string, value: { property: string } | any[] | string | null, options?: {
             appData?: boolean;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{}>;
 
         /**
@@ -257,6 +266,7 @@
             override?: boolean;
             dir?: boolean;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | boolean): HandlerResponse<{}>;
 
         /**
@@ -269,6 +279,7 @@
             override?: boolean;
             dir?: boolean;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | boolean): HandlerResponse<{}>;
 
         /**
@@ -278,6 +289,8 @@
          */
         delete(path: string, options?: {
             dir?: boolean;
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | boolean): HandlerResponse<{}>;
 
         /**
@@ -287,6 +300,7 @@
          */
         md(path: string, options?: {
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | boolean): HandlerResponse<{
             existed: boolean;
             info: FileInfoContract;
@@ -302,6 +316,7 @@
             args?: string | null;
             type?: "file" | "dir" | "url" | "exe" | null;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{}>;
 
         /**
@@ -312,6 +327,7 @@
             open?: boolean;
             max?: number;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<DownloadListContract>;
     };
 
@@ -330,6 +346,7 @@
          */
         encrypt(alg: "aes" | "3des", value: string, key: string, iv: string, options?: {
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             value: string;
             algorithm: string;
@@ -346,10 +363,45 @@
          */
         decrypt(alg: "aes" | "3des", value: string, key: string, iv: string, options?: {
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             value: string;
             algorithm: string;
             encode: "hex";
+        }>;
+
+        /**
+         * Verify the signature.
+         * @param alg The algorithm name.
+         * @param value The value to verify.
+         * @param key The key.
+         * @param test The signature to test.
+         * @param options The options.
+         */
+        verify(alg: "rs256" | "rs384" | "rs512" | "hs256" | "hs384" | "hs512", value: string, key: string, test: string, options?: {
+            type?: "text" | "file" | null;
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
+        }): HandlerResponse<{
+            verify: boolean;
+            algorithm: string;
+        }>;
+
+        /**
+         * Signs.
+         * @param alg The algorithm name.
+         * @param value The value to sign.
+         * @param key The key.
+         * @param options The options.
+         */
+        sign(alg: "rs256" | "rs384" | "rs512" | "hs256" | "hs384" | "hs512", value: string, key: string, options?: {
+            type?: "text" | "file" | null;
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
+        }): HandlerResponse<{
+            sign: string;
+            algorithm: string;
+            encode: "base64url";
         }>;
 
         /**
@@ -362,6 +414,7 @@
             test?: string;
             type?: "text" | "file" | null;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             value: string;
             algorithm: string;
@@ -410,7 +463,8 @@
          * @param options The options.
          */
         theme(options?: {
-            context?: HandlerInfoContract
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             brightness: "dark" | "light";
         }>;
@@ -421,6 +475,7 @@
          */
         checkUpdate(options?: {
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             version: string;
             has: boolean;
@@ -439,6 +494,7 @@
             focus?: boolean;
             physical?: boolean;
             context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         } | null): HandlerResponse<WindowStateInfoContract>;
 
         /**
@@ -446,7 +502,8 @@
          * @param options The options.
          */
         handlers(options?: {
-            context?: HandlerInfoContract
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             collection: {
                 id: string;

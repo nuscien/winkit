@@ -37,6 +37,7 @@ public sealed partial class LocalWebAppPage : Page
     private readonly Dictionary<string, ILocalWebAppCommandHandler> proc = new();
     private readonly LocalWebAppBrowserMessageHandler messageHandler;
     private TabbedWebViewWindow tabbedWebViewWindowInstance;
+    private bool isDevEnv;
 
     /// <summary>
     /// Gets or sets the monitor.
@@ -180,7 +181,34 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Gets or sets a value indicating whether it is in debug mode to ignore any signature verification and enable Microsoft Edge DevTools.
     /// </summary>
-    public bool IsDevEnvironmentEnabled { get; set; }
+    public bool IsDevEnvironmentEnabled
+    {
+        get
+        {
+            return isDevEnv;
+        }
+
+        set
+        {
+            isDevEnv = value;
+            try
+            {
+                if (Browser.CoreWebView2?.Settings != null) Browser.CoreWebView2.Settings.AreDevToolsEnabled = value;
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the available new version to update.
@@ -653,9 +681,9 @@ function genRandomStr() {
   if (stepNumber >= Number.MAX_SAFE_INTEGER) stepNumber = 0; stepNumber++;
   return 'r' + Math.floor(Math.random() * 46655).toString(36) + stepNumber.toString(36) + (new Date().getTime().toString(36));
 }
-function sendRequest(handlerId, cmd, data, info, context, noResp) {
-  let req = { handler: handlerId, cmd, data, info, context, date: new Date() }; let promise = null;
-  if (!noResp) { req.trace = genRandomStr();
+function sendRequest(handlerId, cmd, data, info, context, noResp, ref) {
+  let req = { handler: handlerId, cmd, data, info, context, date: new Date(), trace: genRandomStr() }; let promise = null;
+  if (!noResp) {
     promise = new Promise(function (resolve, reject) {
       let handler = {};
       handler.proc = function (ev) {
@@ -664,9 +692,11 @@ function sendRequest(handlerId, cmd, data, info, context, noResp) {
         if (context) ev.context = context;
         if (ev.data.error) reject(ev.data);
         else resolve(ev.data);
+        try { if (ref) ref.response = ev.data; } catch (ex) { }
     }; hs.push({ h: handler, type: null });
   }); }
-  postMsg(req); return promise;
+  postMsg(req); try { if (ref) ref.trace = req.trace; } catch (ex) { }
+  return promise;
 }
 if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
   try {
@@ -715,11 +745,11 @@ window.localWebApp = {
       id() {
         return id;
       },
-      call(cmd, data, context, info) {
-        sendRequest(id, cmd, data, info, context, false)
+      call(cmd, data, context, info, ref) {
+        sendRequest(id, cmd, data, info, context, false, ref)
       },
       request(cmd, data, context, info) {
-        return sendRequest(id, cmd, data, info, context, true)
+        return sendRequest(id, cmd, data, info, context, true, ref)
       }
     };
   },
@@ -736,23 +766,23 @@ window.localWebApp = {
       if (!options) options = {};
       else if (typeof options === 'string') options = { q: options };
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'list-file', { path: dir, q: options.q, showHidden: options.showHidden }, null, options.context);
+      return sendRequest(null, 'list-file', { path: dir, q: options.q, showHidden: options.showHidden }, null, options.context, false, options.ref);
     },
     listDrives(options) {
       if (options === true) options = { fixed: true };
       else if (options === false) options = { fixed: false };
       else if (!options) options = {};
-      return sendRequest(null, 'list-drives', { fixed: options.fixed }, null, options.context);
+      return sendRequest(null, 'list-drives', { fixed: options.fixed }, null, options.context, false, options.ref);
     },
     get(path, options) {
       if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'get-file', { path, read: options.read, maxLength: options.maxLength }, null, options.context);
+      return sendRequest(null, 'get-file', { path, read: options.read, maxLength: options.maxLength }, null, options.context, false, options.ref);
     },
     write(path, value, options) {
       if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'write-file', { path, value }, null, options.context);
+      return sendRequest(null, 'write-file', { path, value }, null, options.context, false, options.ref);
     },
     move(path, dest, options) {
       if (options === true) options = { override: true };
@@ -760,52 +790,60 @@ window.localWebApp = {
       else if (!options) options = {};
       if (!dest) dest = '';
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'move-file', { path, dest, override: options.override, dir: options.dir, copy: false }, null, options.context);
+      return sendRequest(null, 'move-file', { path, dest, override: options.override, dir: options.dir, copy: false }, null, options.context, false, options.ref);
     },
     copy(path, dest, options) {
       if (options === true) options = { override: true };
       else if (options === false) options = { override: false };
       else if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'move-file', { path, dest, override: options.override, dir: options.dir, copy: true }, null, options.context);
+      return sendRequest(null, 'move-file', { path, dest, override: options.override, dir: options.dir, copy: true }, null, options.context, false, options.ref);
     },
     delete(path, options) {
       if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'move-file', { path, dir: options.dir, copy: false }, null, options.context);
+      return sendRequest(null, 'move-file', { path, dir: options.dir, copy: false }, null, options.context, false, options.ref);
     },
     md(path, options) {
       if (!options) options = {};
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'make-dir', { path }, null, options.context);
+      return sendRequest(null, 'make-dir', { path }, null, options.context, false, options.ref);
     },
     open(path, options) {
       if (!options) options = {};
       else if (typeof options === 'string') options = { args: options }
       if (options.appData && path) path = '.data:\\' + path;
-      return sendRequest(null, 'open', { path, args: options.args, type: options.type }, null, options.context);
+      return sendRequest(null, 'open', { path, args: options.args, type: options.type }, null, options.context, false, options.ref);
     },
     listDownload(options) {
       if (options === true) options = { open: true };
       else if (options === false) options = { open: false };
       else if (typeof options === 'number') options = { max: options };
       else if (!options) options = {};
-      return sendRequest(null, 'download-list', { open: options.open, max: options.max }, null, options.context);
+      return sendRequest(null, 'download-list', { open: options.open, max: options.max }, null, options.context, false, options.ref);
     }
   },
   cryptography: {
     encrypt(alg, value, key, iv, options) {
       if (!options) options = {};
-      return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: false }, null, options.context);
+      return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: false }, null, options.context, false, options.ref);
     },
     decrypt(alg, value, key, iv, options) {
       if (!options) options = {};
-      return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: true }, null, options.context);
+      return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: true }, null, options.context, false, options.ref);
+    },
+    verify(alg, value, key, test, options) {
+      if (!options) options = {};
+      return sendRequest(null, 'verify', { value, alg, key, test, type: options.type }, null, options.context, false, options.ref);
+    },
+    sign(alg, value, key, options) {
+      if (!options) options = {};
+      return sendRequest(null, 'sign', { value, alg, key, type: options.type }, null, options.context, false, options.ref);
     },
     hash(alg, value, options) {
       if (!options) options = {};
       else if (typeof options === 'string') options = { test: options }
-      return sendRequest(null, 'hash', { value, alg, test: options.test, type: options.type }, null, options.context);
+      return sendRequest(null, 'hash', { value, alg, test: options.test, type: options.type }, null, options.context, false, options.ref);
     }
   },
   text: {
@@ -828,26 +866,26 @@ window.localWebApp = {
   hostApp: {
     theme(options) {
       if (!options) options = {};
-      return sendRequest(null, 'theme', {}, null, options.context);
+      return sendRequest(null, 'theme', {}, null, options.context, false, options.ref);
     },
     checkUpdate(options) {
       if (options === true) options = { check: true };
       else if (options === false) options = { check: false };
       else if (!options) options = {};
-      return sendRequest(null, 'check-update', { check: options.check }, null, options.context);
+      return sendRequest(null, 'check-update', { check: options.check }, null, options.context, false, options.ref);
     },
     window(value) {
       if (!value) value = {};
       else if (typeof value === 'string') value = { state: value };
-      return sendRequest(null, 'window', { state: value.state, width: value.width || value.w, height: value.height || value.h, top: value.top || value.y, left: value.left || value.x, focus: value.focus, physical: value.physical }, null, value.context);
+      return sendRequest(null, 'window', { state: value.state, width: value.width || value.w, height: value.height || value.h, top: value.top || value.y, left: value.left || value.x, focus: value.focus, physical: value.physical }, null, value.context, false, options.ref);
     },
     handlers(options) {
       if (!options) options = {};
-      return sendRequest(null, 'handlers', {}, null, options.context);
+      return sendRequest(null, 'handlers', {}, null, options.context, false, options.ref);
     }
   },
   hostInfo: ");
-        sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest, isDebug).ToString(IndentStyles.Compact));
+        sb.Append(LocalWebAppExtensions.GetEnvironmentInformation(host.Manifest).ToString(IndentStyles.Compact));
         sb.Append(", dataRes: ");
         sb.Append(host.DataResources.ToString(IndentStyles.Compact));
         sb.Append(", strRes: ");

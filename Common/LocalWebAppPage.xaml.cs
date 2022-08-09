@@ -636,6 +636,8 @@ public sealed partial class LocalWebAppPage : Page
             _ = LoadAsync(id);
         else if (e.Parameter is DirectoryInfo dir)
             _ = LoadDevPackageAsync(dir);
+        else if (e.Parameter is IPageNavigationCallbackParameter<LocalWebAppPage> c)
+            c.OnNavigate(this, e);
         MonitorSingleton?.OnNavigatedTo(this, e);
     }
 

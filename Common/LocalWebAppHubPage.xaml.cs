@@ -165,6 +165,7 @@ public sealed partial class LocalWebAppHubPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        if (e.Parameter is IPageNavigationCallbackParameter<LocalWebAppHubPage> c) c.OnNavigate(this, e);
         if (e.Parameter is not LocalWebAppHubPageNavigationOptions options) return;
         IsDevModeButtonHidden = options.IsDevModeDisabled;
         options.AdditionalDevApps.Clear();

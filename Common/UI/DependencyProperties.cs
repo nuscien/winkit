@@ -210,3 +210,17 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
         callback(c, new ChangeEventArgs<TPropertyValue>(oldValue, newValue, changeMethod, name), p);
     }
 }
+
+/// <summary>
+/// The callback parameter for page navigation.
+/// </summary>
+/// <typeparam name="T">The type of the page.</typeparam>
+public interface IPageNavigationCallbackParameter<T> where T : Page
+{
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event argments.</param>
+    public void OnNavigate(T sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e);
+}

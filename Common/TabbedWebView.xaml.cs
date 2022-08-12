@@ -358,11 +358,33 @@ public sealed partial class TabbedWebView : UserControl
         {
             if (tabItem is not TabViewItem tabView || tabView.Content is not LocalWebAppPage page || !page.IsHost(host)) continue;
             tabView.IsSelected = true;
+            try
+            {
+                page.FocusBrowser(FocusState.Programmatic);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+
             return page;
         }
 
         var c = AddLocalWebAppTab(callback);
         await c.LoadAsync(host);
+        try
+        {
+            c.FocusBrowser(FocusState.Programmatic);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
         return c;
     }
 
@@ -456,6 +478,17 @@ public sealed partial class TabbedWebView : UserControl
             HostElement.TabItems.Remove(tab);
         };
         if (source != null) c.Source = source;
+        try
+        {
+            c.Focus(FocusState.Programmatic);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
         return c;
     }
 

@@ -105,39 +105,3 @@ public class BaseLocalWebAppPageMonitor : ILocalWebAppPageMonitor
     {
     }
 }
-
-/// <summary>
-/// The options for local web app hub page.
-/// </summary>
-public sealed partial class LocalWebAppHubPageNavigationOptions
-{
-    /// <summary>
-    /// Gets the additional dev apps.
-    /// </summary>
-    public List<LocalWebAppInfo> AdditionalDevApps { get; } = new();
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the dev mode is disabled.
-    /// </summary>
-    public bool IsDevModeDisabled { get; set; }
-
-    /// <summary>
-    /// Gets or sets the handler to prevent app opening.
-    /// </summary>
-    public Func<LocalWebAppHubPage, LocalWebAppInfo, bool, bool> PreventAppHandler { get; set; }
-
-    /// <summary>
-    /// Gets or sets the handler to open local web app.
-    /// </summary>
-    public Func<LocalWebAppHubPage, LocalWebAppInfo, bool, Task> OpenHandler { get; set; }
-
-    /// <summary>
-    /// Gets or sets the handler to open a dialog to load a dev app.
-    /// </summary>
-    public Func<LocalWebAppHubPage, Task<DirectoryInfo>> SelectDevAppHandler { get; set; }
-
-    /// <summary>
-    /// Gets or sets the handler to open a dialog to create a dev app.
-    /// </summary>
-    public Func<LocalWebAppHubPage, LocalWebAppPage, bool> CreateDevAppHandler { get; set; }
-}

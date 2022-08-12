@@ -43,7 +43,7 @@ public class LocalWebAppHost
         }
 
         if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
-        VirtualHost = options?.CustomizedVirtualHost ?? LocalWebAppHook.VirtualHostGenerator?.Invoke(manifest, options);
+        VirtualHost = options?.CustomizedVirtualHost ?? LocalWebAppSettings.VirtualHostGenerator?.Invoke(manifest, options);
         if (string.IsNullOrWhiteSpace(VirtualHost)) VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
     }
 
@@ -330,7 +330,7 @@ public class LocalWebAppHost
     /// </summary>
     /// <param name="id">The identifier of the host app.</param>
     public static void SetHostId(string id)
-        => LocalWebAppHook.HostId = id;
+        => LocalWebAppSettings.HostId = id;
 
     /// <summary>
     /// Loads the standalone web app package information.
@@ -350,7 +350,7 @@ public class LocalWebAppHost
     {
         if (package == null) throw new ArgumentNullException(nameof(package), "package should not be null.");
         var dir = package.RootDirectory;
-        if (dir == null || string.IsNullOrWhiteSpace(LocalWebAppHook.HostId)) throw new InvalidOperationException("The options is not correct.");
+        if (dir == null || string.IsNullOrWhiteSpace(LocalWebAppSettings.HostId)) throw new InvalidOperationException("The options is not correct.");
         var path = package.ProjectConfiguration?.TryGetObjectValue("dev", "proc")?.TryGetStringValue("path")?.Trim();
         if (!string.IsNullOrEmpty(path)) dir = GetDirectoryInfoByRelative(dir, path);
         if (!dir.Exists) Directory.CreateDirectory(dir.FullName);
@@ -426,6 +426,7 @@ public class LocalWebAppHost
         {
             if (string.IsNullOrWhiteSpace(pemFileName)) throw new InvalidOperationException("Miss public key of signature.");
             using var stream2 = assembly.GetManifestResourceStream(pemFileName);
+            if (stream2 == null) throw new InvalidOperationException("Miss public key of signature. The specific file does not exist.");
             using var reader = new StreamReader(stream2);
             key = reader.ReadToEnd();
             config2.SetValue("key", key);
@@ -647,7 +648,7 @@ public class LocalWebAppHost
                 var verifiedHost = false;
                 foreach (var bindingInfo in hostBinding)
                 {
-                    if (bindingInfo?.HostId != LocalWebAppHook.HostId) continue;
+                    if (bindingInfo?.HostId != LocalWebAppSettings.HostId) continue;
                     if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
                         if (VersionComparer.Compare(bindingInfo.MinimumVersion, manifest.Version, false) > 0) continue;
                     if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
@@ -1326,7 +1327,7 @@ public class LocalWebAppHost
 
         // Return result.
         var result = new LocalWebAppPackageResult(options, dir, appDir, zip, config.TryGetObjectValue("details"), config.TryGetObjectValue("project"));
-        LocalWebAppHook.BuildDevPackage?.Invoke(result);
+        LocalWebAppSettings.BuildDevPackage?.Invoke(result);
         return result;
     }
 
@@ -1341,7 +1342,7 @@ public class LocalWebAppHost
     public async Task<string> UpdateAsync(string version, FileInfo zip, bool deleteZip, CancellationToken cancellationToken = default)
     {
         NewVersionAvailable = await UpdateAsync(Options, CacheDirectory.Parent, version, zip, deleteZip, cancellationToken);
-        LocalWebAppHook.OnUpdate?.Invoke(this);
+        LocalWebAppSettings.OnUpdate?.Invoke(this);
         return NewVersionAvailable;
     }
 
@@ -1359,7 +1360,7 @@ public class LocalWebAppHost
         {
             SerializeEvenIfFailed = true
         };
-        LocalWebAppHook.UpdateServiceClientHandler?.Invoke(http);
+        LocalWebAppSettings.UpdateServiceClientHandler?.Invoke(http);
         var resp = await http.GetAsync(url, cancellationToken);
         var respProp = Options.Update?.ResponseProperty?.Trim();
         resp = resp?.TryGetObjectValue(string.IsNullOrEmpty(respProp) ? "data" : respProp) ?? resp;
@@ -1872,7 +1873,7 @@ public class LocalWebAppHost
         try
         {
             var host = await LoadAsync(rootDir, options, false, dir, cancellationToken);
-            if (host?.Manifest?.Version == null || (version != null && host.Manifest.Version != version) || host.ResourcePackageId != options.ResourcePackageId)
+            if (string.IsNullOrWhiteSpace(host?.Manifest?.Version) || (version != null && host.Manifest.Version != version) || host.ResourcePackageId != options.ResourcePackageId)
             {
                 dir.Delete(true);
                 return null;
@@ -2136,13 +2137,13 @@ public class LocalWebAppHost
                     q.Add(k, ResourcePackageId);
                     break;
                 case "host-id":
-                    q.Add(k, LocalWebAppHook.HostId);
+                    q.Add(k, LocalWebAppSettings.HostId);
                     break;
                 case "host-additional":
-                    q.Add(k, LocalWebAppHook.HostAdditionalString);
+                    q.Add(k, LocalWebAppSettings.HostAdditionalString);
                     break;
                 case "host-version":
-                    q.Add(k, LocalWebAppHook.GetAssembly()?.GetName()?.Version?.ToString());
+                    q.Add(k, LocalWebAppSettings.GetAssembly()?.GetName()?.Version?.ToString());
                     break;
                 case "fx-kind":
                     q.Add(k, "wasdk");

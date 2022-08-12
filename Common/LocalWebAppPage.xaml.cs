@@ -474,8 +474,8 @@ public sealed partial class LocalWebAppPage : Page
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
         if (!host.IsVerified)
         {
-            NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle;
-            NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppHook.CustomizedLocaleStrings.InvalidFileSignature;
+            NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
+            NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature;
             NotificationBar.Severity = InfoBarSeverity.Error;
             NotificationBar.IsOpen = true;
             ProgressElement.IsActive = false;
@@ -644,8 +644,8 @@ public sealed partial class LocalWebAppPage : Page
     private void OnLoadError(Exception ex)
     {
         if (ex == null) return;
-        var title = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppHook.CustomizedLocaleStrings.ErrorTitle;
-        var message = ex is LocalWebAppSignatureException signEx ? LocalWebAppHook.SignErrorMessage?.Invoke(signEx) : null;
+        var title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
+        var message = ex is LocalWebAppSignatureException signEx ? LocalWebAppSettings.SignErrorMessage?.Invoke(signEx) : null;
         NotificationBar.Title = title;
         NotificationBar.Message = string.IsNullOrWhiteSpace(message) ? ex?.Message : message;
         NotificationBar.Severity = InfoBarSeverity.Error;

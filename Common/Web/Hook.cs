@@ -10,7 +10,7 @@ namespace Trivial.Web;
 /// <summary>
 /// The global settings of the local web app.
 /// </summary>
-public static class LocalWebAppHook
+public static class LocalWebAppSettings
 {
     /// <summary>
     /// The locale strings.

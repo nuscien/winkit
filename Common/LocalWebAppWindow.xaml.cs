@@ -36,7 +36,7 @@ public sealed partial class LocalWebAppWindow : Window
     public LocalWebAppWindow()
     {
         InitializeComponent();
-        Title = TitleElement.Text = string.IsNullOrWhiteSpace(LocalWebAppHook.CustomizedLocaleStrings.Loading) ? "Loading…" : LocalWebAppHook.CustomizedLocaleStrings.Loading;
+        Title = TitleElement.Text = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.Loading) ? "Loading…" : LocalWebAppSettings.CustomizedLocaleStrings.Loading;
         try
         {
             ExtendsContentIntoTitleBar = true;

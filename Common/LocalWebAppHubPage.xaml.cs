@@ -115,6 +115,11 @@ public sealed partial class LocalWebAppHubPage : Page
     public Func<LocalWebAppHubPage, LocalWebAppPage, bool> CreateDevAppHandler { get; set; }
 
     /// <summary>
+    /// Gets or sets the handler to filter the apps.
+    /// </summary>
+    public Func<LocalWebAppInfo, bool> PredicateHandler { get; set; }
+
+    /// <summary>
     /// Reloads the page.
     /// </summary>
     public void Refresh()
@@ -159,31 +164,21 @@ public sealed partial class LocalWebAppHubPage : Page
     /// <param name="id">The identifier of the dev local web app.</param>
     /// <returns>The number of elements removed from the collection.</returns>
     public int RemoveAdditionalDevApp(string id)
-        => additionalDevApps.RemoveAll(ele => ele.ResourcePackageId == id);
+        => additionalDevApps.RemoveAll(ele => ele?.ResourcePackageId?.Equals(id, StringComparison.OrdinalIgnoreCase) != false);
 
     /// <inheritdoc />
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         if (e.Parameter is IPageNavigationCallbackParameter<LocalWebAppHubPage> c) c.OnNavigate(this, e);
-        if (e.Parameter is not LocalWebAppHubPageNavigationOptions options) return;
-        IsDevModeButtonHidden = options.IsDevModeDisabled;
-        options.AdditionalDevApps.Clear();
-        foreach (var item in options.AdditionalDevApps)
-        {
-            AddAdditionalDevApp(item);
-        }
-
-        PreventAppHandler = options.PreventAppHandler;
-        OpenHandler = options.OpenHandler;
-        SelectDevAppHandler = options.SelectDevAppHandler;
-        CreateDevAppHandler = options.CreateDevAppHandler;
+        else return;
+        _ = OnInitAsync();
     }
 
     private async Task OnInitAsync(Task previous = null)
     {
-        UpdateText(DevShowButtonText, LocalWebAppHook.CustomizedLocaleStrings.DevModeShowTitle);
-        UpdateText(DevTitleText, LocalWebAppHook.CustomizedLocaleStrings.DevModeTitle);
+        UpdateText(DevShowButtonText, LocalWebAppSettings.CustomizedLocaleStrings.DevModeShowTitle);
+        UpdateText(DevTitleText, LocalWebAppSettings.CustomizedLocaleStrings.DevModeTitle);
         if (previous != null)
         {
             await previous;
@@ -191,7 +186,8 @@ public sealed partial class LocalWebAppHubPage : Page
         }
 
         (var list1, var list2) = await LocalWebAppHost.ListAllPackageAsync();
-        InstalledList.ItemsSource = FormatList(list1);
+        var filter = PredicateHandler;
+        InstalledList.ItemsSource = filter != null ? FormatList(list1.Where(filter).ToList()) : FormatList(list1);
         if (!noAdd) AddPlus(list2);
         list2 = FormatList(list2);
         var list3 = new List<LocalWebAppInfo>(FormatList(additionalDevApps, true));
@@ -206,14 +202,14 @@ public sealed partial class LocalWebAppHubPage : Page
 
     private void AddPlus(List<LocalWebAppInfo> list)
     {
-        var icon = LocalWebAppHook.SelectDevAppIconPath;
+        var icon = LocalWebAppSettings.SelectDevAppIconPath;
         if (string.IsNullOrWhiteSpace(icon)) icon = new Uri(BaseUri, "Assets\\SearchLwa_128.png").OriginalString;
         list.Add(new()
         {
             ResourcePackageId = "+",
             LocalPath = "+",
             Icon = icon,
-            DisplayName = GetString(LocalWebAppHook.CustomizedLocaleStrings.DevModeAddTitle, "Open")
+            DisplayName = GetString(LocalWebAppSettings.CustomizedLocaleStrings.DevModeAddTitle, "Open")
         });
     }
 
@@ -228,7 +224,7 @@ public sealed partial class LocalWebAppHubPage : Page
             if (string.IsNullOrWhiteSpace(item.DisplayName)) item.DisplayName = item.ResourcePackageId;
             if (string.IsNullOrEmpty(item.Icon) || (!item.Icon.Contains("://") && !File.Exists(item.Icon)))
             {
-                item.Icon = LocalWebAppHook.DefaultIconPath;
+                item.Icon = LocalWebAppSettings.DefaultIconPath;
                 if (string.IsNullOrEmpty(item.Icon)) item.Icon = defaultIcon;
             }
         }

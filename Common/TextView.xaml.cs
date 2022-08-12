@@ -134,12 +134,12 @@ public sealed partial class TextView : UserControl
     /// <summary>
     /// The dependency property of text selection state.
     /// </summary>
-    public static readonly DependencyProperty IsTextSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty<bool>(nameof(IsTextSelectionEnabled));
+    public static readonly DependencyProperty IsTextSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty(nameof(IsTextSelectionEnabled), true);
 
     /// <summary>
     /// The dependency property of selection mode.
     /// </summary>
-    public static readonly DependencyProperty SelectionModeProperty = DependencyObjectProxy.RegisterProperty(nameof(SelectionMode), ListViewSelectionMode.Extended);
+    public static readonly DependencyProperty SelectionModeProperty = DependencyObjectProxy.RegisterProperty(nameof(SelectionMode), ListViewSelectionMode.None);
 
     /// <summary>
     /// The text.

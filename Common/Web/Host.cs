@@ -641,7 +641,7 @@ public class LocalWebAppHost
         };
 
         // Test the host app binding information.
-        if (verifyOptions != LocalWebAppVerificationOptions.Disabled && !TestBinding(manifest.HostBinding))
+        if (verifyOptions != LocalWebAppVerificationOptions.Disabled && !IsForCurrentHost(manifest.HostBinding))
             throw new InvalidOperationException("Does not match the current host app.");
 
         // Bind static resources from given files.
@@ -697,7 +697,7 @@ public class LocalWebAppHost
         return host;
     }
 
-    private static bool TestBinding(List<LocalWebAppHostBindingInfo> hostBinding)
+    private static bool IsForCurrentHost(List<LocalWebAppHostBindingInfo> hostBinding)
     {
         if (hostBinding == null || hostBinding.Count < 1) return true;
         var version = LocalWebAppSettings.GetAssembly()?.GetName()?.Version?.ToString();
@@ -1370,20 +1370,30 @@ public class LocalWebAppHost
             foreach (var respItem in respArr)
             {
                 if (respItem?.TryGetStringValue("id")?.Trim()?.ToUpperInvariant()?.Replace("@", string.Empty)?.Replace("\\", "/") != manifestId) continue;
+                var hostBindings = ConvertToBindingInfoList(respItem.TryGetObjectListValue("host"));
+                if (!IsForCurrentHost(hostBindings)) continue;
                 resp = respItem;
                 break;
             }
+        }
+        else
+        {
+            var hostBindings = ConvertToBindingInfoList(resp?.TryGetObjectListValue("host"));
+            if (!IsForCurrentHost(hostBindings)) return null;
         }
 
         if (resp == null) return null;
         var ver = resp.TryGetStringValue("version")?.Trim() ?? resp.TryGetStringValue("latestVersion")?.Trim();
         if (string.IsNullOrEmpty(ver)) return null;
-        if (!string.IsNullOrWhiteSpace(Manifest.Version) && VersionComparer.Compare(ver, Manifest.Version, true) <= 0 && resp.TryGetBooleanValue("force") != true)
-            return null;
-        
+        if (!string.IsNullOrWhiteSpace(Manifest.Version))
+        {
+            var compare = VersionComparer.Compare(ver, Manifest.Version, true);
+            if (compare == 0|| (resp.TryGetBooleanValue("force") != true && compare < 0)) return null;
+        }
+
         // Download zip.
         url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
-        var uri = UI.VisualUtility.TryCreateUri(url);
+        var uri = VisualUtility.TryCreateUri(url);
         if (uri == null) return null;
         FileInfo zip = null;
         try
@@ -1550,31 +1560,13 @@ public class LocalWebAppHost
                 if (id == null) continue;
                 if (item.TryGetBooleanValue("disable") == true) continue;
                 var idFormatted = id.ToUpperInvariant().Replace("@", string.Empty).Replace("\\", "/");
-                var hostBindingsArr = item.TryGetObjectListValue("host");
-                var hostBindings = new List<LocalWebAppHostBindingInfo>();
-                if (hostBindingsArr != null)
-                {
-                    foreach (var binding in hostBindingsArr)
-                    {
-                        if (binding == null) continue;
-                        var b = new LocalWebAppHostBindingInfo
-                        {
-                            HostId = binding.TryGetStringTrimmedValue("id", true),
-                            FrameworkKind = binding.TryGetStringTrimmedValue("kind", true),
-                            MinimumVersion = binding.TryGetStringTrimmedValue("min", true),
-                            MaximumVersion = binding.TryGetStringTrimmedValue("max", true),
-                        };
-                        if (b.HostId == null) continue;
-                        hostBindings.Add(b);
-                    }
-                }
-
+                var hostBindings = ConvertToBindingInfoList(item.TryGetObjectListValue("host"));
                 var app = arr.FirstOrDefault(ele => {
                     var testId = ele?.ResourcePackageId?.Trim();
                     if (string.IsNullOrEmpty(testId) == false) return false;
-                    if (id != testId?.ToUpperInvariant()?.Replace("@", string.Empty)?.Replace("\\", "/"))
+                    if (idFormatted != testId?.ToUpperInvariant()?.Replace("@", string.Empty)?.Replace("\\", "/"))
                         return false;
-                    return TestBinding(hostBindings);
+                    return IsForCurrentHost(hostBindings);
                 });
                 if (item.TryGetBooleanValue("remove") == true)
                 {
@@ -1876,6 +1868,27 @@ public class LocalWebAppHost
         }
 
         return null;
+    }
+
+    private static List<LocalWebAppHostBindingInfo> ConvertToBindingInfoList(List<JsonObjectNode> arr)
+    {
+        var hostBindings = new List<LocalWebAppHostBindingInfo>();
+        if (arr == null) return hostBindings;
+        foreach (var binding in arr)
+        {
+            if (binding == null) continue;
+            var b = new LocalWebAppHostBindingInfo
+            {
+                HostId = binding.TryGetStringTrimmedValue("id", true),
+                FrameworkKind = binding.TryGetStringTrimmedValue("kind", true),
+                MinimumVersion = binding.TryGetStringTrimmedValue("min", true),
+                MaximumVersion = binding.TryGetStringTrimmedValue("max", true),
+            };
+            if (b.HostId == null) continue;
+            hostBindings.Add(b);
+        }
+
+        return hostBindings;
     }
 
     /// <summary>

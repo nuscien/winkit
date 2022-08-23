@@ -458,7 +458,6 @@ public sealed partial class CommentView : UserControl
         set => SetValue(AvatarCornerRadiusProperty, value);
     }
 
-
     /// <summary>
     /// Gets or sets the background sizing of avatar image.
     /// </summary>

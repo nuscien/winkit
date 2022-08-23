@@ -31,7 +31,7 @@ internal static class LocalWebAppExtensions
     public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest)
     {
         var eas = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
-        var entryAssembly = (LocalWebAppSettings.Assembly ?? Assembly.GetEntryAssembly()).GetName();
+        var entryAssembly = LocalWebAppSettings.GetAssembly()?.GetName();
         var hostInfo = new JsonObjectNode
         {
             { "hostApp", new JsonObjectNode

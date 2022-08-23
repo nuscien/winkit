@@ -20,6 +20,7 @@ using Trivial.Reflection;
 using Trivial.Security;
 using Trivial.Text;
 using System.IO.Compression;
+using Trivial.UI;
 
 namespace Trivial.Web;
 
@@ -640,27 +641,8 @@ public class LocalWebAppHost
         };
 
         // Test the host app binding information.
-        if (verifyOptions != LocalWebAppVerificationOptions.Disabled)
-        {
-            var hostBinding = manifest.HostBinding;
-            if (hostBinding != null && hostBinding.Count > 0)
-            {
-                var verifiedHost = false;
-                foreach (var bindingInfo in hostBinding)
-                {
-                    if (bindingInfo?.HostId != LocalWebAppSettings.HostId) continue;
-                    if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
-                        if (VersionComparer.Compare(bindingInfo.MinimumVersion, manifest.Version, false) > 0) continue;
-                    if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
-                        if (VersionComparer.Compare(bindingInfo.MaximumVersion, manifest.Version, false) < 0) continue;
-                    verifiedHost = true;
-                    break;
-                }
-
-                if (!verifiedHost)
-                    throw new InvalidOperationException("Does not match the current host app.");
-            }
-        }
+        if (verifyOptions != LocalWebAppVerificationOptions.Disabled && !TestBinding(manifest.HostBinding))
+            throw new InvalidOperationException("Does not match the current host app.");
 
         // Bind static resources from given files.
         var filesToBind = host?.Manifest?.JsonBindings;
@@ -713,6 +695,23 @@ public class LocalWebAppHost
 
         // Return result.
         return host;
+    }
+
+    private static bool TestBinding(List<LocalWebAppHostBindingInfo> hostBinding)
+    {
+        if (hostBinding == null || hostBinding.Count < 1) return true;
+        var version = LocalWebAppSettings.GetAssembly()?.GetName()?.Version?.ToString();
+        foreach (var bindingInfo in hostBinding)
+        {
+            if (bindingInfo?.HostId != LocalWebAppSettings.HostId) continue;
+            if (!string.IsNullOrWhiteSpace(bindingInfo.MinimumVersion))
+                if (VersionComparer.Compare(bindingInfo.MinimumVersion, version, false) > 0) continue;
+            if (!string.IsNullOrWhiteSpace(bindingInfo.MaximumVersion))
+                if (VersionComparer.Compare(bindingInfo.MaximumVersion, version, false) < 0) continue;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -1531,6 +1530,151 @@ public class LocalWebAppHost
     }
 
     /// <summary>
+    /// Updates.
+    /// </summary>
+    /// <param name="config">The configuration file.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web hosts updated.</returns>
+    public static async Task<List<LocalWebAppHost>> UpdateAsync(JsonObjectNode config, CancellationToken cancellationToken = default)
+    {
+        var apps = config?.TryGetObjectListValue("apps");
+        if (apps == null || apps.Count < 1 || config.TryGetBooleanValue("disable") == true) return new();
+        var arr = await ListPackageAsync();
+        var removing = new List<string>();
+        var list = new List<LocalWebAppHost>();
+        foreach (var item in apps)
+        {
+            try
+            {
+                var id = item.TryGetStringTrimmedValue("id", true);
+                if (id == null) continue;
+                if (item.TryGetBooleanValue("disable") == true) continue;
+                var idFormatted = id.ToUpperInvariant().Replace("@", string.Empty).Replace("\\", "/");
+                var hostBindingsArr = item.TryGetObjectListValue("host");
+                var hostBindings = new List<LocalWebAppHostBindingInfo>();
+                if (hostBindingsArr != null)
+                {
+                    foreach (var binding in hostBindingsArr)
+                    {
+                        if (binding == null) continue;
+                        var b = new LocalWebAppHostBindingInfo
+                        {
+                            HostId = binding.TryGetStringTrimmedValue("id", true),
+                            FrameworkKind = binding.TryGetStringTrimmedValue("kind", true),
+                            MinimumVersion = binding.TryGetStringTrimmedValue("min", true),
+                            MaximumVersion = binding.TryGetStringTrimmedValue("max", true),
+                        };
+                        if (b.HostId == null) continue;
+                        hostBindings.Add(b);
+                    }
+                }
+
+                var app = arr.FirstOrDefault(ele => {
+                    var testId = ele?.ResourcePackageId?.Trim();
+                    if (string.IsNullOrEmpty(testId) == false) return false;
+                    if (id != testId?.ToUpperInvariant()?.Replace("@", string.Empty)?.Replace("\\", "/"))
+                        return false;
+                    return TestBinding(hostBindings);
+                });
+                if (item.TryGetBooleanValue("remove") == true)
+                {
+                    if (app != null) removing.Add(id);
+                    continue;
+                }
+
+                removing.Remove(id);
+                var version = item.TryGetStringTrimmedValue("version", true);
+                var uri = VisualUtility.TryCreateUri(item.TryGetStringTrimmedValue("url", true));
+                if (version == null || uri == null) continue;
+                var sign = item.TryGetObjectValue("sign");
+                if (sign == null)
+                {
+                    var signId = item.TryGetStringTrimmedValue("sign", true);
+                    if (signId != null) sign = config.TryGetObjectValue("sign")?.TryGetObjectValue(signId);
+                }
+
+                if (app == null)
+                {
+                    if (sign == null) continue;
+                    var signAlg = sign.TryGetStringTrimmedValue("alg", true);
+                    var signKey = sign.TryGetStringTrimmedValue("key", true);
+                    if (signAlg == null || signKey == null) continue;
+                    var options = new LocalWebAppOptions(id, signAlg, signKey);
+                    var host2 = await LoadAsync(options, uri, cancellationToken);
+                    list.Add(host2);
+                    continue;
+                }
+
+                if (VersionComparer.Compare(version, app.Version, true) <= 0) continue;
+                if (sign != null)
+                {
+                    var signAlg = sign.TryGetStringTrimmedValue("alg", true);
+                    var signKey = sign.TryGetStringTrimmedValue("key", true);
+                    if (signAlg != null && signKey != null) app.SetKey(signAlg, signKey);
+                }
+
+                var host = await LoadAsync(app, uri, cancellationToken);
+                list.Add(host);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            catch (FormatException)
+            {
+            }
+            catch (JsonException)
+            {
+            }
+            catch (SecurityException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (AggregateException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ApplicationException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        }
+
+        try
+        {
+            await RemovePackageAsync(removing);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return list;
+    }
+
+    /// <summary>
     /// Lists all resource packages registered.
     /// </summary>
     /// <returns>The list of the resource packages.</returns>
@@ -1577,18 +1721,6 @@ public class LocalWebAppHost
         return (list1, list2);
     }
 
-    /// <summary>
-    /// Registers a resource package.
-    /// </summary>
-    /// <param name="info">The resource package information.</param>
-    /// <param name="dev">true if list dev apps; otherwise, false.</param>
-    /// <returns>The async task.</returns>
-    private static async Task<bool> RegisterPackageAsync(LocalWebAppInfo info, bool dev = false)
-        => (await UpdatePackageAsync(info?.ResourcePackageId, info2 => {
-            if (info2 != null && info2.Version == info.Version) info.LastModificationTime = info2.LastModificationTime;
-            return info;
-        }, dev)) != null;
-
     internal static DirectoryInfo GetDirectoryInfoByRelative(DirectoryInfo root, string relative)
     {
         if (string.IsNullOrEmpty(relative))
@@ -1628,6 +1760,18 @@ public class LocalWebAppHost
 
         return relative == ".." || relative == "." ? null : FileSystemInfoUtility.TryGetFileInfo(root.FullName, relative);
     }
+
+    /// <summary>
+    /// Registers a resource package.
+    /// </summary>
+    /// <param name="info">The resource package information.</param>
+    /// <param name="dev">true if list dev apps; otherwise, false.</param>
+    /// <returns>The async task.</returns>
+    private static async Task<bool> RegisterPackageAsync(LocalWebAppInfo info, bool dev = false)
+        => (await UpdatePackageAsync(info?.ResourcePackageId, info2 => {
+            if (info2 != null && info2.Version == info.Version) info.LastModificationTime = info2.LastModificationTime;
+            return info;
+        }, dev)) != null;
 
     /// <summary>
     /// Gets the root directory of the app.

@@ -95,6 +95,11 @@ public sealed partial class LocalWebAppPage : Page
     public event TypedEventHandler<LocalWebAppPage, CoreWebView2DownloadStartingEventArgs> DownloadStarting;
 
     /// <summary>
+    /// Occurs when the downloading is starting.
+    /// </summary>
+    public event TypedEventHandler<LocalWebAppPage, CoreWebView2PermissionRequestedEventArgs> PermissionRequested;
+
+    /// <summary>
     /// Occurs when the navigation of a frame in web page is created.
     /// </summary>
     public event TypedEventHandler<LocalWebAppPage, CoreWebView2FrameCreatedEventArgs> FrameCreated;
@@ -607,6 +612,56 @@ public sealed partial class LocalWebAppPage : Page
     public bool RemoveCommandHandler(string id)
         => proc.Remove(id);
 
+    /// <summary>
+    /// Maps a folder as a virtual host name.
+    /// </summary>
+    /// <param name="hostName">The virtual host name.</param>
+    /// <param name="folderPath">The folder path to map.</param>
+    /// <param name="accessKind">The access kind.</param>
+    public void SetVirtualHostNameToFolderMapping(string hostName, string folderPath, CoreWebView2HostResourceAccessKind accessKind)
+        => Browser.CoreWebView2?.SetVirtualHostNameToFolderMapping(hostName, folderPath, accessKind);
+
+    /// <summary>
+    /// Clears the mapping of the specific virtual host name.
+    /// </summary>
+    /// <param name="hostName">The virtual host name.</param>
+    public void ClearVirtualHostNameToFolderMapping(string hostName)
+        => Browser.CoreWebView2?.ClearVirtualHostNameToFolderMapping(hostName);
+
+    /// <summary>
+    /// Prints to PDF format file.
+    /// </summary>
+    /// <param name="path">The output path of the PDF format file.</param>
+    /// <param name="printSettings">The print settings.</param>
+    /// <returns>true if print succeeded; otherwise, false.</returns>
+    public async Task<bool> PrintToPdfAsync(string path, CoreWebView2PrintSettings printSettings)
+    {
+        await Browser.EnsureCoreWebView2Async();
+        return await Browser.CoreWebView2.PrintToPdfAsync(path, printSettings);
+    }
+
+    /// <summary>
+    /// Opens the default download dialog.
+    /// </summary>
+    public void OpenDefaultDownloadDialog()
+        => Browser.CoreWebView2?.OpenDefaultDownloadDialog();
+
+    /// <summary>
+    /// Closes the default download dialog.
+    /// </summary>
+    public void CloseDefaultDownloadDialog()
+        => Browser.CoreWebView2?.CloseDefaultDownloadDialog();
+
+    /// <summary>
+    /// Gets the browser settings.
+    /// </summary>
+    /// <returns>The browser settings.</returns>
+    public async Task<CoreWebView2Settings> GetBrowserSettingsAsync()
+    {
+        await Browser.EnsureCoreWebView2Async();
+        return Browser.CoreWebView2.Settings;
+    }
+
     /// <inheritdoc />
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
@@ -674,6 +729,7 @@ public sealed partial class LocalWebAppPage : Page
         sender.CoreWebView2.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged;
         sender.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
         sender.CoreWebView2.WindowCloseRequested += OnWindowCloseRequested;
+        sender.CoreWebView2.PermissionRequested += OnPermissionRequested;
         CoreWebView2Initialized?.Invoke(this, args);
         var sb = new StringBuilder();
         sb.Append(@"(function () { if (window.localWebApp) return;
@@ -903,6 +959,9 @@ window.localWebApp = {
         DownloadList.Add(args.DownloadOperation);
         DownloadStarting?.Invoke(this, args);
     }
+
+    private void OnPermissionRequested(CoreWebView2 sender, CoreWebView2PermissionRequestedEventArgs args)
+        => PermissionRequested?.Invoke(this, args);
 
     private void OnContainsFullScreenElementChanged(CoreWebView2 sender, object args)
         => ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<bool>(Browser.CoreWebView2.ContainsFullScreenElement));

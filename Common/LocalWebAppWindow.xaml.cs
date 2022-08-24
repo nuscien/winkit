@@ -391,6 +391,43 @@ public sealed partial class LocalWebAppWindow : Window
     public bool RemoveCommandHandler(string id)
         => MainElement.RemoveCommandHandler(id);
 
+    /// <summary>
+    /// Maps a folder as a virtual host name.
+    /// </summary>
+    /// <param name="hostName">The virtual host name.</param>
+    /// <param name="folderPath">The folder path to map.</param>
+    /// <param name="accessKind">The access kind.</param>
+    public void SetVirtualHostNameToFolderMapping(string hostName, string folderPath, CoreWebView2HostResourceAccessKind accessKind)
+        => MainElement.SetVirtualHostNameToFolderMapping(hostName, folderPath, accessKind);
+
+    /// <summary>
+    /// Clears the mapping of the specific virtual host name.
+    /// </summary>
+    /// <param name="hostName">The virtual host name.</param>
+    public void ClearVirtualHostNameToFolderMapping(string hostName)
+        => MainElement.ClearVirtualHostNameToFolderMapping(hostName);
+
+    /// <summary>
+    /// Prints to PDF format file.
+    /// </summary>
+    /// <param name="path">The output path of the PDF format file.</param>
+    /// <param name="printSettings">The print settings.</param>
+    /// <returns>true if print succeeded; otherwise, false.</returns>
+    public Task<bool> PrintToPdfAsync(string path, CoreWebView2PrintSettings printSettings)
+        => MainElement.PrintToPdfAsync(path, printSettings);
+
+    /// <summary>
+    /// Opens the default download dialog.
+    /// </summary>
+    public void OpenDefaultDownloadDialog()
+        => MainElement.OpenDefaultDownloadDialog();
+
+    /// <summary>
+    /// Closes the default download dialog.
+    /// </summary>
+    public void CloseDefaultDownloadDialog()
+        => MainElement.CloseDefaultDownloadDialog();
+
     internal void SetFullScreen(bool value)
     {
         VisualUtility.SetFullScreenMode(value, this);

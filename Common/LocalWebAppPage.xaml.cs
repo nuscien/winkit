@@ -38,6 +38,7 @@ public sealed partial class LocalWebAppPage : Page
     private readonly LocalWebAppBrowserMessageHandler messageHandler;
     private TabbedWebViewWindow tabbedWebViewWindowInstance;
     private bool isDevEnv;
+    private Action continueHandler;
 
     /// <summary>
     /// Gets or sets the monitor.
@@ -52,6 +53,7 @@ public sealed partial class LocalWebAppPage : Page
         InitializeComponent();
         messageHandler = new(Browser);
         MonitorSingleton?.OnCreate(this, Browser);
+        if (!string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.Continue)) CloseInfoButton.Content = LocalWebAppSettings.CustomizedLocaleStrings.Continue;
     }
 
     /// <summary>
@@ -361,7 +363,9 @@ public sealed partial class LocalWebAppPage : Page
         }
 
         IsDevEnvironmentEnabled = true;
-        await LoadAsync(host);
+        InfoViewContainer.Visibility = Visibility.Visible;
+        ProgressElement.IsActive = false;
+        continueHandler = () => _ = LoadAsync(host);
     }
 
     /// <summary>
@@ -426,9 +430,10 @@ public sealed partial class LocalWebAppPage : Page
     /// Loads data.
     /// </summary>
     /// <param name="hostTask">The standalone local web app host.</param>
+    /// <param name="showInfo">true if show the information before loading; otherwise, false.</param>
     /// <param name="callback">The callback.</param>
     /// <param name="error">The error handling.</param>
-    public async Task LoadAsync(Task<LocalWebAppHost> hostTask, Action<LocalWebAppHost> callback = null, Action<Exception> error = null)
+    public async Task LoadAsync(Task<LocalWebAppHost> hostTask, bool showInfo, Action<LocalWebAppHost> callback = null, Action<Exception> error = null)
     {
         if (hostTask == null)
         {
@@ -456,7 +461,7 @@ public sealed partial class LocalWebAppPage : Page
         }
         else
         {
-            await LoadAsync(host);
+            await LoadAsync(host, showInfo);
             callback?.Invoke(host);
         }
     }
@@ -464,8 +469,18 @@ public sealed partial class LocalWebAppPage : Page
     /// <summary>
     /// Loads data.
     /// </summary>
+    /// <param name="hostTask">The standalone local web app host.</param>
+    /// <param name="callback">The callback.</param>
+    /// <param name="error">The error handling.</param>
+    public Task LoadAsync(Task<LocalWebAppHost> hostTask, Action<LocalWebAppHost> callback = null, Action<Exception> error = null)
+        => LoadAsync(hostTask, false, callback, error);
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
     /// <param name="host">The standalone local web app host.</param>
-    public async Task LoadAsync(LocalWebAppHost host)
+    /// <param name="showInfo">true if show the information before loading; otherwise, false.</param>
+    public async Task LoadAsync(LocalWebAppHost host, bool showInfo)
     {
         //Browser.NavigateToString(@"<html><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" ><base target=""_blank"" /></head><body></body></html>");
         InfoViewContainer.Visibility = Visibility.Collapsed;
@@ -475,6 +490,7 @@ public sealed partial class LocalWebAppPage : Page
             return;
         }
 
+        Browser.Visibility = Visibility.Collapsed;
         var dir = host.ResourcePackageDirectory;
         InfoView.Model = host.Manifest;
         if (dir == null || !dir.Exists)
@@ -488,6 +504,7 @@ public sealed partial class LocalWebAppPage : Page
         Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, dir.FullName, CoreWebView2HostResourceAccessKind.Allow);
         var homepage = host.Manifest.HomepagePath?.Trim();
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
+        ProgressElement.IsActive = true;
         if (!host.IsVerified)
         {
             NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
@@ -498,15 +515,43 @@ public sealed partial class LocalWebAppPage : Page
             MonitorSingleton?.OnErrorNotification(this, NotificationBar, new SecurityException("Invalid file signatures."));
             if (!IsDevEnvironmentEnabled)
             {
-                Browser.Visibility = Visibility.Collapsed;
                 InfoViewContainer.Visibility = Visibility.Visible;
                 return;
             }
+
+            InfoViewContainer.Visibility = Visibility.Visible;
+            continueHandler = () =>
+            {
+                ProgressElement.IsActive = true;
+                Browser.Visibility = Visibility.Visible;
+                Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+            };
+            return;
+        }
+
+        if (showInfo)
+        {
+            ProgressElement.IsActive = false;
+            InfoViewContainer.Visibility = Visibility.Visible;
+            continueHandler = () =>
+            {
+                ProgressElement.IsActive = true;
+                Browser.Visibility = Visibility.Visible;
+                Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+            };
+            return;
         }
 
         Browser.Visibility = Visibility.Visible;
         Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
     }
+
+    /// <summary>
+    /// Loads data.
+    /// </summary>
+    /// <param name="host">The standalone local web app host.</param>
+    public Task LoadAsync(LocalWebAppHost host)
+        => LoadAsync(host, false);
 
     /// <summary>
     /// Updates the resource package.
@@ -1129,4 +1174,13 @@ window.localWebApp = {
 
     private void OnActualThemeChanged(FrameworkElement sender, object args)
         => Notify("themeChanged", new(messageHandler?.GetTheme(), "system"));
+
+    private void OnCloseInfoButton(object sender, RoutedEventArgs e)
+    {
+        InfoViewContainer.Visibility = Visibility.Collapsed;
+        InfoView.Model = null;
+        var h = continueHandler;
+        continueHandler = null;
+        h?.Invoke();
+    }
 }

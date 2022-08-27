@@ -295,6 +295,16 @@ public sealed partial class TabbedWebViewWindow : Window
     /// <summary>
     /// Adds a new web view.
     /// </summary>
+    /// <param name="host">The local web app host.</param>
+    /// <param name="showInfo">true if show the information before loading; otherwise, false.</param>
+    /// <param name="callback">The callback.</param>
+    /// <returns>The web view instance.</returns>
+    public Task<LocalWebAppPage> AddAsync(Task<Web.LocalWebAppHost> host, bool showInfo, Action<TabViewItem, LocalWebAppPage> callback = null)
+        => HostElement.AddAsync(host, showInfo, callback);
+
+    /// <summary>
+    /// Adds a new web view.
+    /// </summary>
     /// <param name="tab">The tab view item.</param>
     /// <param name="source">The source URI.</param>
     /// <param name="callback">The callback.</param>
@@ -378,7 +388,7 @@ public sealed partial class TabbedWebViewWindow : Window
                 LocalWebAppPage p2 = null;
                 try
                 {
-                    await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir), (tab, page) =>
+                    await AddAsync(Web.LocalWebAppHost.LoadDevPackageAsync(dir), true, (tab, page) =>
                     {
                         p2 = page;
                         page.IsDevEnvironmentEnabled = true;

@@ -393,11 +393,20 @@ public sealed partial class TabbedWebView : UserControl
     /// </summary>
     /// <param name="hostTask">The host.</param>
     /// <param name="callback">The callback.</param>
-    public async Task<LocalWebAppPage> AddAsync(Task<Web.LocalWebAppHost> hostTask, Action<TabViewItem, LocalWebAppPage> callback = null)
+    public Task<LocalWebAppPage> AddAsync(Task<Web.LocalWebAppHost> hostTask, Action<TabViewItem, LocalWebAppPage> callback = null)
+        => AddAsync(hostTask, false, callback);
+
+    /// <summary>
+    /// Adds a new tab.
+    /// </summary>
+    /// <param name="hostTask">The host.</param>
+    /// <param name="showInfo">true if show the information before loading; otherwise, false.</param>
+    /// <param name="callback">The callback.</param>
+    public async Task<LocalWebAppPage> AddAsync(Task<Web.LocalWebAppHost> hostTask, bool showInfo, Action<TabViewItem, LocalWebAppPage> callback = null)
     {
         if (hostTask == null) return null;
         var c = AddLocalWebAppTab(callback);
-        await c.LoadAsync(hostTask);
+        await c.LoadAsync(hostTask, showInfo);
         return c;
     }
 

@@ -179,6 +179,7 @@ public sealed partial class LocalWebAppHubPage : Page
     {
         UpdateText(DevShowButtonText, LocalWebAppSettings.CustomizedLocaleStrings.DevModeShowTitle);
         UpdateText(DevTitleText, LocalWebAppSettings.CustomizedLocaleStrings.DevModeTitle);
+        if (!string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.Ok)) CloseInfoButton.Content = LocalWebAppSettings.CustomizedLocaleStrings.Ok;
         if (previous != null)
         {
             await previous;
@@ -264,9 +265,12 @@ public sealed partial class LocalWebAppHubPage : Page
     private void OnItemInfoButtonClick(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
+        var id = info.ResourcePackageId?.Trim();
+        if (id == "+" || id == "@") id = null;
         InfoView.Model = new()
         {
-            Id = info.ResourcePackageId,
+            Id = id,
+            DisplayName = info.DisplayName,
             Icon = info.Icon,
             PublisherName = info.PublisherName,
             Description = info.Description,
@@ -366,6 +370,12 @@ public sealed partial class LocalWebAppHubPage : Page
     private void OnDevShowButtonClick(object sender, RoutedEventArgs e)
         => ShowDevPanel(true);
 
+    private void OnCloseInfoButton(object sender, RoutedEventArgs e)
+    {
+        InfoViewContainer.Visibility = Visibility.Collapsed;
+        InfoView.Model = null;
+    }
+
     private static string GetString(string value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value;
 
@@ -407,10 +417,4 @@ public sealed partial class LocalWebAppHubPage : Page
     /// <returns>The window.</returns>
     public static TabbedWebViewWindow CreateWindow(string title)
         => CreateWindow(title, out _);
-
-    private void OnCloseInfoButton(object sender, RoutedEventArgs e)
-    {
-        InfoView.Model = null;
-        InfoViewContainer.Visibility = Visibility.Collapsed;
-    }
 }

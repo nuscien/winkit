@@ -96,7 +96,7 @@
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" >
                 <local:LocalWebAppInfoView x:Name="InfoView" MaxWidth="800" Margin="20" >
                     <local:LocalWebAppInfoView.FurtherElement>
-                        <Button Content="OK" Click="OnCloseInfoButton" MinWidth="80" Margin="0,16" />
+                        <Button x:Name="CloseInfoButton" Content="OK" Click="OnCloseInfoButton" MinWidth="80" Margin="0,16" />
                     </local:LocalWebAppInfoView.FurtherElement>
                 </local:LocalWebAppInfoView>
             </ScrollViewer>

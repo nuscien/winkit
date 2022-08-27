@@ -14,6 +14,9 @@
         <InfoBar x:Name="NotificationBar" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20" />
         <ScrollViewer x:Name="InfoViewContainer" HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" >
             <local:LocalWebAppInfoView x:Name="InfoView" MaxWidth="800" Margin="20" >
+                <local:LocalWebAppInfoView.FurtherElement>
+                    <Button x:Name="CloseInfoButton" Content="Continue" Click="OnCloseInfoButton" MinWidth="80" Margin="0,16" />
+                </local:LocalWebAppInfoView.FurtherElement>
             </local:LocalWebAppInfoView>
         </ScrollViewer>
     </Grid>

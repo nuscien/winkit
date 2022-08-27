@@ -23,6 +23,16 @@ public static class LocalWebAppSettings
         public static string ErrorTitle { get; set; }
 
         /// <summary>
+        /// Gets or sets the word OK.
+        /// </summary>
+        public static string Ok { get; set; }
+
+        /// <summary>
+        /// Gets or sets the word Continue.
+        /// </summary>
+        public static string Continue { get; set; }
+
+        /// <summary>
         /// Gets or sets the description of invalid file signature.
         /// </summary>
         public static string InvalidFileSignature { get; set; }

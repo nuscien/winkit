@@ -255,6 +255,15 @@ public sealed partial class LocalWebAppPage : Page
     }
 
     /// <summary>
+    /// Gets or sets the element to draw the background.
+    /// </summary>
+    public UIElement BackgroundElement
+    {
+        get => BackgroundContainer.Child;
+        set => BackgroundContainer.Child = value;
+    }
+
+    /// <summary>
     /// Gets the a value indicating whether contains the full screen element.
     /// </summary>
     public bool ContainsFullScreenElement => Browser.CoreWebView2?.ContainsFullScreenElement ?? false;
@@ -459,6 +468,7 @@ public sealed partial class LocalWebAppPage : Page
     public async Task LoadAsync(LocalWebAppHost host)
     {
         //Browser.NavigateToString(@"<html><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" ><base target=""_blank"" /></head><body></body></html>");
+        InfoViewContainer.Visibility = Visibility.Collapsed;
         if (host == null)
         {
             OnLoadError(new ArgumentNullException(nameof(host)));
@@ -466,6 +476,7 @@ public sealed partial class LocalWebAppPage : Page
         }
 
         var dir = host.ResourcePackageDirectory;
+        InfoView.Model = host.Manifest;
         if (dir == null || !dir.Exists)
         {
             OnLoadError(new DirectoryNotFoundException("The app directory is not found."));
@@ -488,6 +499,7 @@ public sealed partial class LocalWebAppPage : Page
             if (!IsDevEnvironmentEnabled)
             {
                 Browser.Visibility = Visibility.Collapsed;
+                InfoViewContainer.Visibility = Visibility.Visible;
                 return;
             }
         }

@@ -261,6 +261,22 @@ public sealed partial class LocalWebAppHubPage : Page
         _ = OnInitAsync(LocalWebAppHost.RemovePackageAsync(info.ResourcePackageId));
     }
 
+    private void OnItemInfoButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || element.DataContext is not LocalWebAppInfo info) return;
+        InfoView.Model = new()
+        {
+            Id = info.ResourcePackageId,
+            Icon = info.Icon,
+            PublisherName = info.PublisherName,
+            Description = info.Description,
+            Website = info.Website,
+            Version = info.Version,
+            Copyright = info.Copyright,
+        };
+        InfoViewContainer.Visibility = Visibility.Visible;
+    }
+
     private async Task<bool> OnDevItemButtonClickAsync(LocalWebAppInfo info)
     {
         var h = OpenHandler;
@@ -391,4 +407,10 @@ public sealed partial class LocalWebAppHubPage : Page
     /// <returns>The window.</returns>
     public static TabbedWebViewWindow CreateWindow(string title)
         => CreateWindow(title, out _);
+
+    private void OnCloseInfoButton(object sender, RoutedEventArgs e)
+    {
+        InfoView.Model = null;
+        InfoViewContainer.Visibility = Visibility.Collapsed;
+    }
 }

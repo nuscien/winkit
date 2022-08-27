@@ -8,8 +8,13 @@
     mc:Ignorable="d" >
 
     <Grid ActualThemeChanged="OnActualThemeChanged" >
+        <Border x:Name="BackgroundContainer" />
         <WebView2 x:Name="Browser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CoreWebView2Initialized="OnCoreWebView2Initialized" NavigationCompleted="OnNavigationCompleted" NavigationStarting="OnNavigationStarting" WebMessageReceived="OnWebMessageReceived" CoreProcessFailed="OnCoreProcessFailed" />
         <ProgressRing x:Name="ProgressElement" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="100" />
         <InfoBar x:Name="NotificationBar" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20" />
+        <ScrollViewer x:Name="InfoViewContainer" HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" >
+            <local:LocalWebAppInfoView x:Name="InfoView" MaxWidth="800" Margin="20" >
+            </local:LocalWebAppInfoView>
+        </ScrollViewer>
     </Grid>
 </Page>

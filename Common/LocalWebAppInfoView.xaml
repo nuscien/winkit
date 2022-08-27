@@ -1,0 +1,40 @@
+﻿<UserControl
+    x:Class="Trivial.UI.LocalWebAppInfoView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:DefaultBindMode="OneWay" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" >
+        <Grid.Resources>
+            <ResourceDictionary>
+                <Style x:Key="PropertyText" TargetType="TextBlock" >
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0,0,0,8" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                    <Setter Property="IsTextSelectionEnabled" Value="True" />
+                </Style>
+                <Style x:Key="PropertyLink" TargetType="HyperlinkButton" >
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0,0,0,8" />
+                    <Setter Property="HorizontalAlignment" Value="Left" />
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                </Style>
+            </ResourceDictionary>
+        </Grid.Resources>
+        <ImageIcon x:Name="IconElement" Width="64" Height="64" HorizontalAlignment="Left" VerticalAlignment="Top" Source="{x:Bind Model.Icon}" >
+        </ImageIcon>
+        <StackPanel x:Name="PropertiesElement" Orientation="Vertical" Spacing="0" Margin="72,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" >
+            <TextBlock x:Name="TitleElement" Style="{ThemeResource PropertyText}" FontSize="{x:Bind TitleFontSize}" />
+            <TextBlock x:Name="PublisherElement" Style="{ThemeResource PropertyText}" Text="{x:Bind Model.PublisherName}" />
+            <TextBlock x:Name="DescriptionElement" Style="{ThemeResource PropertyText}" Text="{x:Bind Model.Description}" />
+            <HyperlinkButton x:Name="WebsiteElement" Style="{ThemeResource PropertyLink}" Content="{x:Bind Model.Website}" />
+            <TextBlock x:Name="VersionElement" Style="{ThemeResource PropertyText}" />
+            <TextBlock x:Name="CopyrightElement" Style="{ThemeResource PropertyText}" Text="{x:Bind Model.Copyright}" />
+            <Border x:Name="FurtherContainer" />
+        </StackPanel>
+    </Grid>
+</UserControl>

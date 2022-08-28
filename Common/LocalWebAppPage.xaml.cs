@@ -363,6 +363,7 @@ public sealed partial class LocalWebAppPage : Page
         }
 
         IsDevEnvironmentEnabled = true;
+        ShowTitle(host);
         InfoViewContainer.Visibility = Visibility.Visible;
         ProgressElement.IsActive = false;
         continueHandler = () => _ = LoadAsync(host);
@@ -507,6 +508,7 @@ public sealed partial class LocalWebAppPage : Page
         ProgressElement.IsActive = true;
         if (!host.IsVerified)
         {
+            ShowTitle(host);
             NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
             NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature;
             NotificationBar.Severity = InfoBarSeverity.Error;
@@ -531,6 +533,7 @@ public sealed partial class LocalWebAppPage : Page
 
         if (showInfo)
         {
+            ShowTitle(host);
             ProgressElement.IsActive = false;
             InfoViewContainer.Visibility = Visibility.Visible;
             continueHandler = () =>
@@ -766,6 +769,13 @@ public sealed partial class LocalWebAppPage : Page
         MonitorSingleton?.OnErrorNotification(this, NotificationBar, ex);
         LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
         TitleChanged?.Invoke(this, new DataEventArgs<string>(title));
+    }
+
+    private void ShowTitle(LocalWebAppHost host)
+    {
+        var title = host.Manifest?.DisplayName?.Trim();
+        if (string.IsNullOrEmpty(title)) return;
+        TitleChanged?.Invoke(this, new(host.Manifest?.DisplayName));
     }
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)

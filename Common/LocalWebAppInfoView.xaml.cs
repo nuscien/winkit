@@ -31,6 +31,11 @@ public sealed partial class LocalWebAppInfoView : UserControl
     public static readonly DependencyProperty ModelProperty = DependencyObjectProxy.RegisterProperty<LocalWebAppManifest>(nameof(Model), OnModelChanged);
 
     /// <summary>
+    /// The dependency property of icon.
+    /// </summary>
+    public static readonly DependencyProperty IconProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Icon));
+
+    /// <summary>
     /// The dependency property of title font size.
     /// </summary>
     public static readonly DependencyProperty TitleFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(TitleFontSize), 18d);
@@ -50,6 +55,15 @@ public sealed partial class LocalWebAppInfoView : UserControl
     {
         get => (LocalWebAppManifest)GetValue(ModelProperty);
         set => SetValue(ModelProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the icon path.
+    /// </summary>
+    public string Icon
+    {
+        get => (string)GetValue(IconProperty);
+        set => SetValue(IconProperty, value);
     }
 
     /// <summary>
@@ -80,6 +94,7 @@ public sealed partial class LocalWebAppInfoView : UserControl
         }
 
         c.TitleElement.Text = string.IsNullOrWhiteSpace(m.DisplayName) ? "App" : m.DisplayName;
+        c.Icon = c.Model.Icon;
         c.PublisherElement.Visibility = GetVisibility(m.PublisherName);
         c.DescriptionElement.Visibility = GetVisibility(m.Description);
         var uri = VisualUtility.TryCreateUri(m.Website);

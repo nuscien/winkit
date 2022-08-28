@@ -151,6 +151,44 @@ public class LocalWebAppHost
     }
 
     /// <summary>
+    /// Gets absolute icon path of resource package.
+    /// </summary>
+    public string GetResourcePackageIconPath()
+    {
+        var appDir = ResourcePackageDirectory;
+        if (appDir == null || !appDir.Exists) return null;
+        var s = Manifest?.Icon;
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        if (s.Contains("://")) return s;
+        try
+        {
+            var file = GetFileInfoByRelative(appDir, s);
+            if (file == null || !file.Exists || string.IsNullOrWhiteSpace(file.FullName)) return null;
+            return file.FullName;
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Reads the file.
     /// </summary>
     /// <param name="file">The file to read.</param>

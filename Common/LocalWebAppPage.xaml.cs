@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security;
@@ -299,6 +300,12 @@ public sealed partial class LocalWebAppPage : Page
         => Browser.Reload();
 
     /// <summary>
+    /// Gets absolute icon path of resource package.
+    /// </summary>
+    public string GetResourcePackageIconPath()
+        => host?.GetResourcePackageIconPath();
+
+    /// <summary>
     /// Tests if the host loaded is the specific one.
     /// </summary>
     /// <param name="host">The host to test.</param>
@@ -494,6 +501,8 @@ public sealed partial class LocalWebAppPage : Page
         Browser.Visibility = Visibility.Collapsed;
         var dir = host.ResourcePackageDirectory;
         InfoView.Model = host.Manifest;
+        var icon = host.GetResourcePackageIconPath();
+        if (!string.IsNullOrWhiteSpace(icon)) InfoView.Icon = icon;
         if (dir == null || !dir.Exists)
         {
             OnLoadError(new DirectoryNotFoundException("The app directory is not found."));

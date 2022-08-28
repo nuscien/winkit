@@ -25,7 +25,7 @@
                 </Style>
             </ResourceDictionary>
         </Grid.Resources>
-        <ImageIcon x:Name="IconElement" Width="64" Height="64" HorizontalAlignment="Left" VerticalAlignment="Top" Source="{x:Bind Model.Icon}" >
+        <ImageIcon x:Name="IconElement" Width="64" Height="64" HorizontalAlignment="Left" VerticalAlignment="Top" Source="{x:Bind Icon}" >
         </ImageIcon>
         <StackPanel x:Name="PropertiesElement" Orientation="Vertical" Spacing="0" Margin="72,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <TextBlock x:Name="TitleElement" Style="{ThemeResource PropertyText}" FontSize="{x:Bind TitleFontSize}" />

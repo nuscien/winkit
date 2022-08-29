@@ -88,13 +88,27 @@ public sealed partial class LocalWebAppInfoView : UserControl
     {
         if (c == null || e == null) return;
         var m = e.NewValue;
+        var icon = LocalWebAppSettings.DefaultIconPath;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(icon)) icon = new Uri(c.BaseUri, "Assets\\DefaultLwa_128.png").OriginalString;
+        }
+        catch (FormatException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
         if (m == null)
         {
+            c.Icon = icon;
             return;
         }
 
         c.TitleElement.Text = string.IsNullOrWhiteSpace(m.DisplayName) ? "App" : m.DisplayName;
-        c.Icon = c.Model.Icon;
+        if (!string.IsNullOrWhiteSpace(c.Model.Icon)) icon = c.Model.Icon;
+        c.Icon = icon;
         c.PublisherElement.Visibility = GetVisibility(m.PublisherName);
         c.DescriptionElement.Visibility = GetVisibility(m.Description);
         var uri = VisualUtility.TryCreateUri(m.Website);

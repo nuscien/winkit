@@ -226,7 +226,16 @@ public sealed partial class LocalWebAppHubPage : Page
             if (string.IsNullOrEmpty(item.Icon) || (!item.Icon.Contains("://") && !File.Exists(item.Icon)))
             {
                 item.Icon = LocalWebAppSettings.DefaultIconPath;
-                if (string.IsNullOrEmpty(item.Icon)) item.Icon = defaultIcon;
+                try
+                {
+                    if (string.IsNullOrEmpty(item.Icon)) item.Icon = defaultIcon;
+                }
+                catch (FormatException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
             }
         }
 

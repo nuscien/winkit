@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -37,18 +38,23 @@ public sealed partial class TextLineBlock : UserControl
     /// <summary>
     /// The dependency property of line height.
     /// </summary>
-    public static readonly DependencyProperty LineHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(LineHeight), 18d);
+    public static readonly DependencyProperty TextCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(TextCornerRadius));
 
     /// <summary>
-    /// The dependency property of index.
+    /// The dependency property of line number.
     /// </summary>
-    public static readonly DependencyProperty IndexProperty = DependencyObjectProxy.RegisterProperty(nameof(Index), null, null, obj =>
+    public static readonly DependencyProperty LineNumberProperty = DependencyObjectProxy.RegisterProperty(nameof(LineNumber), null, null, obj =>
     {
         if (obj is null) return null;
         if (obj is int i) return i.ToString("g");
         if (obj is long l) return l.ToString("g");
         return obj.ToString();
     });
+
+    /// <summary>
+    /// The dependency property of text selection state.
+    /// </summary>
+    public static readonly DependencyProperty IsTextSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty(nameof(IsTextSelectionEnabled), true);
 
     /// <summary>
     /// The dependency property of prefix.
@@ -64,6 +70,26 @@ public sealed partial class TextLineBlock : UserControl
     /// The dependency property of text highlighters.
     /// </summary>
     public static readonly DependencyProperty TextHighlightersProperty = DependencyObjectProxy.RegisterProperty<IEnumerable<TextHighlighter>>(nameof(TextHighlighters), OnTextHighlightersChanged);
+
+    /// <summary>
+    /// The dependency property of text background.
+    /// </summary>
+    public static readonly DependencyProperty TextBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TextBackground));
+
+    /// <summary>
+    /// The dependency property of text style.
+    /// </summary>
+    public static readonly DependencyProperty TextStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(TextStyle));
+
+    /// <summary>
+    /// The dependency property of prefix text style.
+    /// </summary>
+    public static readonly DependencyProperty PrefixStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(PrefixStyle));
+
+    /// <summary>
+    /// The dependency property of line number style.
+    /// </summary>
+    public static readonly DependencyProperty LineNumberStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(LineNumberStyle));
 
     /// <summary>
     /// Initializes a new instance of the TextLineBlock class.
@@ -92,25 +118,34 @@ public sealed partial class TextLineBlock : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the line height.
+    /// Gets or sets the corner radius of text background.
     /// </summary>
-    public double LineHeight
+    public CornerRadius TextCornerRadius
     {
-        get => (double)GetValue(LineHeightProperty);
-        set => SetValue(LineHeightProperty, value);
+        get => (CornerRadius)GetValue(TextCornerRadiusProperty);
+        set => SetValue(TextCornerRadiusProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the index.
+    /// Gets or sets the line number in string.
     /// </summary>
-    public string Index
+    public string LineNumber
     {
-        get => (string)GetValue(IndexProperty);
-        set => SetValue(IndexProperty, value);
+        get => (string)GetValue(LineNumberProperty);
+        set => SetValue(LineNumberProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the prefix.
+    /// Gets or sets a value indicating whether text selection is enabled in each line.
+    /// </summary>
+    public bool IsTextSelectionEnabled
+    {
+        get => (bool)GetValue(IsTextSelectionEnabledProperty);
+        set => SetValue(IsTextSelectionEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the prefix text.
     /// </summary>
     public string Prefix
     {
@@ -125,6 +160,42 @@ public sealed partial class TextLineBlock : UserControl
     {
         get => (string)GetValue(TextProperty);
         set => SetValue(TextProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the text background.
+    /// </summary>
+    public Brush TextBackground
+    {
+        get => (Brush)GetValue(TextBackgroundProperty);
+        set => SetValue(TextBackgroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the text style.
+    /// </summary>
+    public Style TextStyle
+    {
+        get => (Style)GetValue(TextStyleProperty);
+        set => SetValue(TextStyleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the prefix text style.
+    /// </summary>
+    public Style PrefixStyle
+    {
+        get => (Style)GetValue(PrefixStyleProperty);
+        set => SetValue(PrefixStyleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the line number style.
+    /// </summary>
+    public Style LineNumberStyle
+    {
+        get => (Style)GetValue(LineNumberStyleProperty);
+        set => SetValue(LineNumberStyleProperty, value);
     }
 
     /// <summary>
@@ -149,5 +220,88 @@ public sealed partial class TextLineBlock : UserControl
         {
             c.TextElement.TextHighlighters.Add(item);
         }
+    }
+}
+
+/// <summary>
+/// The line model.
+/// </summary>
+public class TextLineBlockModel
+{
+    /// <summary>
+    /// Initializes a new instance of the TextLineBlockModel class.
+    /// </summary>
+    public TextLineBlockModel()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the TextLineBlockModel class.
+    /// </summary>
+    /// <param name="text">The text</param>
+    public TextLineBlockModel(string text)
+    {
+        Text = text;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the TextLineBlockModel class.
+    /// </summary>
+    /// <param name="text">The text</param>
+    /// <param name="background">The background.</param>
+    public TextLineBlockModel(string text, Brush background)
+        : this(text)
+    {
+        Background = background;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the TextLineBlockModel class.
+    /// </summary>
+    /// <param name="text">The text</param>
+    /// <param name="highlighters">The text highlighters.</param>
+    /// <param name="background">The background.</param>
+    public TextLineBlockModel(string text, IEnumerable<TextHighlighter> highlighters, Brush background)
+        : this(text, background)
+    {
+        if (highlighters == null) return;
+        foreach (var item in highlighters)
+        {
+            TextHighlighters.Add(item);
+        }
+    }
+
+    /// <summary>
+    /// Gets the text.
+    /// </summary>
+    public string Text { get; }
+
+    /// <summary>
+    /// Gets the background
+    /// </summary>
+    public Brush Background { get; }
+
+    /// <summary>
+    /// Gets the text highlighters.
+    /// </summary>
+    public IList<TextHighlighter> TextHighlighters { get; } = new ObservableCollection<TextHighlighter>();
+
+    /// <summary>
+    /// Adds a text highlighter.
+    /// </summary>
+    /// <param name="obj">The instance of text highlighter to add.</param>
+    /// <param name="ranges">The additional text ranges.</param>
+    public void AddTextHighlighter(TextHighlighter obj, params TextRange[] ranges)
+    {
+        if (obj == null) return;
+        if (ranges != null)
+        {
+            foreach (var range in ranges)
+            {
+                obj.Ranges.Add(range);
+            }
+        }
+
+        TextHighlighters.Add(obj);
     }
 }

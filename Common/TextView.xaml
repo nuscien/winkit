@@ -25,23 +25,25 @@
                             <Setter Property="Padding" Value="4,0" />
                             <Setter Property="Margin" Value="0" />
                             <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         </Style>
                     </Setter.Value>
                 </Setter>
                 <Setter Property="LineNumberStyle" >
                     <Setter.Value>
-                        <Style TargetType="TextBlock" >
-                            <Setter Property="Foreground" Value="#2B91AF" />
-                            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New, monospace, Segoe UI, Microsoft Yahei, Microsoft Jhenghei, MS Gothic, Malgun Gothic, Microsoft Himalaya" />
-                            <Setter Property="TextTrimming" Value="Clip" />
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WinKit.LineNumberText}" >
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="PrefixStyle" >
+                    <Setter.Value>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WinKit.LineBlockPrefixText}" >
                         </Style>
                     </Setter.Value>
                 </Setter>
                 <Setter Property="TextStyle" >
                     <Setter.Value>
-                        <Style TargetType="TextBlock" >
-                            <Setter Property="TextWrapping" Value="WrapWholeWords" />
-                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WinKit.LineBlockContentText}" >
                         </Style>
                     </Setter.Value>
                 </Setter>
@@ -51,18 +53,7 @@
     <ListView x:Name="TextElement" SelectionMode="{x:Bind SelectionMode}" x:DefaultBindMode="OneWay" Foreground="{x:Bind Foreground}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" ItemContainerStyle="{x:Bind ItemContainerStyle}" ItemClick="TextElement_ItemClick" SelectionChanged="TextElement_SelectionChanged" >
         <ListView.ItemTemplate>
             <DataTemplate x:DataType="local:TextViewModel" >
-                <Grid Tag="{x:Bind LineNumber}" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="{Binding Path=LineNumberWidth, ElementName=CurrentControl}" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border>
-                        <TextBlock Text="{x:Bind LineNumber}" Style="{Binding Path=LineNumberStyle, ElementName=CurrentControl}" />
-                    </Border>
-                    <Border Background="{x:Bind Background}" Grid.Column="1" >
-                        <TextBlock Text="{x:Bind Text}" Style="{Binding Path=TextStyle, ElementName=CurrentControl}" IsTextSelectionEnabled="{Binding Path=IsTextSelectionEnabled, ElementName=CurrentControl}" />
-                    </Border>
-                </Grid>
+                <local:TextLineBlock TextBackground="{x:Bind Background}" IndexWidth="{Binding Path=LineNumberWidth, ElementName=CurrentControl}" LineNumber="{x:Bind LineNumber}" LineNumberStyle="{Binding Path=LineNumberStyle, ElementName=CurrentControl}" Text="{x:Bind Text}" TextStyle="{Binding Path=TextStyle, ElementName=CurrentControl}" TextHighlighters="{x:Bind TextHighlighters}" IsTextSelectionEnabled="{Binding Path=IsTextSelectionEnabled, ElementName=CurrentControl}" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>

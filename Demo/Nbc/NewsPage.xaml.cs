@@ -37,6 +37,7 @@ public sealed partial class NewsPage : Page
     {
         var arr = await DataService.GetRawAsync();
         LoadingElement.IsActive = false;
+        if (arr == null) return;
         foreach (var item in arr)
         {
             var title = item?.TryGetStringValue("listTitle");

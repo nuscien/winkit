@@ -8,14 +8,44 @@
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d">
 
-    <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:TextLineBlock" >
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="LineNumberStyle" >
+                    <Setter.Value>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WinKit.LineNumberText}" >
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="PrefixStyle" >
+                    <Setter.Value>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WinKit.LineBlockPrefixText}" >
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="TextStyle" >
+                    <Setter.Value>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WinKit.LineBlockContentText}" >
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" HorizontalAlignment="Stretch" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{x:Bind IndexWidth}" />
             <ColumnDefinition Width="{x:Bind PrefixWidth}" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <TextBlock x:Name="IndexElement" LineHeight="{x:Bind LineHeight}" Text="{x:Bind Index}" TextAlignment="Right" VerticalAlignment="Top" Grid.Column="0" />
-        <TextBlock x:Name="PrefixElement" LineHeight="{x:Bind LineHeight}" Text="{x:Bind Prefix}" TextAlignment="Center" VerticalAlignment="Top" Grid.Column="1" />
-        <TextBlock x:Name="TextElement" LineHeight="{x:Bind LineHeight}" Text="{x:Bind Text}" VerticalAlignment="Top" TextWrapping="Wrap" IsTextSelectionEnabled="True" Grid.Column="2" />
+        <Border Background="{x:Bind TextBackground}" CornerRadius="{x:Bind TextCornerRadius}" Grid.Column="2" />
+        <TextBlock Text="{x:Bind LineNumber}" Style="{x:Bind LineNumberStyle}" Grid.Column="0" />
+        <TextBlock Text="{x:Bind Prefix}" Style="{x:Bind PrefixStyle}" Grid.Column="1" />
+        <TextBlock x:Name="TextElement" Text="{x:Bind Text}" Style="{x:Bind TextStyle}" IsTextSelectionEnabled="{x:Bind IsTextSelectionEnabled}" Grid.Column="2" />
     </Grid>
 </UserControl>

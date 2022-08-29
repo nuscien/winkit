@@ -28,49 +28,6 @@ using DependencyObjectProxy = DependencyObjectProxy<TextView>;
 public sealed partial class TextView : UserControl
 {
     /// <summary>
-    /// The line model.
-    /// </summary>
-    public class Line
-    {
-        /// <summary>
-        /// Initializes a new instance of the TextView.Line class.
-        /// </summary>
-        public Line()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the TextView.Line class.
-        /// </summary>
-        /// <param name="text">The text</param>
-        public Line(string text)
-        {
-            Text = text;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the TextView.Line class.
-        /// </summary>
-        /// <param name="text">The text</param>
-        /// <param name="background">The background.</param>
-        public Line(string text, Brush background)
-            : this(text)
-        {
-            Background = background;
-        }
-
-        /// <summary>
-        /// Gets the text.
-        /// </summary>
-        public string Text { get; }
-
-        /// <summary>
-        /// Gets the background
-        /// </summary>
-        public Brush Background { get; }
-    }
-
-    /// <summary>
     /// The event arguments of line event.
     /// </summary>
     public class LineEventArgs : EventArgs
@@ -120,6 +77,11 @@ public sealed partial class TextView : UserControl
     /// The dependency property of text style.
     /// </summary>
     public static readonly DependencyProperty TextStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(TextStyle));
+
+    /// <summary>
+    /// The dependency property of prefix text style.
+    /// </summary>
+    public static readonly DependencyProperty PrefixStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(PrefixStyle));
 
     /// <summary>
     /// The dependency property of line number style.
@@ -186,6 +148,15 @@ public sealed partial class TextView : UserControl
     {
         get => (Style)GetValue(TextStyleProperty);
         set => SetValue(TextStyleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the prefix text style.
+    /// </summary>
+    public Style PrefixStyle
+    {
+        get => (Style)GetValue(PrefixStyleProperty);
+        set => SetValue(PrefixStyleProperty, value);
     }
 
     /// <summary>
@@ -420,7 +391,7 @@ public sealed partial class TextView : UserControl
     /// Appends.
     /// </summary>
     /// <param name="text">The text to append.</param>
-    public void Append(IEnumerable<Line> text)
+    public void Append(IEnumerable<TextLineBlockModel> text)
     {
         if (text == null) return;
         foreach (var line in text)
@@ -434,6 +405,7 @@ public sealed partial class TextView : UserControl
             };
             var background = line?.Background;
             if (background != null) item.Background = background;
+            if (line.TextHighlighters.Count > 0) item.TextHighlighters = line.TextHighlighters;
             collection.Add(item);
         }
     }
@@ -532,9 +504,7 @@ public sealed partial class TextView : UserControl
     }
 
     private void TextElement_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        SelectionChanged?.Invoke(this, e);
-    }
+        => SelectionChanged?.Invoke(this, e);
 }
 
 internal class TextViewModel : ObservableProperties
@@ -556,4 +526,14 @@ internal class TextViewModel : ObservableProperties
         get => GetCurrentProperty<Brush>();
         internal set => SetCurrentProperty(value);
     }
+
+    /// <summary>
+    /// Gets the text highlighters.
+    /// </summary>
+    public IList<TextHighlighter> TextHighlighters
+    {
+        get => GetCurrentProperty<IList<TextHighlighter>>();
+        internal set => SetCurrentProperty(value);
+    }
+
 }

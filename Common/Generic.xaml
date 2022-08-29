@@ -92,4 +92,23 @@
         <Setter Property="Padding" Value="11,5" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
+    <Style TargetType="TextBlock" x:Key="WinKit.LineNumberText" >
+        <Setter Property="Foreground" Value="#2B91AF" />
+        <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New, monospace, Segoe UI, Microsoft Yahei, Microsoft Jhenghei, MS Gothic, Malgun Gothic, Microsoft Himalaya" />
+        <Setter Property="TextTrimming" Value="Clip" />
+        <Setter Property="TextAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+    <Style TargetType="TextBlock" x:Key="WinKit.LineBlockPrefixText" >
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New, monospace, Segoe UI, Microsoft Yahei, Microsoft Jhenghei, MS Gothic, Malgun Gothic, Microsoft Himalaya" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="TextTrimming" Value="Clip" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+    <Style TargetType="TextBlock" x:Key="WinKit.LineBlockContentText" >
+        <Setter Property="TextWrapping" Value="WrapWholeWords" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
 </ResourceDictionary>

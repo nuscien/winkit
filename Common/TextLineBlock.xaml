@@ -1,0 +1,21 @@
+﻿<UserControl
+    x:Class="Trivial.UI.TextLineBlock"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:DefaultBindMode="OneWay"
+    mc:Ignorable="d">
+
+    <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{x:Bind IndexWidth}" />
+            <ColumnDefinition Width="{x:Bind PrefixWidth}" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="IndexElement" LineHeight="{x:Bind LineHeight}" Text="{x:Bind Index}" TextAlignment="Right" VerticalAlignment="Top" Grid.Column="0" />
+        <TextBlock x:Name="PrefixElement" LineHeight="{x:Bind LineHeight}" Text="{x:Bind Prefix}" TextAlignment="Center" VerticalAlignment="Top" Grid.Column="1" />
+        <TextBlock x:Name="TextElement" LineHeight="{x:Bind LineHeight}" Text="{x:Bind Text}" VerticalAlignment="Top" TextWrapping="Wrap" IsTextSelectionEnabled="True" Grid.Column="2" />
+    </Grid>
+</UserControl>

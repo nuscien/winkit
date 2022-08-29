@@ -10,9 +10,9 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>6.1.828</Version>
-    <AssemblyVersion>6.1.828.0</AssemblyVersion>
-    <FileVersion>6.1.828.0</FileVersion>
+    <Version>6.2.0</Version>
+    <AssemblyVersion>6.2.0.0</AssemblyVersion>
+    <FileVersion>6.2.0.0</FileVersion>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -150,6 +150,7 @@
   <ItemGroup>
     <None Remove="LocalWebAppHubPage.xaml" />
     <None Remove="LocalWebAppInfoView.xaml" />
+    <None Remove="TextLineBlock.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -158,6 +159,12 @@
 
   <ItemGroup>
     <Folder Include="Assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="TextLineBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

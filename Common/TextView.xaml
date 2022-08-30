@@ -53,7 +53,7 @@
     <ListView x:Name="TextElement" SelectionMode="{x:Bind SelectionMode}" x:DefaultBindMode="OneWay" Foreground="{x:Bind Foreground}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" ItemContainerStyle="{x:Bind ItemContainerStyle}" ItemClick="TextElement_ItemClick" SelectionChanged="TextElement_SelectionChanged" >
         <ListView.ItemTemplate>
             <DataTemplate x:DataType="local:TextViewModel" >
-                <local:TextLineBlock TextBackground="{x:Bind Background}" IndexWidth="{Binding Path=LineNumberWidth, ElementName=CurrentControl}" LineNumber="{x:Bind LineNumber}" LineNumberStyle="{Binding Path=LineNumberStyle, ElementName=CurrentControl}" Text="{x:Bind Text}" TextStyle="{Binding Path=TextStyle, ElementName=CurrentControl}" TextHighlighters="{x:Bind TextHighlighters}" IsTextSelectionEnabled="{Binding Path=IsTextSelectionEnabled, ElementName=CurrentControl}" />
+                <local:TextLineBlock TextBackground="{x:Bind Background}" LineNumberWidth="{Binding Path=LineNumberWidth, ElementName=CurrentControl}" LineNumber="{x:Bind LineNumber}" LineNumberStyle="{Binding Path=LineNumberStyle, ElementName=CurrentControl}" Text="{x:Bind Text}" TextStyle="{Binding Path=TextStyle, ElementName=CurrentControl}" TextHighlighters="{x:Bind TextHighlighters}" IsTextSelectionEnabled="{Binding Path=IsTextSelectionEnabled, ElementName=CurrentControl}" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>

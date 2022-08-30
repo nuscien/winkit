@@ -39,7 +39,7 @@
     </UserControl.Resources>
     <Grid Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" HorizontalAlignment="Stretch" >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="{x:Bind IndexWidth}" />
+            <ColumnDefinition Width="{x:Bind LineNumberWidth}" />
             <ColumnDefinition Width="{x:Bind PrefixWidth}" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>

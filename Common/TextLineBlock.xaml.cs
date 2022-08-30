@@ -26,9 +26,9 @@ using DependencyObjectProxy = DependencyObjectProxy<TextLineBlock>;
 public sealed partial class TextLineBlock : UserControl
 {
     /// <summary>
-    /// The dependency property of index column width.
+    /// The dependency property of line number column width.
     /// </summary>
-    public static readonly DependencyProperty IndexWidthProperty = DependencyObjectProxy.RegisterProperty(nameof(IndexWidth), new GridLength(60));
+    public static readonly DependencyProperty LineNumberWidthProperty = DependencyObjectProxy.RegisterProperty(nameof(LineNumberWidth), new GridLength(60));
 
     /// <summary>
     /// The dependency property of prefix column width.
@@ -102,10 +102,10 @@ public sealed partial class TextLineBlock : UserControl
     /// <summary>
     /// Gets or sets the width of index column.
     /// </summary>
-    public GridLength IndexWidth
+    public GridLength LineNumberWidth
     {
-        get => (GridLength)GetValue(IndexWidthProperty);
-        set => SetValue(IndexWidthProperty, value);
+        get => (GridLength)GetValue(LineNumberWidthProperty);
+        set => SetValue(LineNumberWidthProperty, value);
     }
 
     /// <summary>

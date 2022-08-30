@@ -212,6 +212,29 @@ public sealed partial class TextLineBlock : UserControl
         set => SetValue(TextHighlightersProperty, value);
     }
 
+    /// <summary>
+    /// Sets the model.
+    /// </summary>
+    /// <param name="model">The model.</param>
+    public void SetModel(TextLineBlockModel model)
+    {
+        if (model == null) model = new();
+        Text = model.Text;
+        TextBackground = model.Background;
+        TextHighlighters = model.TextHighlighters;
+        Prefix = model.Prefix;
+    }
+
+    /// <summary>
+    /// Converts to the text line block model.
+    /// </summary>
+    /// <param name="value">The element.</param>
+    public static explicit operator TextLineBlockModel(TextLineBlock value)
+    {
+        if (value == null) return null;
+        return new(value.Text, value.TextHighlighters, value.TextBackground, value.Prefix);
+    }
+
     private static void OnTextHighlightersChanged(TextLineBlock c, ChangeEventArgs<IEnumerable<TextHighlighter>> e, DependencyProperty d)
     {
         if (c == null || e?.NewValue == null) return;
@@ -261,9 +284,11 @@ public class TextLineBlockModel
     /// <param name="text">The text</param>
     /// <param name="highlighters">The text highlighters.</param>
     /// <param name="background">The background.</param>
-    public TextLineBlockModel(string text, IEnumerable<TextHighlighter> highlighters, Brush background)
+    /// <param name="prefix">The prefix.</param>
+    public TextLineBlockModel(string text, IEnumerable<TextHighlighter> highlighters, Brush background, string prefix = null)
         : this(text, background)
     {
+        Prefix = prefix;
         if (highlighters == null) return;
         foreach (var item in highlighters)
         {
@@ -275,6 +300,11 @@ public class TextLineBlockModel
     /// Gets the text.
     /// </summary>
     public string Text { get; }
+
+    /// <summary>
+    /// Gets the prefix text.
+    /// </summary>
+    public string Prefix { get; }
 
     /// <summary>
     /// Gets the background

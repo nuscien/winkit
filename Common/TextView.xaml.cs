@@ -45,11 +45,13 @@ public sealed partial class TextView : UserControl
         /// <param name="line">The line number.</param>
         /// <param name="text">The text.</param>
         /// <param name="background">The background.</param>
-        public LineEventArgs(int line, string text, Brush background = null)
+        /// <param name="textHighlighters">The text highligher.</param>
+        public LineEventArgs(int line, string text, Brush background = null, IList<TextHighlighter> textHighlighters = null)
         {
             LineNumber = line;
             Text = text;
             Background = background;
+            TextHighlighters = textHighlighters;
         }
 
         /// <summary>
@@ -66,6 +68,11 @@ public sealed partial class TextView : UserControl
         /// Gets the background
         /// </summary>
         public Brush Background { get; }
+
+        /// <summary>
+        /// Gets the text highlighters.
+        /// </summary>
+        public IList<TextHighlighter> TextHighlighters { get; }
     }
 
     /// <summary>
@@ -500,7 +507,7 @@ public sealed partial class TextView : UserControl
     private void TextElement_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem is not TextViewModel model) return;
-        ItemClick?.Invoke(this, new LineEventArgs(model.LineNumber, model.Text, model.Background));
+        ItemClick?.Invoke(this, new LineEventArgs(model.LineNumber, model.Text, model.Background, model.TextHighlighters));
     }
 
     private void TextElement_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -535,5 +542,4 @@ internal class TextViewModel : ObservableProperties
         get => GetCurrentProperty<IList<TextHighlighter>>();
         internal set => SetCurrentProperty(value);
     }
-
 }

@@ -453,9 +453,9 @@ public class LocalWebAppHost
     public static async Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (assembly == null) assembly = System.Reflection.Assembly.GetEntryAssembly();
-        if (string.IsNullOrWhiteSpace(projectFileName)) projectFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly);
-        if (string.IsNullOrWhiteSpace(packageFileName)) packageFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"), assembly);
-        if (string.IsNullOrWhiteSpace(pemFileName)) pemFileName = GetEmbeddedFileName(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, null, ".pem"), assembly);
+        if (string.IsNullOrWhiteSpace(projectFileName)) projectFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly);
+        if (string.IsNullOrWhiteSpace(packageFileName)) packageFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"), assembly);
+        if (string.IsNullOrWhiteSpace(pemFileName)) pemFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".pem"), assembly);
         using var stream = string.IsNullOrEmpty(projectFileName) ? null : assembly.GetManifestResourceStream(projectFileName);
         var config = JsonObjectNode.Parse(stream);
         var config2 = config?.TryGetObjectValue("ref");
@@ -472,7 +472,8 @@ public class LocalWebAppHost
         }
 
         var options = LoadOptions(config, null);
-        return await LoadAsync(options, assembly, packageFileName, forceToLoad, skipVerificationException, cancellationToken);
+        var version = config.TryGetObjectValue("package")?.TryGetStringTrimmedValue("version", true);
+        return await LoadAsync(options, assembly, packageFileName, version, skipVerificationException, cancellationToken);
     }
 
     /// <summary>
@@ -492,7 +493,27 @@ public class LocalWebAppHost
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, System.Reflection.Assembly assembly, string fileName, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    public static Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, System.Reflection.Assembly assembly, string fileName, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+        => LoadAsync(options, assembly, fileName, forceToLoad ? "*" : null, skipVerificationException, cancellationToken);
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="options">The options to parse.</param>
+    /// <param name="assembly">The assembly which embed the resource package.</param>
+    /// <param name="fileName">The zip file name of the embedded resource package.</param>
+    /// <param name="version">The version to check update.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web app host.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    private static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, System.Reflection.Assembly assembly, string fileName, string version, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
@@ -500,6 +521,7 @@ public class LocalWebAppHost
         var appId = FormatResourcePackageId(options.ResourcePackageId);
         appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        var forceToLoad = version == "*";
         if (assembly != null && !string.IsNullOrWhiteSpace(fileName))
         {
             if (!forceToLoad)
@@ -556,6 +578,12 @@ public class LocalWebAppHost
         }
 
         var host = await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(version) && !string.IsNullOrWhiteSpace(host?.Manifest?.Version) && version.Length > 2 && VersionComparer.Compare(host.Manifest.Version, version, false) < 0)
+        {
+            await LoadCompressedResourceAsync(options, dir, assembly, fileName, cancellationToken);
+            host = await LoadAsync(dir, options, skipVerificationException, null, cancellationToken);
+        }
+
         _ = host.UpdateRegisteredAsync();
         return host;
     }

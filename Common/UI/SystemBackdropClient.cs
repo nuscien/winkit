@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Background;
 using Windows.System;
 using WinRT;
 
@@ -29,15 +30,7 @@ internal class SystemBackdropClient : IDisposable
     private ISystemBackdropControllerWithTargets backdropController;
     private bool disposedValue;
 
-    public void EnsureWindowsSystemDispatcherQueueController()
-    {
-        if (DispatcherQueue.GetForCurrentThread() != null || dispatcherQueueController != null) return;
-        DispatcherQueueOptions options;
-        options.dwSize = Marshal.SizeOf(typeof(DispatcherQueueOptions));
-        options.threadType = 2;     // DQTYPE_THREAD_CURRENT
-        options.apartmentType = 2;  // DQTAT_COM_STA
-        _ = CreateDispatcherQueueController(options, ref dispatcherQueueController);
-    }
+    public Func<ElementTheme, ISystemBackdropControllerWithTargets> BackdropControllerMaker { get; set; }
 
     public bool IsInputActive
     {
@@ -52,6 +45,16 @@ internal class SystemBackdropClient : IDisposable
             if (s == null) return;
             s.IsInputActive = value;
         }
+    }
+
+    public void EnsureWindowsSystemDispatcherQueueController()
+    {
+        if (DispatcherQueue.GetForCurrentThread() != null || dispatcherQueueController != null) return;
+        DispatcherQueueOptions options;
+        options.dwSize = Marshal.SizeOf(typeof(DispatcherQueueOptions));
+        options.threadType = 2;     // DQTYPE_THREAD_CURRENT
+        options.apartmentType = 2;  // DQTAT_COM_STA
+        _ = CreateDispatcherQueueController(options, ref dispatcherQueueController);
     }
 
     public void SetConfigurationSourceTheme(ElementTheme theme)
@@ -74,8 +77,42 @@ internal class SystemBackdropClient : IDisposable
     public bool UpdateWindowBackground(Window window, ElementTheme theme)
     {
         var oldBc = backdropController;
-        backdropController = VisualUtility.TryCreateMicaBackdrop();
-        if (backdropController == null) backdropController = VisualUtility.TryCreateAcrylicBackdrop();
+        var h = BackdropControllerMaker;
+        if (h != null)
+        {
+            var isFailed = true;
+            try
+            {
+                backdropController = h(theme);
+                isFailed = false;
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (NotImplementedException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+
+            if (isFailed) backdropController = null;
+        }
+        else
+        {
+            backdropController = VisualUtility.TryCreateMicaBackdrop();
+            backdropController ??= VisualUtility.TryCreateAcrylicBackdrop();
+        }
+
         if (backdropController == null) return false;
         try
         {

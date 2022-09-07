@@ -7,6 +7,7 @@ using System.Security;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -335,7 +336,7 @@ public static partial class VisualUtility
     /// </summary>
     /// <param name="color">The color.</param>
     /// <returns>The solid brush.</returns>
-    public static SolidColorBrush ToBrush(Windows.UI.Color color)
+    public static SolidColorBrush ToBrush(Color color)
         => new(color);
 
     /// <summary>
@@ -344,7 +345,7 @@ public static partial class VisualUtility
     /// <param name="color">The color.</param>
     /// <returns>The solid brush.</returns>
     public static SolidColorBrush ToBrush(System.Drawing.Color color)
-        => new(Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B));
+        => new(Color.FromArgb(color.A, color.R, color.G, color.B));
 
     /// <summary>
     /// Converts to brush.
@@ -355,7 +356,7 @@ public static partial class VisualUtility
     /// <param name="b">The value of blue channel (0-255).</param>
     /// <returns>The solid brush.</returns>
     public static SolidColorBrush ToBrush(byte a, byte r, byte g, byte b)
-        => new(Windows.UI.Color.FromArgb(a, r, g, b));
+        => new(Color.FromArgb(a, r, g, b));
 
     /// <summary>
     /// Converts to brush.
@@ -365,7 +366,7 @@ public static partial class VisualUtility
     /// <param name="b">The value of blue channel (0-255).</param>
     /// <returns>The solid brush.</returns>
     public static SolidColorBrush ToBrush(byte r, byte g, byte b)
-        => new(Windows.UI.Color.FromArgb(255, r, g, b));
+        => new(Color.FromArgb(255, r, g, b));
 
     /// <summary>
     /// Create text inlines.
@@ -1061,7 +1062,7 @@ public static partial class VisualUtility
             return false;
         }
 
-        result = Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+        result = Color.FromArgb(color.A, color.R, color.G, color.B);
         return true;
     }
 
@@ -1071,7 +1072,7 @@ public static partial class VisualUtility
     /// <param name="s">The input string to parse.</param>
     /// <returns>The result color parsed.</returns>
     /// <exception cref="FormatException">s was incorrect to parse as a color.</exception>
-    public static Windows.UI.Color ParseColor(string s)
+    public static Color ParseColor(string s)
     {
         s = s.Trim();
         if (string.IsNullOrEmpty(s)) return Microsoft.UI.Colors.Transparent;
@@ -1084,7 +1085,7 @@ public static partial class VisualUtility
     /// </summary>
     /// <param name="value">The source color value.</param>
     /// <returns>A hex format string.</returns>
-    public static string ToHexString(Windows.UI.Color value)
+    public static string ToHexString(Color value)
         => value.A == 255 ? $"#{value.R:x2}{value.G:x2}{value.B:x2}" : $"#{value.A:x2}{value.R:x2}{value.G:x2}{value.B:x2}";
 
     /// <summary>
@@ -1092,7 +1093,7 @@ public static partial class VisualUtility
     /// </summary>
     /// <param name="value">The source color value.</param>
     /// <returns>A hex format string.</returns>
-    public static string ToRgbaString(Windows.UI.Color value)
+    public static string ToRgbaString(Color value)
         => $"rgba({value.R}, {value.G}, {value.B}, {value.A / 255d:0.######})";
 
     /// <summary>
@@ -1173,11 +1174,66 @@ public static partial class VisualUtility
         await webview.CoreWebView2.ExecuteScriptAsync(sb.ToString());
     }
 
-    internal static Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController TryCreateAcrylicBackdrop()
+    /// <summary>
+    /// Applies mica system backdrop.
+    /// </summary>
+    /// <param name="window">The window to enable the effect.</param>
+    /// <param name="theme">The request theme.</param>
+    /// <param name="backdropController">The backdrop controller maker.</param>
+    public static void ApplyMicaSystemBackdrop(Window window, ElementTheme? theme = null, Func<ElementTheme, ISystemBackdropControllerWithTargets> backdropController = null)
+    {
+        if (window == null) return;
+        var backdrop = new SystemBackdropClient
+        {
+            BackdropControllerMaker = backdropController
+        };
+        theme ??= (window.Content as FrameworkElement)?.RequestedTheme;
+        backdrop.UpdateWindowBackground(window, theme ?? ElementTheme.Default);
+        window.Activated += (sender, ev) =>
+        {
+            try
+            {
+                backdrop.IsInputActive = ev.WindowActivationState != WindowActivationState.Deactivated;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        };
+        window.Closed += (sender, ev) =>
+        {
+            try
+            {
+                backdrop.Dispose();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (ExternalException)
+            {
+            }
+        };
+    }
+
+    internal static DesktopAcrylicController TryCreateAcrylicBackdrop()
     {
         try
         {
-            if (!Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController.IsSupported()) return null;
+            if (!DesktopAcrylicController.IsSupported()) return null;
             return new();
         }
         catch (ArgumentException)
@@ -1202,11 +1258,11 @@ public static partial class VisualUtility
         return null;
     }
 
-    internal static Microsoft.UI.Composition.SystemBackdrops.MicaController TryCreateMicaBackdrop()
+    internal static MicaController TryCreateMicaBackdrop()
     {
         try
         {
-            if (!Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported()) return null;
+            if (!MicaController.IsSupported()) return null;
             return new();
         }
         catch (ArgumentException)
@@ -1252,7 +1308,7 @@ public static partial class VisualUtility
         catch (InvalidOperationException)
         {
         }
-        catch (System.Security.SecurityException)
+        catch (SecurityException)
         {
         }
         catch (NotSupportedException)

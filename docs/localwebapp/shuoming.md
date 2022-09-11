@@ -1,0 +1,77 @@
+# Local Web App
+
+Local web app (LWA) 是一种全新的应用开发框架和模式，可以完全用 Web 开发（即 HTML + CSS + JS/TS）的方式进行开发，其运行于微软 Edge WebView2 之中，其 URL 被指定映射为基于 HTTPS 的 localhost 或其它指定域名，以确保运行环境与普通网页类似，但所有前端资源均直接从本地加载，即无相关网络传输耗时，并包含静默自动升级机制，以及原生支持。
+
+## 应用模型
+
+应用整体由两部分构成：宿主程序，和前端资源包。
+
+### 宿主程序
+
+宿主程序是应用运行的基础，其提供容器、运行时和扩展能力，其以对应平台的原生方式运行，如 UWP、Win32、macOS。
+
+宿主程序对上层业务是透明的，但也是必须的，因为它是确保该应用能以原生应用的形态运行于这些平台（或操作系统）的基础。开发者通常只需分别配置相关项目设置，以指定应用（及随后发布到相关应用商店后）的一些特征，例如应用名和图标；不过，其内具体程序开发则不用太过关心，因为通常会以模板形式提供，如同其它 Web Native 程序一样。
+
+宿主程序会创建并激活一个主窗口，其内含微软 WebView2 元素，以加载一个本地页面，该页面即为开发者所需开发的内容，其通常会导入一些 JS 文件和样式文件，这些文件最终会被嵌入一个称为前端资源包的文件中。
+
+### 前端资源包
+
+前端资源包指的是打包后的所有前端相关资源文件，包括承载网页、样式和脚本。这部分内容即为应用开发者主要关注和开发部分，其包含所有业务逻辑和交互体验，是应用运行时最终用户所能体验到的主体部分。
+
+前端资源包包含一份清单，其内描述相关信息，包括元数据和配置。
+
+开发者需要开发一份常规 Web 应用，最好是单页面应用（SPA），而后配置好前端资源清单并进行打包即可。由于该包会被压缩并下载至本地解压后运行，运行期间没有前端页面和其它资源经网络加载的耗时，因此无需太过关注前端资源包的文件尺寸。资源包经过签名，即可保证运行于用户设备的本地资源不会被篡改。
+
+## 更新
+
+Often, app just need to update its resource package but not the whole host app. In the app framework solution, there is a built-in auto update method to check for each resource package. The native developers can also prevent this mechanism to enable their customized one.
+
+### 内置自动更新
+
+宿主程序默认会启用静默自动更新机制，以在后台自动下载、解压和校验最新版前端资源包。
+
+宿主程序会在更新可用时通知前端页面，并提供相关 JS API 查询当前可用的更新状态，并在下次运行时（可由业务层触发立即重启）自动加载新版。
+
+开发者需在线上部署更新服务（或在兼容网站上进行发布），更新服务仅需提供前端资源包最新状态查询和对应版本下载能力。宿主程序会通过 HTTPS 请求进行查询，该请求地址可以自定义，并可根据更新服务 API 接口定义，配置为带入 ID 和版本等信息。宿主程序会对获取到的新包进行校验。
+
+### 自定义更新
+
+如果对宿主程序进行编程调整，可以禁用内置自动更新功能，并重新实现一套符合自身业务的更新机制，宿主程序暴露的原生 API 提供相关包更新的接口，因此只需实现新版检测和触发时机控制等逻辑。
+
+通常，只有遇到以下场景，且具备相关原生应用开发能力时，才考虑自定义更新。
+
+- 宿主程序管理多个前端资源包，类似于小程序平台。
+- 宿主为一个已经存在的另一个应用的一部分，并且其前端资源包需要根据该应用的特定业务需要，来按需更新。
+- 后端更新服务因各种原因，无法满足内置自动更新的标准（虽然该标准以提供足够的自定义能力支持）。
+
+## 原生拓展能力
+
+宿主程序通过 JS 桥接模式，来向前端 Web 页面提供原生扩展能力。所有相关功能，都附加在 `window.localWebApp` 对象之上。大多数函数或方法以 Promise/A 异步返回值形式提供。
+
+### 内置扩展
+
+通过内置扩展，可以拥有访问本地资源和其它能力的权限和方法。
+
+- 对本地目录和文件，以及下载列表的访问能力。
+- 对称加密、哈希、签名、验证。
+- 对文本的编解码。
+- 对宿主的访问，例如获取主题、检查前端资源包更新、控制窗口状态。
+
+可查看其[具体介绍](./yuanshengkuozhan)或 [Type Script 定义文件](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts)来获取详情。
+
+### 数据绑定
+
+可以设定预设的数据资源绑定。
+
+- 所有与环境和前端资源包元数据相关的信息。
+- 通过前端资源清单绑定的字符串和 JSON 资源。
+
+### 自定义扩展
+
+Native app developers can implement the command handler for customized extensions. It is based on message communication between host app and webpage. JS can get the command handler by its identifier and it returns a proxy of the native implementation to send request and get response. It would be great if JS developers add a corresponding JS API based on the command handler to export them as a set of JS accessing friendly functions.
+
+可查看[扩展原生实现（英文）](./command-handler)来了解如何通过原生方式实现自定义扩展。
+
+## 工程支持
+
+开发方式和调试模式，与传统 Web 应用完全一致，包括调试环境下可用微软 Edge 浏览器开发者工具。

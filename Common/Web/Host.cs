@@ -431,34 +431,7 @@ public class LocalWebAppHost
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
     public static Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
-        => LoadAsync(assembly, null, null, forceToLoad, null, skipVerificationException, cancellationToken);
-
-    /// <summary>
-    /// Loads the standalone web app package information.
-    /// </summary>
-    /// <param name="assembly">The assembly which embed the resource package.</param>
-    /// <param name="projectFileName">The config file name of the resource package project.</param>
-    /// <param name="packageFileName">The zip file name of the embedded resource package.</param>
-    /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
-    /// <param name="pemFileName">The public key file name of signature.</param>
-    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
-    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns>The local web app host.</returns>
-    /// <exception cref="ArgumentNullException">options was null.</exception>
-    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
-    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
-    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
-    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
-    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
-    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
-    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
-    public static Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
-        => LoadAsync(assembly, new LocalWebAppEmbbeddedResourceInfo
-        {
-            ProjectFileName = projectFileName,
-            PackageResourceFileName = packageFileName,
-            PemFileName = pemFileName
-        }, forceToLoad, skipVerificationException, cancellationToken);
+        => LoadAsync(assembly, new LocalWebAppEmbbeddedResourceInfo(), forceToLoad, skipVerificationException, cancellationToken);
 
     /// <summary>
     /// Loads the standalone web app package information.
@@ -480,10 +453,11 @@ public class LocalWebAppHost
     public static async Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, LocalWebAppEmbbeddedResourceInfo fileNames, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (assembly == null) assembly = System.Reflection.Assembly.GetEntryAssembly();
-        var projectFileName = fileNames?.ProjectFileName;
-        var packageFileName = fileNames?.PackageResourceFileName;
-        var pemFileName = fileNames?.PemFileName;
-        var packageConfigFileName = fileNames?.PackageConfigurationFileName?.Trim();
+        fileNames ??= new();
+        var projectFileName = fileNames.ProjectFileName;
+        var packageFileName = fileNames.PackageResourceFileName;
+        var pemFileName = fileNames.PemFileName;
+        var packageConfigFileName = fileNames.PackageConfigurationFileName?.Trim();
         if (string.IsNullOrWhiteSpace(projectFileName)) projectFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly);
         if (string.IsNullOrWhiteSpace(packageFileName)) packageFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"), assembly);
         if (string.IsNullOrWhiteSpace(pemFileName)) pemFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".pem"), assembly);

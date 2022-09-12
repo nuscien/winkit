@@ -17,6 +17,8 @@ using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
 using Trivial.Text;
+using System.Xml.Linq;
+using Trivial.UI;
 
 namespace Trivial.Web;
 
@@ -270,6 +272,47 @@ public class LocalWebAppEmbbeddedResourceInfo
     /// Gets or sets the file name of the package configuration file.
     /// </summary>
     public string PackageConfigurationFileName { get; set; }
+
+    /// <summary>
+    /// Creates by folder.
+    /// </summary>
+    /// <param name="folder">The folder.</param>
+    /// <param name="assembly">The assembly.</param>
+    /// <returns>The local web app embbedded resource information instance.</returns>
+    public static LocalWebAppEmbbeddedResourceInfo CreateByFolder(string folder, System.Reflection.Assembly assembly = null)
+    {
+        assembly ??= System.Reflection.Assembly.GetEntryAssembly();
+        return new()
+        {
+            ProjectFileName = CreateFileNameByFolder(folder, GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly),
+            PackageResourceFileName = CreateFileNameByFolder(folder, GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"), assembly),
+            PemFileName = CreateFileNameByFolder(folder, GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".pem"), assembly),
+            PackageConfigurationFileName = CreateFileNameByFolder(folder, "package.json", assembly)
+        };
+    }
+
+    private static string CreateFileNameByFolder(string folder, string name, System.Reflection.Assembly assembly)
+    {
+        var files = assembly.GetManifestResourceNames();
+        var fileName = $"{assembly.GetName().Name}.{folder}.{name}";
+        if (files.Contains(fileName)) return fileName;
+        name = $"{folder}.{name}";
+        if (files.Contains(name)) return name;
+        name = $".{name}";
+        foreach (var n in files)
+        {
+            if (n.EndsWith(name)) return n;
+        }
+
+        return null;
+    }
+
+    private static string GetSubFileName(string name, string sub, string ext = null)
+    {
+        var i = name.LastIndexOf('.');
+        if (string.IsNullOrEmpty(ext)) ext = name[i..];
+        return string.IsNullOrWhiteSpace(sub) ? string.Concat(name[..i], ext) : string.Concat(name[..i], '.', sub, ext);
+    }
 }
 
 /// <summary>

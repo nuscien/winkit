@@ -1,3 +1,5 @@
+🌐 __简体中文__ (zh-Hans) | [English (en)](../localwebapp/)
+
 # Local Web App
 
 Local web app (LWA) 是一种全新的应用开发框架和模式，可以完全用 Web 开发（即 HTML + CSS + JS/TS）的方式进行开发，其运行于微软 Edge WebView2 之中，其 URL 被指定映射为基于 HTTPS 的 localhost 或其它指定域名，以确保运行环境与普通网页类似，但所有前端资源均直接从本地加载，即无相关网络传输耗时，并包含静默自动升级机制，以及原生支持。
@@ -24,7 +26,7 @@ Local web app (LWA) 是一种全新的应用开发框架和模式，可以完全
 
 ## 更新
 
-Often, app just need to update its resource package but not the whole host app. In the app framework solution, there is a built-in auto update method to check for each resource package. The native developers can also prevent this mechanism to enable their customized one.
+通常，应用只需更新其前端资源包即可，因为这才是应用的实际业务主题。在本应用框架解决方案中，已提供内置的相关静默自动更新机制。当然，也可以通过原生应用开发的方式，来实现自定义更新机制。
 
 ### 内置自动更新
 
@@ -68,7 +70,7 @@ Often, app just need to update its resource package but not the whole host app. 
 
 ### 自定义扩展
 
-Native app developers can implement the command handler for customized extensions. It is based on message communication between host app and webpage. JS can get the command handler by its identifier and it returns a proxy of the native implementation to send request and get response. It would be great if JS developers add a corresponding JS API based on the command handler to export them as a set of JS accessing friendly functions.
+原生应用开发者可以实现自定义的命令处理程序，以对前端页面的原生访问能力或其它功能提供支持。其基于内部消息机制，来实现宿主程序和前端页面的通信。JS 部分可以通过扩展实现者注册的 ID，来获取该命令集合，该命令集合通过暴露访问方法，来实现与宿主程序的通信。这些方法是内置的，JS 开发也可以基于这些方法进行进一步封装，以提供更为友好的 API。
 
 可查看[扩展原生实现（英文）](./command-handler)来了解如何通过原生方式实现自定义扩展。
 

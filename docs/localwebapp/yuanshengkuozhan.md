@@ -1,4 +1,4 @@
-[Local Web App](../localwebapp)
+[Local Web App](../localwebapp/shuoming)
 
 # 原生扩展
 
@@ -24,6 +24,8 @@
 
 ## 自定义扩展
 
-The function `getCommandHandler` is to get the proxy of command handler native implementation. It passes an identifier and returns an object with methods to send request and get response.
+原生应用开发者可以实现自定义的命令处理程序，以对前端页面的原生访问能力或其它功能提供支持。其基于内部消息机制，来实现宿主程序和前端页面的通信。JS 部分可以通过扩展实现者注册的 ID，来获取该命令集合，该命令集合通过暴露访问方法，来实现与宿主程序的通信。这些方法是内置的，JS 开发也可以基于这些方法进行进一步封装，以提供更为友好的 API。
 
-JS also can enumerate the information of all command handler by `hostApp.handlers` method.
+函数 `getCommandHandler` 可以获取原生程序开发者提供的 API 集合的 JS 层代理，其接受一个 ID 并返回包含发送命令和获取数据的一个实例。
+
+JS 也可以通过 `hostApp.handlers` 方法遍历已注册的所有代理。

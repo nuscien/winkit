@@ -1,3 +1,5 @@
+🌐 __English__ (en) | [简体中文 (zh-Hans)](../localwebapp/shuoming)
+
 # Local Web App
 
 Local web app is a new way to run your web app locally.
@@ -54,7 +56,7 @@ Following are some of appropriate scenario to customize the update logic.
 
 Host app provide JS bridge to extend native APIs to webpage. All components are on `window.localWebApp` object. Most of the method/function are invoked asynchronously so their return results are encapsulated by Promise/A.
 
-### Built-in extensions and datas
+### Built-in extensions
 
 It includes following extended APIs.
 
@@ -63,12 +65,14 @@ It includes following extended APIs.
 - Functions to encode/decode text.
 - Host APIs to get theme, check update and control window.
 
+See [introduction](./native-api) or [Type Script definition file](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts) for API details.
+
+## Data
+
 It also bind following data.
 
 - All the information about the environment and metadata.
 - The binding data loaded from the specific file contents. These are configured in manifest.
-
-See [introduction](./native-api) or [Type Script definition file](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts) for API details.
 
 ### Customized extensions
 

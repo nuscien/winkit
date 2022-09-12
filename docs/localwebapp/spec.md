@@ -1,3 +1,5 @@
+🌐 __English__ (en) | [简体中文 (zh-Hans)](../localwebapp/guige)
+
 This spec is about the workflow the framework works. See [documentation](../localwebapp/) for usages.
 
 # Local Web App

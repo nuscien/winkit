@@ -1,3 +1,5 @@
+🌐 __简体中文__ (zh-Hans) | [English (en)](../localwebapp/spec)
+
 本__规格__文档描述框架执行逻辑；如需了解使用方式，请查阅[说明文档](../localwebapp/shuoming)。
 
 # Local Web App

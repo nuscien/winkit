@@ -294,17 +294,8 @@ public class LocalWebAppEmbbeddedResourceInfo
     private static string CreateFileNameByFolder(string folder, string name, System.Reflection.Assembly assembly)
     {
         var files = assembly.GetManifestResourceNames();
-        var fileName = $"{assembly.GetName().Name}.{folder}.{name}";
-        if (files.Contains(fileName)) return fileName;
-        name = $"{folder}.{name}";
-        if (files.Contains(name)) return name;
-        name = $".{name}";
-        foreach (var n in files)
-        {
-            if (n.EndsWith(name)) return n;
-        }
-
-        return null;
+        var fileName = string.IsNullOrWhiteSpace(folder) ? $"{assembly.GetName().Name}.{name}" : $"{assembly.GetName().Name}.{folder}.{name}";
+        return files.Contains(fileName) ? fileName : null;
     }
 
     private static string GetSubFileName(string name, string sub, string ext = null)

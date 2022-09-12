@@ -240,6 +240,39 @@ public class LocalWebAppPackageUpdateInfo
 }
 
 /// <summary>
+/// The local web app assembly embbed resource information.
+/// </summary>
+public class LocalWebAppEmbbeddedResourceInfo
+{
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppEmbbeddedResourceInfo class.
+    /// </summary>
+    public LocalWebAppEmbbeddedResourceInfo()
+    {
+    }
+
+    /// <summary>
+    /// Gets or sets the file name of project.
+    /// </summary>
+    public string ProjectFileName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file name of the package resource.
+    /// </summary>
+    public string PackageResourceFileName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file name of the private PEM.
+    /// </summary>
+    public string PemFileName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file name of the package configuration file.
+    /// </summary>
+    public string PackageConfigurationFileName { get; set; }
+}
+
+/// <summary>
 /// The package result of local web app.
 /// </summary>
 public class LocalWebAppPackageResult

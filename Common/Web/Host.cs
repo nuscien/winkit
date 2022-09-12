@@ -21,6 +21,8 @@ using Trivial.Security;
 using Trivial.Text;
 using System.IO.Compression;
 using Trivial.UI;
+using Windows.ApplicationModel.Calls;
+using System.Runtime.ConstrainedExecution;
 
 namespace Trivial.Web;
 
@@ -450,15 +452,94 @@ public class LocalWebAppHost
     /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
     /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
-    public static async Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+    public static Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, string projectFileName, string packageFileName, bool forceToLoad = false, string pemFileName = null, bool skipVerificationException = false, CancellationToken cancellationToken = default)
+        => LoadAsync(assembly, new LocalWebAppEmbbeddedResourceInfo
+        {
+            ProjectFileName = projectFileName,
+            PackageResourceFileName = packageFileName,
+            PemFileName = pemFileName
+        }, forceToLoad, skipVerificationException, cancellationToken);
+
+    /// <summary>
+    /// Loads the standalone web app package information.
+    /// </summary>
+    /// <param name="assembly">The assembly which embed the resource package.</param>
+    /// <param name="fileNames">The embbedded file names.</param>
+    /// <param name="forceToLoad">true if force to load the resource; otherwise, false.</param>
+    /// <param name="skipVerificationException">true if don't throw exception on verification failure; otherwise, false.</param>
+    /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
+    /// <returns>The local web app host.</returns>
+    /// <exception cref="ArgumentNullException">options was null.</exception>
+    /// <exception cref="InvalidOperationException">The options was incorrect.</exception>
+    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
+    /// <exception cref="DirectoryNotFoundException">The related directory was not found.</exception>
+    /// <exception cref="FileNotFoundException">The resource manifest was not found.</exception>
+    /// <exception cref="JsonException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="FormatException">The format of the resource manifest was incorrect.</exception>
+    /// <exception cref="LocalWebAppSignatureException">Signature failed.</exception>
+    public static async Task<LocalWebAppHost> LoadAsync(System.Reflection.Assembly assembly, LocalWebAppEmbbeddedResourceInfo fileNames, bool forceToLoad = false, bool skipVerificationException = false, CancellationToken cancellationToken = default)
     {
         if (assembly == null) assembly = System.Reflection.Assembly.GetEntryAssembly();
+        var projectFileName = fileNames?.ProjectFileName;
+        var packageFileName = fileNames?.PackageResourceFileName;
+        var pemFileName = fileNames?.PemFileName;
+        var packageConfigFileName = fileNames?.PackageConfigurationFileName?.Trim();
         if (string.IsNullOrWhiteSpace(projectFileName)) projectFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"), assembly);
         if (string.IsNullOrWhiteSpace(packageFileName)) packageFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"), assembly);
         if (string.IsNullOrWhiteSpace(pemFileName)) pemFileName = GetEmbeddedFileName(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".pem"), assembly);
         using var stream = string.IsNullOrEmpty(projectFileName) ? null : assembly.GetManifestResourceStream(projectFileName);
         var config = JsonObjectNode.Parse(stream);
         var config2 = config?.TryGetObjectValue("ref");
+        string version2 = null;
+        if (config.GetValueKind("id") != JsonValueKind.String && (config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest"))?.GetValueKind("id") != JsonValueKind.String)
+        {
+            JsonObjectNode packageConfig = null;
+            try
+            {
+                using var stream2 = assembly.GetManifestResourceStream(packageConfigFileName ?? GetEmbeddedFileName("package.json", assembly));
+                if (stream2 == null) throw new InvalidOperationException("Miss package identifier.");
+                packageConfig = JsonObjectNode.Parse(stream2);
+                if (packageConfig == null) throw new InvalidOperationException("Miss package identifier.");
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (SecurityException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (NotImplementedException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+            catch (ExternalException ex)
+            {
+                throw new InvalidOperationException("Miss package identifier.", ex);
+            }
+
+            var propStr = packageConfig.TryGetStringTrimmedValue("name");
+            if (string.IsNullOrWhiteSpace(propStr)) throw new InvalidOperationException("Miss package identifier.");
+            config.SetValue("id", propStr);
+            version2 = packageConfig.TryGetStringTrimmedValue("version");
+        }
+
         if (config2 == null) throw new InvalidOperationException("Load project config failed.");
         var key = config2.TryGetStringValue("key");
         if (string.IsNullOrWhiteSpace(key))
@@ -472,7 +553,7 @@ public class LocalWebAppHost
         }
 
         var options = LoadOptions(config, null);
-        var version = config.TryGetObjectValue("package")?.TryGetStringTrimmedValue("version", true);
+        var version = forceToLoad ? "*" : (config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest"))?.TryGetStringTrimmedValue("version", true) ?? version2;
         return await LoadAsync(options, assembly, packageFileName, version, skipVerificationException, cancellationToken);
     }
 
@@ -1271,7 +1352,7 @@ public class LocalWebAppHost
     public static LocalWebAppPackageResult Package(DirectoryInfo dir, string outputFileName = null)
     {
         // Load options.
-        if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
+        if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The root directory is not found.");
         JsonObjectNode config = null;
         FileInfo configFile = null;
         try
@@ -1282,7 +1363,8 @@ public class LocalWebAppHost
         {
         }
 
-        if (config == null && dir != null)
+        var rootDir = dir;
+        if (config == null)
         {
             dir = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
             if (dir != null) config = LoadBuildConfig(dir, out configFile);
@@ -1290,9 +1372,8 @@ public class LocalWebAppHost
 
         if (configFile == null) throw new InvalidOperationException("Miss config file.");
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
-        var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
+        var keyFile = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
-        var options = LoadOptions(config, keyFile);
         var refConfig = config.TryGetObjectValue("ref");
 
         // Create manifest.
@@ -1305,12 +1386,33 @@ public class LocalWebAppHost
         {
         }
 
-        var manifestPath = Path.Combine(appDir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
+        var manifestPath = Path.Combine(appDir.FullName, LocalWebAppExtensions.DefaultManifestFileName);
         var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
         if (manifestJson != null)
         {
             var packageId = config.TryGetStringValue("id")?.Trim();
-            if (!string.IsNullOrEmpty(packageId)) manifestJson.SetValue("id", packageId);
+            var curVerKind = manifestJson.GetValueKind("version");
+            if (!string.IsNullOrEmpty(packageId))
+            {
+                manifestJson.SetValue("id", packageId);
+            }
+            else if (manifestJson.GetValueKind("id") != JsonValueKind.String)
+            {
+                var nodeConfigPath = Path.Combine(rootDir.FullName, "package.json");
+                if (!File.Exists(nodeConfigPath)) throw new InvalidOperationException("Miss package identifier.");
+                var nodeConfig = JsonObjectNode.TryParse(new FileInfo(nodeConfigPath));
+                packageId = nodeConfig?.TryGetStringValue("name")?.Trim();
+                if (string.IsNullOrEmpty(packageId)) throw new InvalidOperationException("Miss package identifier.");
+                manifestJson.SetValue("id", packageId);
+                config.SetValue("id", packageId);
+                var ver = nodeConfig.TryGetStringValue("version")?.Trim();
+                if (curVerKind != JsonValueKind.String && curVerKind != JsonValueKind.Number && !string.IsNullOrEmpty(ver))
+                    manifestJson.SetValue("version", ver);
+            }
+
+            curVerKind = manifestJson.GetValueKind("version");
+            if (curVerKind != JsonValueKind.String && curVerKind != JsonValueKind.Number)
+                manifestJson.SetValue("version", "0.0.1");
             var manifestStr = manifestJson.ToString();
             File.WriteAllText(manifestPath, manifestStr);
         }
@@ -1365,6 +1467,7 @@ public class LocalWebAppHost
         }
 
         // Sign.
+        var options = LoadOptions(config, keyFile);
         Sign(appDir, options);
 
         // Load.
@@ -1391,7 +1494,7 @@ public class LocalWebAppHost
         }
 
         // Return result.
-        var result = new LocalWebAppPackageResult(options, dir, appDir, zip, config.TryGetObjectValue("details"), config.TryGetObjectValue("project"));
+        var result = new LocalWebAppPackageResult(options, rootDir, appDir, zip, config.TryGetObjectValue("details"), config.TryGetObjectValue("project"));
         LocalWebAppSettings.BuildDevPackage?.Invoke(result);
         return result;
     }
@@ -2251,7 +2354,7 @@ public class LocalWebAppHost
     private static LocalWebAppOptions LoadOptions(JsonObjectNode config, FileInfo keyFile)
     {
         // Create options.
-        var resId = config.TryGetStringValue("id")?.Trim() ?? config.TryGetObjectValue("package").TryGetStringValue("id")?.Trim();
+        var resId = config.TryGetStringValue("id")?.Trim() ?? (config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest")).TryGetStringValue("id")?.Trim();
         config = config.TryGetObjectValue("ref");
         var sign = config.TryGetStringValue("sign")?.Trim()?.ToUpperInvariant();
         if (string.IsNullOrEmpty(sign)) sign = "RS512";

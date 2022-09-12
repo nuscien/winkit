@@ -1,5 +1,5 @@
 {
-  "name": "@nuscien/filebrowserdemo",
+  "name": "filebrowser",
   "version": "0.1.0",
   "description": "The demo for local web app.",
   "devDependencies": {

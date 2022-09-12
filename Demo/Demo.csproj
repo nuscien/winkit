@@ -47,6 +47,7 @@
     <Content Include="..\Common\Assets\DefaultLwa_128.png" Link="Assets\DefaultLwa_128.png" />
     <Content Include="..\Common\Assets\FolderLwa_128.png" Link="Assets\FolderLwa_128.png" />
     <Content Include="..\Common\Assets\SearchLwa_128.png" Link="Assets\SearchLwa_128.png" />
+    <EmbeddedResource Include="..\FileBrowser\package.json" Link="package.json" />
     <Content Include="..\Materials\logo.png" Link="logo.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

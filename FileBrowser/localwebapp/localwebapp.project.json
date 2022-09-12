@@ -1,8 +1,6 @@
 {
-  "id": "filebrowser",
   "package": {
     "title": "File Browser",
-    "version": "0.1.0",
     "publisher": "Nanchang Jinchen Software Co Ltd",
     "icon": ".\\images\\icons\\Logo.png",
     "description": "Explore local files.",

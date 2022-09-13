@@ -24,7 +24,7 @@
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>logo.png</PackageIcon>
-    <PackageTags>ui tiles</PackageTags>
+    <PackageTags>ui tiles lwa</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
     <LangVersion>10.0</LangVersion>
@@ -53,6 +53,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <PackageReference Include="Trivial" Version="6.5.4" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -19,10 +20,7 @@ using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
 using Trivial.Text;
-using System.IO.Compression;
 using Trivial.UI;
-using Windows.ApplicationModel.Calls;
-using System.Runtime.ConstrainedExecution;
 
 namespace Trivial.Web;
 

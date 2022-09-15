@@ -145,6 +145,16 @@ public sealed partial class TabbedWebView : UserControl
     public event EventHandler<LocalWebAppTabEventArgs> LocalWebAppTabCreated;
 
     /// <summary>
+    /// Occurs when the webpage send request to close itself.
+    /// </summary>
+    public event EventHandler<WebViewTabEventArgs> WebViewPageCloseRequested;
+
+    /// <summary>
+    /// Occurs when the webpage send request to close itself.
+    /// </summary>
+    public event EventHandler<LocalWebAppTabEventArgs> LocalWebAppPageCloseRequested;
+
+    /// <summary>
     /// Occurs on the selection has changed.
     /// </summary>
     public event SelectionChangedEventHandler SelectionChanged;
@@ -469,22 +479,38 @@ public sealed partial class TabbedWebView : UserControl
         {
             try
             {
-                c.Close();
+                WebViewPageCloseRequested?.Invoke(this, new WebViewTabEventArgs(tab, c, source));
             }
-            catch (InvalidOperationException)
+            finally
             {
-            }
-            catch (NullReferenceException)
-            {
-            }
-            catch (ApplicationException)
-            {
-            }
-            catch (ExternalException)
-            {
-            }
+                try
+                {
+                    c.Close();
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (NullReferenceException)
+                {
+                }
+                catch (ApplicationException)
+                {
+                }
+                catch (ExternalException)
+                {
+                }
 
-            HostElement.TabItems.Remove(tab);
+                try
+                {
+                    HostElement.TabItems.Remove(tab);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (ExternalException)
+                {
+                }
+            }
         };
         if (source != null) c.Source = source;
         try
@@ -655,22 +681,38 @@ public sealed partial class TabbedWebView : UserControl
         {
             try
             {
-                c.Close();
+                LocalWebAppPageCloseRequested?.Invoke(this, new LocalWebAppTabEventArgs(tab, c));
             }
-            catch (InvalidOperationException)
+            finally
             {
-            }
-            catch (NullReferenceException)
-            {
-            }
-            catch (ApplicationException)
-            {
-            }
-            catch (ExternalException)
-            {
-            }
+                try
+                {
+                    c.Close();
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (NullReferenceException)
+                {
+                }
+                catch (ApplicationException)
+                {
+                }
+                catch (ExternalException)
+                {
+                }
 
-            HostElement.TabItems.Remove(tab);
+                try
+                {
+                    HostElement.TabItems.Remove(tab);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (ExternalException)
+                {
+                }
+            }
         };
         LocalWebAppTabCreated?.Invoke(this, new LocalWebAppTabEventArgs(tab, c));
         return c;

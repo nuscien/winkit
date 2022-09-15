@@ -95,6 +95,16 @@ public sealed partial class TabbedWebViewWindow : Window
     public event EventHandler<TabbedWebView.LocalWebAppTabEventArgs> LocalWebAppTabCreated;
 
     /// <summary>
+    /// Occurs when the webpage send request to close itself.
+    /// </summary>
+    public event EventHandler<TabbedWebView.WebViewTabEventArgs> WebViewPageCloseRequested;
+
+    /// <summary>
+    /// Occurs when the webpage send request to close itself.
+    /// </summary>
+    public event EventHandler<TabbedWebView.LocalWebAppTabEventArgs> LocalWebAppPageCloseRequested;
+
+    /// <summary>
     /// Occurs on the selection has changed.
     /// </summary>
     public event SelectionChangedEventHandler SelectionChanged;
@@ -475,4 +485,28 @@ public sealed partial class TabbedWebViewWindow : Window
 
     private void HostElement_ContainsFullScreenElementChanged(object sender, Data.DataEventArgs<int> e)
         => VisualUtility.SetFullScreenMode(e.Data > 0, this);
+
+    private void HostElement_WebViewPageCloseRequested(object sender, TabbedWebView.WebViewTabEventArgs e)
+    {
+        WebViewPageCloseRequested?.Invoke(this, e);
+        _ = TestWindowCloseAsync();
+    }
+
+    private void HostElement_LocalWebAppPageCloseRequested(object sender, TabbedWebView.LocalWebAppTabEventArgs e)
+    {
+        LocalWebAppPageCloseRequested?.Invoke(this, e);
+        _ = TestWindowCloseAsync();
+    }
+
+    private async Task TestWindowCloseAsync()
+    {
+        await Task.Delay(400);
+        try
+        {
+            if (HostElement.TabItems.Count < 1) Close();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
 }

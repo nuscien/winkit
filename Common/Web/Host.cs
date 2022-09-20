@@ -27,7 +27,7 @@ namespace Trivial.Web;
 /// <summary>
 /// The local standalone web app host.
 /// </summary>
-public class LocalWebAppHost
+public partial class LocalWebAppHost
 {
     private LocalWebAppHost(LocalWebAppManifest manifest, LocalWebAppOptions options)
     {
@@ -570,10 +570,9 @@ public class LocalWebAppHost
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
-        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
         var appId = FormatResourcePackageId(options.ResourcePackageId);
-        appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
-        var dir = FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        var dir = await TryGetPackageFolderAsync(FormatResourcePackageId(appId));
+        if (dir == null || !dir.Exists) throw new InvalidOperationException("Initialize app data folder failed.");
         var forceToLoad = version == "*";
         if (assembly != null && !string.IsNullOrWhiteSpace(fileName))
         {
@@ -851,6 +850,7 @@ public class LocalWebAppHost
     {
         if (uri == null) throw new ArgumentNullException(nameof(uri));
         var dir = await GetAppRootDirectoryAsync(options);
+        if (dir == null || !dir.Exists) throw new InvalidOperationException("Initialize app data folder failed.");
         var cacheDir = Directory.CreateDirectory(Path.Combine(dir.FullName, "cache"));
         var path = Path.Combine(cacheDir.FullName, "TempResourcePackage.zip");
         TryDeleteDirectory(path);
@@ -929,6 +929,7 @@ public class LocalWebAppHost
     public static async Task<LocalWebAppHost> LoadAsync(LocalWebAppOptions options, FileInfo zip, CancellationToken cancellationToken = default)
     {
         var dir = await GetAppRootDirectoryAsync(options);
+        if (dir == null || !dir.Exists) throw new InvalidOperationException("Initialize app data folder failed.");
         await UpdateAsync(options, dir, null, zip, false, cancellationToken);
         var host = await LoadAsync(dir, options, false, null, cancellationToken);
         if (host.ResourcePackageId != options.ResourcePackageId) throw new InvalidOperationException("The app is not the expect one.");
@@ -1444,7 +1445,7 @@ public class LocalWebAppHost
 
         // Load.
         if (string.IsNullOrWhiteSpace(outputFileName))
-            outputFileName = Path.Combine(dir.FullName, GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"));
+            outputFileName = Path.Combine(dir.FullName, GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, null, ".zip"));
         if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
             outputFileName = Path.Combine(dir.FullName, outputFileName);
         File.Delete(outputFileName);
@@ -1534,7 +1535,7 @@ public class LocalWebAppHost
 
         // Download zip.
         url = GetUrl(resp.TryGetStringValue("url"), resp.TryGetObjectValue("params"));
-        var uri = VisualUtility.TryCreateUri(url);
+        var uri = LocalWebAppExtensions.TryCreateUri(url);
         if (uri == null) return null;
         FileInfo zip = null;
         try
@@ -1623,15 +1624,7 @@ public class LocalWebAppHost
         if (!dev)
         {
             if (appId == "_settings") return false;
-            try
-            {
-                var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-                appDataFolder = await appDataFolder.GetFolderAsync(appId);
-                if (appDataFolder != null) await appDataFolder.DeleteAsync();
-            }
-            catch (IOException)
-            {
-            }
+            await TryRemovePackageFolderAsync(appId);
         }
 
         var dir = await GetSettingsDirAsync();
@@ -1717,7 +1710,7 @@ public class LocalWebAppHost
 
                 removing.Remove(id);
                 var version = item.TryGetStringTrimmedValue("version", true);
-                var uri = VisualUtility.TryCreateUri(item.TryGetStringTrimmedValue("url", true));
+                var uri = LocalWebAppExtensions.TryCreateUri(item.TryGetStringTrimmedValue("url", true));
                 if (version == null || uri == null) continue;
                 var sign = item.TryGetObjectValue("sign");
                 if (sign == null)
@@ -1906,6 +1899,7 @@ public class LocalWebAppHost
             return info;
         }, dev)) != null;
 
+
     /// <summary>
     /// Gets the root directory of the app.
     /// </summary>
@@ -1922,10 +1916,7 @@ public class LocalWebAppHost
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrEmpty(options.ResourcePackageId)) throw new InvalidOperationException("The resource package identifier should not be null or empty.");
-        var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-        var appId = FormatResourcePackageId(options.ResourcePackageId);
-        appDataFolder = await appDataFolder.CreateFolderAsync(appId, Windows.Storage.CreationCollisionOption.OpenIfExists);
-        return FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
+        return await TryGetPackageFolderAsync(FormatResourcePackageId(options.ResourcePackageId));
     }
 
     /// <summary>
@@ -2060,35 +2051,8 @@ public class LocalWebAppHost
         return Path.Combine(parent, folder);
     }
 
-    private static async Task<DirectoryInfo> GetSettingsDirAsync()
-    {
-        try
-        {
-            var appDataFolder = await Windows.Storage.ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("LocalWebApp", Windows.Storage.CreationCollisionOption.OpenIfExists);
-            appDataFolder = await appDataFolder.CreateFolderAsync("_settings", Windows.Storage.CreationCollisionOption.OpenIfExists);
-            return FileSystemInfoUtility.TryGetDirectoryInfo(appDataFolder.Path);
-        }
-        catch (IOException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        catch (ExternalException)
-        {
-        }
-
-        return null;
-    }
+    private static Task<DirectoryInfo> GetSettingsDirAsync()
+        => TryGetPackageFolderAsync("_settings");
 
     /// <summary>
     /// Updates the resource package.

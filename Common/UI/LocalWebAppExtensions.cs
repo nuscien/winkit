@@ -28,6 +28,14 @@ internal static class LocalWebAppExtensions
     internal const string DefaultManifestGeneratedFileName = "localwebapp.files.json";
     internal const string VirtualRootDomain = "localwebapp.localhost";
 
+    /// <summary>
+    /// Tries to parse a URI.
+    /// </summary>
+    /// <param name="url">The URL.</param>
+    /// <returns>The URI.</returns>
+    public static Uri TryCreateUri(string url)
+        => VisualUtility.TryCreateUri(url);
+
     public static JsonObjectNode GetEnvironmentInformation(LocalWebAppManifest manifest)
     {
         var eas = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();

@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>lwac</AssemblyName>
+    <RootNamespace>Trivial.Web</RootNamespace>
+    <Product>Trivial</Product>
+    <Authors>Kingcean Tuan</Authors>
+    <Company>Nanchang Jinchen Software Co., Ltd.</Company>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Description>CLI for local web app.</Description>
+    <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/nuscien/winkit</PackageProjectUrl>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryUrl>https://github.com/nuscien/winkit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageTags>cli lwa</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
+    <LangVersion>10.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\Web\FileInfo.cs" Link="FileInfo.cs" />
+    <Compile Include="..\Common\Web\Hook.cs" Link="Hook.cs" />
+    <Compile Include="..\Common\Web\Host.cs" Link="Host.cs" />
+    <Compile Include="..\Common\Web\Manifest.cs" Link="Manifest.cs" />
+    <Compile Include="..\Common\Web\Options.cs" Link="Options.cs" />
+    <Compile Include="..\Common\Web\SignatureException.cs" Link="SignatureException.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Trivial" Version="6.5.4" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="README.md" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
+    <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+</Project>

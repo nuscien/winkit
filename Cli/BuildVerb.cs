@@ -43,7 +43,8 @@ internal class BuildVerb : BaseCommandVerb
         }
 
         console.WriteLine(ConsoleColor.Green, "Success!");
-        console.WriteLine($"{manifest.DisplayName} ({manifest.Id}) v{manifest.Version} by {manifest.PublisherName ?? "?"}");
+        console.WriteLine($"{manifest.DisplayName} ({manifest.Id}) v{manifest.Version}");
+        if (!string.IsNullOrWhiteSpace(manifest.PublisherName)) console.WriteLine(manifest.PublisherName);
         if (!string.IsNullOrWhiteSpace(manifest.Website)) console.WriteLine(ConsoleColor.Cyan, manifest.Website);
         if (!string.IsNullOrWhiteSpace(manifest.Description)) console.WriteLine(manifest.Description);
         if (!string.IsNullOrWhiteSpace(manifest.Copyright)) console.WriteLine(manifest.Copyright);

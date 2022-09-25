@@ -44,6 +44,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:DefaultBindMode="OneWay" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" CornerRadius="{x:Bind CornerRadius}" >
+        <Border x:Name="BackgroundPanel" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         <Border Width="{x:Bind AvatarWidth}" Height="{x:Bind AvatarHeight}" CornerRadius="{x:Bind AvatarCornerRadius}" Margin="{x:Bind AvatarMargin}" Background="{x:Bind AvatarBackground}" BackgroundSizing="{x:Bind AvatarBackgroundSizing}" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Image x:Name="AvatarImage" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <Image.Source>
@@ -51,6 +52,7 @@
                 </Image.Source>
             </Image>
         </Border>
+        <Border x:Name="SenderCornerPanel" Margin="0" HorizontalAlignment="Right" VerticalAlignment="Top" />
         <StackPanel Orientation="{x:Bind SenderOrientation}" Spacing="{x:Bind SenderSpacing}" Margin="{x:Bind SenderMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
             <TextBlock x:Name="NicknameText" Text="{x:Bind Nickname}" Width="{x:Bind NicknameWidth}" Height="{x:Bind NicknameHeight}" Foreground="{x:Bind NicknameForeground}" FontSize="{x:Bind NicknameFontSize}" FontWeight="{x:Bind NicknameFontWeight}" FontStyle="{x:Bind NicknameFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
             <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />

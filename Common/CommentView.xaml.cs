@@ -518,6 +518,24 @@ public sealed partial class CommentView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the content of background.
+    /// </summary>
+    public UIElement BackgroundContent
+    {
+        get => BackgroundPanel.Child;
+        set => BackgroundPanel.Child = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the content of sender corner.
+    /// </summary>
+    public UIElement SenderCornerContent
+    {
+        get => SenderCornerPanel.Child;
+        set => SenderCornerPanel.Child = value;
+    }
+
+    /// <summary>
     /// Gets or sets the content of before customized zone.
     /// </summary>
     public UIElement BeforeContent

@@ -1253,7 +1253,20 @@ public static partial class VisualUtility
         catch (InvalidOperationException)
         {
         }
+        catch (NotSupportedException)
+        {
+        }
     }
+
+    /// <summary>
+    /// Applies mica system backdrop.
+    /// </summary>
+    /// <param name="window">The window to enable the effect.</param>
+    /// <param name="theme">The request theme.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public static void ApplyMicaSystemBackdrop(Window window, ElementTheme? theme, CancellationToken cancellationToken)
+        => ApplyMicaSystemBackdrop(window, theme, null, cancellationToken);
+
 
     internal static DesktopAcrylicController TryCreateAcrylicBackdrop()
     {

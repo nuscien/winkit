@@ -892,9 +892,19 @@ public sealed partial class TileItem : UserControl
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(TitleConnectedAnimationKey)) ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(TitleConnectedAnimationKey, TitleText);
+            if (!string.IsNullOrWhiteSpace(ImageConnectedAnimationKey)) ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(ImageConnectedAnimationKey, ImageControl);
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
         Click?.Invoke(this, e);
-        if (!string.IsNullOrWhiteSpace(TitleConnectedAnimationKey)) ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(TitleConnectedAnimationKey, TitleText);
-        if (!string.IsNullOrWhiteSpace(ImageConnectedAnimationKey)) ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(ImageConnectedAnimationKey, ImageControl);
     }
 
     private static void OnTextChanged(TileItem c, ChangeEventArgs<string> e, DependencyProperty p)

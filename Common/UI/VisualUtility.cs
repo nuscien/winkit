@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Text;
@@ -18,6 +19,7 @@ using Microsoft.UI.Xaml.Media;
 using Trivial.Data;
 using Trivial.Tasks;
 using Trivial.Text;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Text;
@@ -1180,7 +1182,8 @@ public static partial class VisualUtility
     /// <param name="window">The window to enable the effect.</param>
     /// <param name="theme">The request theme.</param>
     /// <param name="backdropController">The backdrop controller maker.</param>
-    public static void ApplyMicaSystemBackdrop(Window window, ElementTheme? theme = null, Func<ElementTheme, ISystemBackdropControllerWithTargets> backdropController = null)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public static void ApplyMicaSystemBackdrop(Window window, ElementTheme? theme = null, Func<ElementTheme, ISystemBackdropControllerWithTargets> backdropController = null, CancellationToken cancellationToken = default)
     {
         if (window == null) return;
         var backdrop = new SystemBackdropClient
@@ -1189,7 +1192,7 @@ public static partial class VisualUtility
         };
         theme ??= (window.Content as FrameworkElement)?.RequestedTheme;
         backdrop.UpdateWindowBackground(window, theme ?? ElementTheme.Default);
-        window.Activated += (sender, ev) =>
+        TypedEventHandler<object, WindowActivatedEventArgs> activated = (sender, ev) =>
         {
             try
             {
@@ -1208,7 +1211,7 @@ public static partial class VisualUtility
             {
             }
         };
-        window.Closed += (sender, ev) =>
+        TypedEventHandler<object, WindowEventArgs> closed = (sender, ev) =>
         {
             try
             {
@@ -1227,6 +1230,29 @@ public static partial class VisualUtility
             {
             }
         };
+        if (cancellationToken.IsCancellationRequested) return;
+        window.Activated += activated;
+        window.Closed += closed;
+        try
+        {
+            if (cancellationToken.CanBeCanceled) cancellationToken.Register(() =>
+            {
+                try
+                {
+                    window.Activated -= activated;
+                    window.Closed -= closed;
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (NullReferenceException)
+                {
+                }
+            });
+        }
+        catch (InvalidOperationException)
+        {
+        }
     }
 
     internal static DesktopAcrylicController TryCreateAcrylicBackdrop()

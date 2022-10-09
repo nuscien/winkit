@@ -3,9 +3,9 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <Version>6.3.0</Version>
-    <FileVersion>6.3.0.0</FileVersion>
-    <AssemblyVersion>6.3.0.0</AssemblyVersion>
+    <Version>6.5.0</Version>
+    <FileVersion>6.5.0.0</FileVersion>
+    <AssemblyVersion>6.5.0.0</AssemblyVersion>
     <AssemblyName>Trivial.WindowsKit.Demo</AssemblyName>
     <PackageId>Trivial.WindowsKit.Demo</PackageId>
     <Authors>Kingcean Tuan</Authors>
@@ -18,6 +18,8 @@
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Trivial.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -27,6 +27,8 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
     <LangVersion>10.0</LangVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Trivial.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

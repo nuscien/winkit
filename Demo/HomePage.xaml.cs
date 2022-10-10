@@ -46,6 +46,24 @@ public sealed partial class HomePage : Page
                 "Copyrights of these data sources are reserved by their owner.",
                 string.Empty
             });
+            if (i > 0) continue;
+            TextViewElement.Append(new JsonObjectNode
+            {
+                { "title", "Trivial.WindowsKit" },
+                { "3rd-party-notes", new JsonArrayNode
+                {
+                    "This demo shows basic visual samples based on some 3rd-party data sources.",
+                    "Copyrights of these data sources are reserved by their owner."
+                } },
+                { "data", new JsonObjectNode
+                {
+                    { "number", 9876543210 },
+                    { "true", true },
+                    { "false", false },
+                    { "null", null as string }
+                } },
+            });
+            TextViewElement.Append(string.Empty);
         }
 
         FileBrowserElement.NavigateAsync(new DirectoryInfo("C:\\"));

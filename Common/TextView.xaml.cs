@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using Trivial.Data;
 using Trivial.IO;
 using Trivial.Reflection;
@@ -20,6 +22,8 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 namespace Trivial.UI;
+
+using static System.Net.Mime.MediaTypeNames;
 using DependencyObjectProxy = DependencyObjectProxy<TextView>;
 
 /// <summary>
@@ -250,20 +254,6 @@ public sealed partial class TextView : UserControl
     }
 
     /// <summary>
-    /// Appends.
-    /// </summary>
-    /// <param name="text">The text to append.</param>
-    public void Append(string text)
-        => Append(new CharsReader(text).ReadLines());
-
-    /// <summary>
-    /// Appends.
-    /// </summary>
-    /// <param name="text">The text to append.</param>
-    public void Append(CharsReader text)
-        => Append(text?.ReadLines());
-
-    /// <summary>
     /// Gets the text of the specific line.
     /// </summary>
     /// <param name="lineNumber">The line number.</param>
@@ -379,6 +369,23 @@ public sealed partial class TextView : UserControl
     /// Appends.
     /// </summary>
     /// <param name="text">The text to append.</param>
+    public void Append(string text)
+        => Append(text == string.Empty ? new List<string>
+        {
+            string.Empty
+        } : new CharsReader(text).ReadLines());
+
+    /// <summary>
+    /// Appends.
+    /// </summary>
+    /// <param name="text">The text to append.</param>
+    public void Append(CharsReader text)
+        => Append(text?.ReadLines());
+
+    /// <summary>
+    /// Appends.
+    /// </summary>
+    /// <param name="text">The text to append.</param>
     public void Append(IEnumerable<string> text)
     {
         if (text == null) return;
@@ -417,54 +424,49 @@ public sealed partial class TextView : UserControl
         }
     }
 
-    ///// <summary>
-    ///// Appends.
-    ///// </summary>
-    ///// <param name="text">The text to append.</param>
-    ///// <param name="style">The optional style for JSON.</param>
-    //public void Append(JsonObjectNode text, JsonTextStyle style = null)
-    //{
-    //    if (text == null) return;
-    //    var inlines = VisualUtilities.CreateTextInlines(text, style);
-    //    var indexWidth = new GridLength(double.IsNaN(IndexWidth) || IndexWidth < 0 ? 0 : IndexWidth);
-    //    TextViewModel item = null;
-    //    var col = new List<TextViewModel>();
-    //    foreach (var line in inlines)
-    //    {
-    //        if (item == null)
-    //        {
-    //            Count++;
-    //            item = new TextViewModel
-    //            {
-    //                TextStyle = TextStyle,
-    //                LineNumber = Count,
-    //                LineNumberWidth = indexWidth,
-    //                LineNumberStyle = LineNumberStyle
-    //            };
-    //            col.Add(item);
-    //        }
+    /// <summary>
+    /// Appends.
+    /// </summary>
+    /// <param name="text">The text to append.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    public void Append(JsonObjectNode text, JsonTextStyle style = null)
+    {
+        if (text == null) return;
+        var i = Count;
+        var lines = VisualUtility.CreateTextViewModels(text, i + 1, style ?? VisualUtility.GetDefaultJsonTextStyle(this));
+        Count += lines.Count;
+        foreach (var line in lines)
+        {
+            collection.Add(line);
+        }
+    }
 
-    //        if (line is LineBreak)
-    //        {
-    //            item = null;
-    //            continue;
-    //        }
-
-    //        item.Inlines.Add(line);
-    //    }
-
-    //    foreach (var ele in col)
-    //    {
-    //        collection.Add(ele);
-    //    }
-    //}
+    /// <summary>
+    /// Appends.
+    /// </summary>
+    /// <param name="text">The text to append.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    public void Append(JsonArrayNode text, JsonTextStyle style = null)
+    {
+        if (text == null) return;
+        var i = Count;
+        var lines = VisualUtility.CreateTextViewModels(text, i + 1, style ?? VisualUtility.GetDefaultJsonTextStyle(this));
+        Count += lines.Count;
+        foreach (var line in lines)
+        {
+            collection.Add(line);
+        }
+    }
 
     /// <summary>
     /// Sets text.
     /// </summary>
     /// <param name="text">The text to set.</param>
     public void SetData(string text)
-        => SetData(new CharsReader(text).ReadLines());
+        => SetData(text == string.Empty ? new List<string>
+        {
+            string.Empty
+        } : new CharsReader(text).ReadLines());
 
     /// <summary>
     /// Sets text.
@@ -483,6 +485,32 @@ public sealed partial class TextView : UserControl
         Count = 0;
         if (text == null) return;
         Append(text);
+    }
+
+    /// <summary>
+    /// Sets text.
+    /// </summary>
+    /// <param name="text">The text to set.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    public void SetData(JsonObjectNode text, JsonTextStyle style = null)
+    {
+        collection.Clear();
+        Count = 0;
+        if (text == null) return;
+        Append(text, style);
+    }
+
+    /// <summary>
+    /// Sets text.
+    /// </summary>
+    /// <param name="text">The text to set.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    public void SetData(JsonArrayNode text, JsonTextStyle style = null)
+    {
+        collection.Clear();
+        Count = 0;
+        if (text == null) return;
+        Append(text, style);
     }
 
     private IEnumerable<TextViewModel> SearchInternal(string q, bool exactly = false, int start = 0, StringComparison? comparison = null)
@@ -541,5 +569,57 @@ internal class TextViewModel : ObservableProperties
     {
         get => GetCurrentProperty<IList<TextHighlighter>>();
         internal set => SetCurrentProperty(value);
+    }
+}
+
+internal class TextViewModelFactory
+{
+    private StringBuilder sb = new();
+    private List<TextHighlighter> highlighters = new();
+
+    public TextViewModelFactory(int start)
+    {
+        StartIndex = start;
+    }
+
+    public List<TextViewModel> Collection { get; } = new();
+
+    public int StartIndex { get; }
+
+    public void AppendToBuffer(string text, Brush foreground, Brush background = null)
+    {
+        var range = new TextRange(sb.Length, text.Length);
+        sb.Append(text);
+        AppendToBuffer(range, foreground, background);
+    }
+
+    public void AppendToBuffer(char c, Brush foreground, Brush background = null)
+    {
+        var range = new TextRange(sb.Length, 1);
+        sb.Append(c);
+        AppendToBuffer(range, foreground, background);
+    }
+
+    public void PushLine()
+    {
+        Collection.Add(new()
+        {
+            LineNumber = StartIndex + Collection.Count,
+            Text = sb.ToString(),
+            TextHighlighters = highlighters
+        });
+        sb = new();
+        highlighters = new();
+    }
+
+    private void AppendToBuffer(TextRange range, Brush foreground, Brush background)
+    {
+        var hl = new TextHighlighter
+        {
+            Foreground = foreground,
+            Background = background ?? VisualUtility.TransparentBrush
+        };
+        hl.Ranges.Add(range);
+        highlighters.Add(hl);
     }
 }

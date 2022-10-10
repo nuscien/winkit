@@ -31,6 +31,8 @@ namespace Trivial.UI;
 /// </summary>
 public static partial class VisualUtility
 {
+    internal readonly static Brush TransparentBrush = new SolidColorBrush();
+
     /// <summary>
     /// Gets the resource.
     /// </summary>
@@ -41,9 +43,7 @@ public static partial class VisualUtility
     /// <exception cref="ArgumentException">key is invalid.</exception>
     /// <exception cref="COMException">COM exception.</exception>
     public static T GetResource<T>(string key)
-    {
-        return (T)Application.Current.Resources[key];
-    }
+        => (T)Application.Current.Resources[key];
 
     /// <summary>
     /// Tries to get the resource.
@@ -116,6 +116,14 @@ public static partial class VisualUtility
         result = default;
         return false;
     }
+
+    /// <summary>
+    /// Tries to get the style.
+    /// </summary>
+    /// <param name="key">The resource key.</param>
+    /// <returns>The resource.</returns>
+    public static Style TryGetStyle(string key)
+        => TryGetResource<Style>(key, out var r) ? r : null;
 
     /// <summary>
     /// Registers a click event handler.
@@ -1267,7 +1275,6 @@ public static partial class VisualUtility
     public static void ApplyMicaSystemBackdrop(Window window, ElementTheme? theme, CancellationToken cancellationToken)
         => ApplyMicaSystemBackdrop(window, theme, null, cancellationToken);
 
-
     internal static DesktopAcrylicController TryCreateAcrylicBackdrop()
     {
         try
@@ -1317,6 +1324,59 @@ public static partial class VisualUtility
         {
         }
         catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Create text view models.
+    /// </summary>
+    /// <param name="json">The data source.</param>
+    /// <param name="start">The start index.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    /// <returns>The text view model collection</returns>
+    internal static List<TextViewModel> CreateTextViewModels(JsonObjectNode json, int start, JsonTextStyle style = null)
+    {
+        var arr = new TextViewModelFactory(start);
+        if (json == null) return arr.Collection;
+        CreateTextViewModels(arr, json, style ?? new(), 0);
+        arr.PushLine();
+        return arr.Collection;
+    }
+
+    /// <summary>
+    /// Create text view models.
+    /// </summary>
+    /// <param name="json">The data source.</param>
+    /// <param name="start">The start index.</param>
+    /// <param name="style">The optional style for JSON.</param>
+    /// <returns>The text view model collection</returns>
+    internal static List<TextViewModel> CreateTextViewModels(JsonArrayNode json, int start, JsonTextStyle style = null)
+    {
+        var arr = new TextViewModelFactory(start);
+        if (json == null) return arr.Collection;
+        CreateTextViewModels(arr, json, style ?? new(), 0);
+        arr.PushLine();
+        return arr.Collection;
+    }
+
+    internal static JsonTextStyle GetDefaultJsonTextStyle(FrameworkElement element)
+    {
+        try
+        {
+            return element.ActualTheme switch
+            {
+                ElementTheme.Light => new(ApplicationTheme.Light),
+                ElementTheme.Dark => new(ApplicationTheme.Dark),
+                _ => null
+            };
+        }
+        catch (InvalidOperationException)
         {
         }
         catch (ExternalException)
@@ -1450,4 +1510,82 @@ public static partial class VisualUtility
             Foreground = foreground,
             Text = text.ToString()
         };
+
+    private static void CreateTextViewModels(TextViewModelFactory arr, JsonObjectNode json, JsonTextStyle style, int intend)
+    {
+        if (json == null) return;
+        var blank = new string(' ', intend * (style.IsCompact ? 2 : 4));
+        arr.AppendToBuffer('{', style.PunctuationForeground);
+        var i = 0;
+        var blank2 = string.Concat(blank, style.IsCompact ? "  " : "    ");
+        foreach (var prop in json)
+        {
+            if (prop.Value is null) continue;
+            if (i > 0) arr.AppendToBuffer(',', style.PunctuationForeground);
+
+            arr.PushLine();
+            arr.AppendToBuffer(blank2, null);
+            arr.AppendToBuffer(JsonStringNode.ToJson(prop.Key), style.PropertyForeground);
+            arr.AppendToBuffer(": ", style.PunctuationForeground);
+            CreateTextViewModels(arr, prop.Value, style, intend + 1);
+            i++;
+        }
+
+        arr.PushLine();
+        arr.AppendToBuffer(blank, null);
+        arr.AppendToBuffer('}', style.PunctuationForeground);
+    }
+
+    private static void CreateTextViewModels(TextViewModelFactory arr, JsonArrayNode json, JsonTextStyle style, int intend)
+    {
+        if (json == null) return;
+        var blank = new string(' ', intend * (style.IsCompact ? 2 : 4));
+        arr.AppendToBuffer('[', style.PunctuationForeground);
+        var i = 0;
+        var blank2 = string.Concat(blank, style.IsCompact ? "  " : "    ");
+        foreach (var item in json)
+        {
+            if (item is null) continue;
+            if (i > 0) arr.AppendToBuffer(',', style.PunctuationForeground);
+            arr.PushLine();
+            arr.AppendToBuffer(blank2, null);
+            CreateTextViewModels(arr, item, style, intend + 1);
+            i++;
+        }
+
+        arr.PushLine();
+        arr.AppendToBuffer(blank, null);
+        arr.AppendToBuffer(']', style.PunctuationForeground);
+    }
+
+    private static void CreateTextViewModels(TextViewModelFactory arr, IJsonDataNode json, JsonTextStyle style, int intend)
+    {
+        switch (json.ValueKind)
+        {
+            case JsonValueKind.Undefined:
+            case JsonValueKind.Null:
+                arr.AppendToBuffer("null", style.KeywordForeground);
+                break;
+            case JsonValueKind.String:
+                arr.AppendToBuffer(json.ToString(), style.StringForeground);
+                break;
+            case JsonValueKind.Number:
+                arr.AppendToBuffer(json.ToString(), style.NumberForeground);
+                break;
+            case JsonValueKind.True:
+                arr.AppendToBuffer("true", style.KeywordForeground);
+                break;
+            case JsonValueKind.False:
+                arr.AppendToBuffer("false", style.KeywordForeground);
+                break;
+            case JsonValueKind.Object:
+                CreateTextViewModels(arr, json as JsonObjectNode, style, intend);
+                break;
+            case JsonValueKind.Array:
+                CreateTextViewModels(arr, json as JsonArrayNode, style, intend);
+                break;
+            default:
+                break;
+        }
+    }
 }

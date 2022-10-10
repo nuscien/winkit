@@ -14,6 +14,7 @@ class Program
         Console.WriteLine("CLI of Local Web App - Trivial");
         var dispatcher = new CommandDispatcher();
         dispatcher.Register<BuildVerb>("build");
+        dispatcher.Register<InitVerb>("init");
         return dispatcher.ProcessAsync();
     }
 }

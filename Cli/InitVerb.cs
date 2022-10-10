@@ -13,6 +13,7 @@ namespace Trivial.Web;
 
 internal class InitVerb : BaseCommandVerb
 {
+    /// <inheritdoc />
     protected override async Task OnProcessAsync(CancellationToken cancellationToken = default)
     {
         const string FileName = "localwebapp.project.json";
@@ -20,7 +21,7 @@ internal class InitVerb : BaseCommandVerb
         if (string.IsNullOrEmpty(Arguments.Verb?.Value))
         {
             console.Write(ConsoleColor.Red, "Error!");
-            console.WriteLine(" Please type the directory path.");
+            console.WriteLine(" Please type a directory path.");
             return;
         }
 
@@ -65,18 +66,59 @@ internal class InitVerb : BaseCommandVerb
         {
             { "package", manifest }
         };
-        UpdateManifest(manifest, "title");
-        UpdateManifest(manifest, "publisher");
-        UpdateManifest(manifest, "copyright");
-        UpdateManifest(manifest, "description");
-        UpdateManifest(manifest, "website");
-        UpdateManifest(manifest, "icon");
-        File.WriteAllText(Path.Combine(folder.FullName, FileName), json.ToString(IndentStyles.Compact));
+        var skipTyping = Arguments.Has("direct", "d");
+        UpdateManifest(manifest, "title", skipTyping);
+        UpdateManifest(manifest, "publisher", skipTyping);
+        UpdateManifest(manifest, "copyright", skipTyping);
+        UpdateManifest(manifest, "description", skipTyping);
+        UpdateManifest(manifest, "website", skipTyping);
+        UpdateManifest(manifest, "icon", skipTyping);
+        console.Write("Initializing…");
+        await File.WriteAllTextAsync(Path.Combine(folder.FullName, FileName), json.ToString(IndentStyles.Compact), cancellationToken);
+        var rsa = RSA.Create().ExportParameters(true);
+        var filePath = Path.Combine(folder.FullName, "localwebapp.private.pem");
+        if (!File.Exists(filePath))
+        {
+            var s = RSAParametersConvert.ToPrivatePEMString(rsa, true);
+            await File.WriteAllTextAsync(filePath, s, cancellationToken);
+        }
+
+        filePath = Path.Combine(folder.FullName, "localwebapp.pem");
+        if (!File.Exists(filePath))
+        {
+            var s = RSAParametersConvert.ToPublicPEMString(rsa);
+            await File.WriteAllTextAsync(filePath, s, cancellationToken);
+        }
+
+        filePath = Path.Combine(folder.FullName, ".gitignore");
+        if (!File.Exists(filePath))
+        {
+            var s = $"localwebapp.zip{Environment.NewLine}localwebapp/localwebapp.zip{Environment.NewLine}localwebapp/data{Environment.NewLine}localwebapp/cache{Environment.NewLine}localwebapp/log{Environment.NewLine}localwebapp/temp";
+            await File.WriteAllTextAsync(filePath, s, cancellationToken);
+        }
+
+        console.BackspaceToBeginning();
+        console.WriteLine(ConsoleColor.Green, "Done!");
     }
 
-    private void UpdateManifest(JsonObjectNode json, string key)
+    private bool UpdateManifest(JsonObjectNode json, string key, bool skipTyping = false)
     {
         var s = Arguments.GetMergedValue(key)?.Trim();
-        if (!string.IsNullOrEmpty(s)) json.SetValue(key, s);
+        if (string.IsNullOrEmpty(s) && !skipTyping)
+        {
+            var console = GetConsole();
+            console.Write($"{key.ToSpecificCase(Cases.Capitalize)}: ");
+            try
+            {
+                s = console.ReadLine();
+            }
+            catch (IOException)
+            {
+            }
+        }
+
+        if (string.IsNullOrEmpty(s)) return false;
+        json.SetValue(key, s);
+        return true;
     }
 }

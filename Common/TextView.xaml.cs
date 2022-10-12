@@ -23,7 +23,6 @@ using Windows.Foundation.Collections;
 
 namespace Trivial.UI;
 
-using static System.Net.Mime.MediaTypeNames;
 using DependencyObjectProxy = DependencyObjectProxy<TextView>;
 
 /// <summary>

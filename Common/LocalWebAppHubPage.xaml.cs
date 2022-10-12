@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Trivial.Collection;
 using Trivial.Data;
@@ -404,11 +405,52 @@ public sealed partial class LocalWebAppHubPage : Page
     public static TabbedWebViewWindow CreateWindow(string title, out LocalWebAppHubPage page)
     {
         var win = new TabbedWebViewWindow();
-        page = new LocalWebAppHubPage
+        var p = new LocalWebAppHubPage
         {
             OpenHandler = win.OpenLocalWebApp,
-            SelectDevAppHandler = p => VisualUtility.SelectFolderAsync(win)
         };
+        p.SelectDevAppHandler = async p =>
+        {
+            Task task = null;
+            CancellationTokenSource cancel = null;
+            var dir = await VisualUtility.SelectFolderAsync(win, ex =>
+            {
+                if (p.FileSelectContainer.Tag is CancellationTokenSource) return;
+                p.FileSelectText.Text = null;
+                p.FileSelectContainer.Visibility = Visibility.Visible;
+                cancel = new CancellationTokenSource();
+                p.FileSelectContainer.Tag = cancel;
+                task = Task.Delay(36_000_000, cancel.Token);
+            });
+            try
+            {
+                if (task != null) await task;
+            }
+            catch (OperationCanceledException)
+            {
+                dir = IO.FileSystemInfoUtility.TryGetDirectoryInfo(p.FileSelectText.Text);
+                if (dir != null && !dir.Exists) dir = null;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            finally
+            {
+                p.FileSelectContainer.Tag = null;
+                p.FileSelectContainer.Visibility = Visibility.Collapsed;
+                p.FileSelectText.Text = null;
+                try
+                {
+                    if (cancel != null) cancel.Dispose();
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+
+            return dir;
+        };
+        page = p;
         if (string.IsNullOrWhiteSpace(title)) title = "Apps";
         win.Add(new TabViewItem
         {
@@ -426,4 +468,52 @@ public sealed partial class LocalWebAppHubPage : Page
     /// <returns>The window.</returns>
     public static TabbedWebViewWindow CreateWindow(string title)
         => CreateWindow(title, out _);
+
+    private void OnFileSelectOkClick(object sender, RoutedEventArgs e)
+    {
+        if (FileSelectContainer.Tag is not CancellationTokenSource cancel)
+        {
+            FileSelectContainer.Visibility = Visibility.Collapsed;
+            FileSelectText.Text = null;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(FileSelectText.Text))
+        {
+            FileSelectContainer.Visibility = Visibility.Visible;
+            FileSelectText.Focus(FocusState.Programmatic);
+            return;
+        }
+
+        try
+        {
+            cancel.Cancel();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+
+        FileSelectContainer.Tag = null;
+    }
+
+    private void OnFileSelectCancelClick(object sender, RoutedEventArgs e)
+    {
+        FileSelectContainer.Visibility = Visibility.Collapsed;
+        FileSelectText.Text = null;
+        if (FileSelectContainer.Tag is not CancellationTokenSource cancel) return;
+        FileSelectContainer.Tag = null;
+        try
+        {
+            cancel.Cancel();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+    }
 }

@@ -1386,7 +1386,7 @@ public static partial class VisualUtility
         return null;
     }
 
-    internal static async Task<DirectoryInfo> SelectFolderAsync(Window window)
+    internal static async Task<DirectoryInfo> SelectFolderAsync(Window window, Action<ExternalException> onExternalExceptionThrow = null)
     {
         var picker = new Windows.Storage.Pickers.FolderPicker
         {
@@ -1413,8 +1413,9 @@ public static partial class VisualUtility
         catch (NotSupportedException)
         {
         }
-        catch (ExternalException)
+        catch (ExternalException ex)
         {
+            onExternalExceptionThrow?.Invoke(ex);
         }
 
         return null;

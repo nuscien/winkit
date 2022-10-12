@@ -334,6 +334,8 @@ public sealed partial class LocalWebAppPage : Page
     public async Task LoadDevPackageAsync(Window window, CancellationToken cancellationToken = default)
     {
         var dir = await VisualUtility.SelectFolderAsync(window);
+        if (dir == null) throw new InvalidOperationException("Requires a directory.", new OperationCanceledException("No directory selected."));
+        cancellationToken.ThrowIfCancellationRequested();
         await LoadDevPackageAsync(dir, cancellationToken);
     }
 

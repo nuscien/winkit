@@ -101,5 +101,20 @@
                 </local:LocalWebAppInfoView>
             </ScrollViewer>
         </Border>
+        <Border x:Name="FileSelectContainer" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Visibility="Collapsed" >
+            <Grid Width="400" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                <TextBox x:Name="FileSelectText" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
+                <Button Width="80" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OnFileSelectOkClick" Style="{ThemeResource AccentButtonStyle}" >
+                    <Button.Content>
+                        <SymbolIcon Symbol="Accept" />
+                    </Button.Content>
+                </Button>
+                <Button Width="80" Margin="90,0,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OnFileSelectCancelClick" >
+                    <Button.Content>
+                        <SymbolIcon Symbol="Cancel" />
+                    </Button.Content>
+                </Button>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

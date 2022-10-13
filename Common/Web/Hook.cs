@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Trivial.Web;
@@ -140,6 +141,9 @@ public static class LocalWebAppSettings
     /// Gets or sets the main assembly of the app.
     /// </summary>
     public static System.Reflection.Assembly Assembly { get; set; }
+
+    internal static HttpClient CreateHttpClient()
+        => new();
 
     internal static System.Reflection.Assembly GetAssembly()
     {

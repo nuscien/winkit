@@ -174,6 +174,11 @@
         title: string;
     }
 
+    type FilePath = string | {
+        parent?: null | undefined | "absolute" | "parent" | "asset" | "appdata" | "doc";
+        path: string | null;
+    }
+
     type EventCallback = EventCallbackContract | ((ev: any) => void);
 
     type HandlerResponse<T> = Promise<HandlerResponseContract<T>>;
@@ -236,8 +241,7 @@
          * @param path The path of the file to get information.
          * @param options The options.
          */
-        get(path: string, options?: {
-            appData?: boolean;
+        get(path: FilePath, options?: {
             read?: boolean | "none" | "text" | "json" | "base64";
             maxLength?: number;
             context?: HandlerInfoContract;
@@ -250,8 +254,7 @@
          * @param value The content to write.
          * @param options The options.
          */
-        write(path: string, value: { property: string } | any[] | string | null, options?: {
-            appData?: boolean;
+        write(path: FilePath, value: { property: string } | any[] | string | null, options?: {
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{}>;
@@ -262,7 +265,7 @@
          * @param dest The destination path.
          * @param options The options.
          */
-        move(path: string, dest: string, options?: {
+        move(path: FilePath, dest: FilePath, options?: {
             override?: boolean;
             dir?: boolean;
             context?: HandlerInfoContract;
@@ -275,7 +278,7 @@
          * @param dest The destination path.
          * @param options The options.
          */
-        copy(path: string, dest: string, options?: {
+        copy(path: FilePath, dest: FilePath, options?: {
             override?: boolean;
             dir?: boolean;
             context?: HandlerInfoContract;
@@ -287,7 +290,7 @@
          * @param path The source path of the file to delete.
          * @param options The options.
          */
-        delete(path: string, options?: {
+        delete(path: FilePath, options?: {
             dir?: boolean;
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
@@ -298,7 +301,7 @@
          * @param path The source path of the file to move.
          * @param options The options.
          */
-        md(path: string, options?: {
+        md(path: FilePath, options?: {
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         } | boolean): HandlerResponse<{
@@ -311,8 +314,7 @@
          * @param path The path of the file or folder to open.
          * @param options The options.
          */
-        open(path: string, options?: {
-            appData?: boolean;
+        open(path: FilePath, options?: {
             args?: string | null;
             type?: "file" | "dir" | "url" | "exe" | null;
             context?: HandlerInfoContract;

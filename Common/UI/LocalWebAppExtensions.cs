@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -249,10 +250,9 @@ internal static class LocalWebAppExtensions
 
     public static LocalWebAppResponseMessage ListFiles(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
-        var path = request?.Data?.TryGetStringValue("path");
+        var path = GetPath(request?.Data, "path", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
         if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
-        if (host != null) path = host.GetLocalPath(path, true);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
         if (dir == null || !dir.Exists) return new("Not found.");
         var resp = new LocalWebAppResponseMessage
@@ -355,10 +355,95 @@ internal static class LocalWebAppExtensions
 
     public static async Task<LocalWebAppResponseMessage> GetFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
-        var path = request?.Data?.TryGetStringValue("path");
+        var path = GetPath(request?.Data, "path", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
         if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
-        if (host != null) path = host.GetLocalPath(path, true);
+        if (path.StartsWith("https://") || path.StartsWith("http//"))
+        {
+            var readMethod2 = request.Data.TryGetStringValue("read")?.Trim()?.ToLowerInvariant();
+            var readBoolean2 = request.Data.TryGetBooleanValue("read");
+            if (string.IsNullOrEmpty(readMethod2) || readMethod2 == "none" || readBoolean2 == false) return new("The path is not valid.");
+            using var http = LocalWebAppSettings.CreateHttpClient();
+            using var httpContent = (await http.GetAsync(path))?.Content;
+            var httpInfo = new JsonObjectNode()
+            {
+                { "type", "url" },
+                { "path", path }
+            };
+            var httpResp = new LocalWebAppResponseMessage(new JsonObjectNode()
+            {
+                { "info", httpInfo }
+            }, new()
+            {
+                { "path", path }
+            });
+            if (httpContent == null) return httpResp;
+            var httpLen = httpContent.Headers?.ContentLength;
+            if (httpLen.HasValue) httpInfo.SetValue("length", httpLen.Value);
+            if (readMethod2 == "base64")
+            {
+                var httpBytes = await httpContent.ReadAsByteArrayAsync();
+                var str = Convert.ToBase64String(httpBytes);
+                httpResp.Data.SetValue("value", str);
+                httpResp.Data.SetValue("valueType", "base64");
+            }
+            else if (readMethod2 == "text")
+            {
+                var str = await httpContent.ReadAsStringAsync();
+                httpResp.Data.SetValue("value", str);
+                httpResp.Data.SetValue("valueType", "text");
+            }
+            else if (readMethod2 == "json")
+            {
+                var str = await http.GetStringAsync(path);
+                var valueJson = JsonObjectNode.TryParse(str);
+                if (valueJson != null)
+                {
+                    httpResp.Data.SetValue("value", valueJson);
+                    httpResp.Data.SetValue("valueType", "json");
+                }
+                else if (str.StartsWith('['))
+                {
+                    var valueJsonArray = JsonArrayNode.TryParse(str);
+                    if (valueJsonArray != null)
+                    {
+                        httpResp.Data.SetValue("value", valueJsonArray);
+                        httpResp.Data.SetValue("valueType", "jsonArray");
+                    }
+                }
+            }
+            else if (readBoolean2 == true)
+            {
+                var str = await http.GetStringAsync(path);
+                if (str.StartsWith("{"))
+                {
+                    var valueJson = JsonObjectNode.TryParse(str);
+                    if (valueJson != null)
+                    {
+                        httpResp.Data.SetValue("value", valueJson);
+                        httpResp.Data.SetValue("valueType", "json");
+                    }
+                }
+                else if (str.StartsWith("["))
+                {
+                    var valueJsonArray = JsonArrayNode.TryParse(str);
+                    if (valueJsonArray != null)
+                    {
+                        httpResp.Data.SetValue("value", valueJsonArray);
+                        httpResp.Data.SetValue("valueType", "jsonArray");
+                    }
+                }
+                
+                if (!httpResp.Data.ContainsKey("valueType"))
+                {
+                    httpResp.Data.SetValue("value", str);
+                    httpResp.Data.SetValue("valueType", "text");
+                }
+            }
+
+            return httpResp;
+        }
+
         var file = FileSystemInfoUtility.TryGetFileInfo(path);
         if (file == null && Directory.Exists(path))
         {
@@ -517,10 +602,9 @@ internal static class LocalWebAppExtensions
 
     public static async Task<LocalWebAppResponseMessage> WriteFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
-        var path = request?.Data?.TryGetStringValue("path");
+        var path = GetPath(request?.Data, "path", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
         if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
-        if (host != null) path = host.GetLocalPath(path, true);
         var info = new JsonObjectNode
         {
             { "path", path }
@@ -549,13 +633,12 @@ internal static class LocalWebAppExtensions
 
     public static LocalWebAppResponseMessage CreateDirectory(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
-        var path = request?.Data?.TryGetStringValue("path") ?? request?.Data?.TryGetStringValue("source");
-        if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
+        if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
         var info = new JsonObjectNode
         {
             { "path", path }
         };
-        if (host != null) path = host.GetLocalPath(path, true);
         var dir = FileSystemInfoUtility.TryGetDirectoryInfo(path);
         if (dir?.Exists == true) return new(new JsonObjectNode
         {
@@ -570,14 +653,31 @@ internal static class LocalWebAppExtensions
         }, info);
     }
 
-    public static LocalWebAppResponseMessage MoveFile(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    public static async Task<LocalWebAppResponseMessage> MoveFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host)
     {
-        var path = request?.Data?.TryGetStringValue("path") ?? request?.Data?.TryGetStringValue("source");
+        var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
-        var dest = request.Data.TryGetStringValue("dest") ?? request.Data.TryGetStringValue("destination");
+        var dest = GetPath(request?.Data, "dest", host) ?? GetPath(request?.Data, "destination", host);
         var isToCopy = request.Data.TryGetBooleanValue("copy") ?? false;
         var isDir = request.Data.TryGetBooleanValue("dir") ?? false;
-        if (host != null) path = host.GetLocalPath(path, true);
+        if (path.StartsWith("https://") || path.StartsWith("http://"))
+        {
+            if (isDir) return new("Expect a directory but the path is not.");
+            if (string.IsNullOrWhiteSpace(dest)) return new("The destination path should not be null or empty.");
+            if (request.Data.TryGetBooleanValue("override") != true && File.Exists(dest)) return new("The destination file already exist.");
+            using var http = LocalWebAppSettings.CreateHttpClient();
+            using var httpContent = (await http.GetAsync(path))?.Content;
+            await httpContent.WriteFileAsync(dest);
+            return new(new JsonObjectNode(), new JsonObjectNode
+            {
+                { "action", "download" },
+                { "sourceType", "url" },
+                { "source", path },
+                { "dest", dest }
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(path)) return new("The source path is not valid.");
         if (dest == null)
         {
             if (isToCopy) return new(new JsonObjectNode(), new JsonObjectNode
@@ -600,8 +700,7 @@ internal static class LocalWebAppExtensions
             });
         }
 
-        if (string.IsNullOrWhiteSpace(path)) return new("The destination path should not be null or empty.");
-        if (host != null) dest = host.GetLocalPath(dest, true);
+        if (string.IsNullOrWhiteSpace(dest)) return new("The destination path should not be null or empty.");
         if (path == dest) return new(new JsonObjectNode(), new JsonObjectNode
         {
             { "action", "none" },
@@ -640,6 +739,42 @@ internal static class LocalWebAppExtensions
         }
 
         return new(new JsonObjectNode(), info);
+    }
+
+    public static LocalWebAppResponseMessage CompressFiles(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    {
+        var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
+        var dest = GetPath(request?.Data, "dest", host) ?? GetPath(request?.Data, "destination", host);
+        if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        if (string.IsNullOrWhiteSpace(dest)) return new("The destination path should not be null or empty.");
+        if (!Directory.Exists(path)) return new("The source compressed directory does not exist.");
+        if (request.Data.TryGetBooleanValue("override") == true && File.Exists(path)) File.Delete(path);
+        var includeBaseFolder = request.Data.TryGetBooleanValue("folder") ?? false;
+        ZipFile.CreateFromDirectory(path, dest, CompressionLevel.Optimal, includeBaseFolder);
+        return new(new JsonObjectNode(), new JsonObjectNode
+        {
+            { "algorithm", "zip" },
+            { "source", path },
+            { "dest", dest },
+            { "folder", includeBaseFolder }
+        });
+    }
+
+    public static LocalWebAppResponseMessage ExtractFiles(LocalWebAppRequestMessage request, LocalWebAppHost host)
+    {
+        var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
+        var dest = GetPath(request?.Data, "dest", host) ?? GetPath(request?.Data, "destination", host);
+        if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        if (string.IsNullOrWhiteSpace(dest)) return new("The destination path should not be null or empty.");
+        if (!File.Exists(path)) return new("The source compressed file does not exist.");
+        Directory.CreateDirectory(dest);
+        ZipFile.ExtractToDirectory(path, dest, request.Data.TryGetBooleanValue("override") ?? false);
+        return new(new JsonObjectNode(), new JsonObjectNode
+        {
+            { "algorithm", "zip" },
+            { "source", path },
+            { "dest", dest }
+        });
     }
 
     public static LocalWebAppResponseMessage Hash(LocalWebAppRequestMessage request, LocalWebAppHost host = null)
@@ -810,7 +945,7 @@ internal static class LocalWebAppExtensions
 
     public static async Task<LocalWebAppResponseMessage> OpenFileAsync(LocalWebAppRequestMessage request, LocalWebAppHost host = null)
     {
-        var path = request?.Data?.TryGetStringValue("path")?.Trim();
+        var path = GetPath(request?.Data, "path", host);
         if (string.IsNullOrEmpty(path)) return new("The path should not be null or empty.");
         if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
         var type = request.Data.TryGetStringValue("type")?.Trim()?.ToLowerInvariant();
@@ -825,7 +960,6 @@ internal static class LocalWebAppExtensions
             if (path.Contains("://")) type = "url";
             else if (args != null) type = "exe";
             else type = "file";
-            if (host != null) path = host.GetLocalPath(path, true);
         }
 
         try
@@ -1011,6 +1145,36 @@ internal static class LocalWebAppExtensions
         });
     }
 
+    public static string GetPath(IJsonValueNode node, LocalWebAppHost host)
+    {
+        if (node is IJsonStringNode s)
+        {
+            if (host != null) return host.GetLocalPath(s.StringValue, true);
+            return s.StringValue.StartsWith("%") ? FileSystemInfoUtility.GetLocalPath(s.StringValue) : s.StringValue;
+        }
+
+        if (node is not JsonObjectNode json) return null;
+        var str = json.TryGetStringValue("path");
+        var kind = json.TryGetStringTrimmedValue("parent", true)?.ToLowerInvariant();
+        if (kind == null || kind == "absolute")
+        {
+            if (string.IsNullOrWhiteSpace(str)) return null;
+            return str.StartsWith("%") ? FileSystemInfoUtility.GetLocalPath(str) : str;
+        }
+
+        return kind switch
+        {
+            "asset" => host?.GetLocalPath(string.Concat(".asset:\\", str), true),
+            "parent" => host?.GetLocalPath(string.Concat("..\\", str), true),
+            "data" or "appdata" => host?.GetLocalPath(string.Concat(".data:\\", str), true),
+            "doc" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), str),
+            _ => null,
+        };
+    }
+
+    public static string GetPath(JsonObjectNode node, string key, LocalWebAppHost host)
+        => GetPath(node?.TryGetValue(key), host);
+
     private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, Dictionary<string, ILocalWebAppCommandHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
@@ -1025,9 +1189,13 @@ internal static class LocalWebAppExtensions
             case "write-file":
                 return await WriteFileAsync(request, host);
             case "move-file":
-                return MoveFile(request, host);
+                return await MoveFileAsync(request, host);
             case "make-dir":
                 return CreateDirectory(request, host);
+            case "zip-file":
+                return CompressFiles(request, host);
+            case "unzip-file":
+                return ExtractFiles(request, host);
             case "hash":
                 return Hash(request, host);
             case "symmetric":

@@ -559,10 +559,6 @@ internal static class LocalWebAppExtensions
             else if (readMethod == "text" || readMethod == "json" || readBoolean == true || file.Length < 1_000_000)
             {
                 var str = await File.ReadAllTextAsync(path);
-                var end = str.IndexOf("\0");
-#pragma warning disable IDE0057
-                if (end >= 0) str = str.Substring(0, end);
-#pragma warning restore IDE0057
                 resp.Data.SetValue("value", str);
                 resp.Data.SetValue("valueType", "text");
                 if (readMethod == "json" || (file.Extension?.ToLowerInvariant() == ".json" && string.IsNullOrEmpty(readMethod)))

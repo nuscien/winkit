@@ -85,9 +85,10 @@ namespace FileBrowserDemo {
 
                                 break;
                             }
-                        case "doc":
+                        case "document":
                         case "slide":
                         case "pdf":
+                        case "psd":
                             localWebApp.files.open(path);
                             break;
                         case "link":
@@ -136,7 +137,7 @@ namespace FileBrowserDemo {
         }
 
         renderTextFile(file: localWebApp.FileInfoContract) {
-            this.renderCustomizedFile(file, "text", ["text", "json", "markdown", "html", "image"], (dom, file) => {
+            this.renderCustomizedFile(file, "text", ["text", "json", "markdown", "html"], (dom, file) => {
                 appendSection(dom, createSpanElement(file.value, { styleRef: "x-file-text-content" }));
             });
         }
@@ -431,10 +432,10 @@ namespace FileBrowserDemo {
             case "ttf":
             case "otf":
                 return "File_Font";
-            case "lnk":
-                return "Link";
-            case "url":
-                return "Link_Url";
+            // case "lnk":
+            //     return "Link";
+            // case "url":
+            //     return "Link_Url";
             default:
                 return "File";
         }

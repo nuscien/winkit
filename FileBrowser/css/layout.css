@@ -531,6 +531,8 @@ body > main {
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
+    text-overflow: ellipsis;
+    overflow: hidden;
     transition: 0.2s;
 }
 .x-file-view-menu > ul > li.x-state-selected {

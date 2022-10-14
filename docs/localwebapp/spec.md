@@ -157,7 +157,7 @@ Host app provide JS bridge to extend native APIs to webpage. All components are 
 It includes following extended APIs.
 
 - `files` A set of native API to access directories, files and download list.
-- `cryptography` A set of native API about symmetric algorithm and hash.
+- `cryptography` A set of native API about RSA, symmetric algorithm and hash.
 - `text` A set of functions to encode/decode text.
 - `hostApp` A set of native API to get host theme, check update and control window.
 

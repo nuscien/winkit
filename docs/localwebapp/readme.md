@@ -83,3 +83,6 @@ See [introduction](./command-handler) for native implementation details.
 ## Engineering supports
 
 The same development and debug experience with H5.
+
+- For SPA project, you can run `lwac` tool in the NPM project root directory to initialize LWA once. It will make a sub-directory named `localwebapp` with files of configuration and signature key. You should run that tool to build the resource package after bundle. And of course, you can append this into `node build` script to automate it. The compressed resource package file is under `localwebapp` that you can publish online.
+- For the web project that includes numbers of seperated HTML files, you need run `lwac` tool in the project root directory to initialize LWA once. It will make a sub-directory named `localwebapp` with files of configuration and signature key. You should run that tool to build the resource package after any modification and it will output a compressed file to `localwebapp` folder.

@@ -509,6 +509,9 @@ body > main {
     transition: 0.6s;
 }
 .x-file-view-menu {
+    border-color: rgba(128, 128, 128, 0.2);
+    border-width: 0 1px 0 0;
+    border-style: none solid none none;
     margin: 0;
     position: absolute;
     top: 0;

@@ -90,6 +90,10 @@ namespace FileBrowserDemo {
                         case "pdf":
                             localWebApp.files.open(path);
                             break;
+                        case "link":
+                            if (!item.link) break;
+                            this.renderFolder(item.link);
+                            break;
                     }
     
                     return item.type;
@@ -132,7 +136,7 @@ namespace FileBrowserDemo {
         }
 
         renderTextFile(file: localWebApp.FileInfoContract) {
-            this.renderCustomizedFile(file, "text", ["text", "json"], (dom, file) => {
+            this.renderCustomizedFile(file, "text", ["text", "json", "markdown", "html", "image"], (dom, file) => {
                 appendSection(dom, createSpanElement(file.value, { styleRef: "x-file-text-content" }));
             });
         }
@@ -183,11 +187,9 @@ namespace FileBrowserDemo {
                         let type = getIconName(ele.name).replace("File_", "").toLowerCase();
                         return !ele.name || list.indexOf(type) < 0 ? null : ele;
                     }).filter(ele => ele).map(ele => {
-                        let li = document.createElement("li");
-                        li.innerText = ele.name;
-                        li.addEventListener("click", ev => {
+                        let li = createElement("li", ele.name, { click: (ev: any) => {
                             this.renderTextFile(ele);
-                        });
+                        } });
                         if (ele.name === file.name) li.className = "x-state-selected";
                         return li;
                     });
@@ -198,7 +200,6 @@ namespace FileBrowserDemo {
                     }
                 });
             }, ex => {
-                
             });
         }
     }
@@ -217,6 +218,11 @@ namespace FileBrowserDemo {
             return "dir";
         }
 
+        // dom.addEventListener("contextmenu", ev => {
+        //     localWebApp.cryptography.hash("sha256", item.path, { type: "file" }).then(r => {
+        //         alert(r.data.value);
+        //     })
+        // });
         dom.className = "link-long-file";
         dom.appendChild(createImageElement(settings.iconPath + getIconName(item.name) + ".png", item.name));
         dom.appendChild(createSpanElement(item.name, { title: true }));
@@ -271,7 +277,7 @@ namespace FileBrowserDemo {
         else dom.innerHTML = "";
         let backEle = document.createElement("a");
         backEle.className = "x-file-back";
-        backEle.innerHTML = "&lt;";
+        backEle.innerHTML = "↑";
         if (back) backEle.addEventListener("click", back);
         dom.appendChild(backEle);
         dom.appendChild(createSpanElement(title, { styleRef: "x-file-name" }));
@@ -287,19 +293,42 @@ namespace FileBrowserDemo {
             } : null, header);
         }
         
-        let section = document.createElement("section");
+        let section = createElement("section", null, { styleRef: "x-file-view-splitted" });
         let i = renderItems(dirs, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label" }));
+            dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label x-file-view-splitted" }));
             dom.appendChild(section);
         }
 
-        section = document.createElement("section");
+        section = createElement("section", null, { styleRef: "x-file-view-splitted" });
         i = renderItems(files, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Files (" + i + ")", { styleRef: "x-style-label" }));
+            dom.appendChild(createElement("h2", "Files (" + i + ")", { styleRef: "x-style-label x-file-view-splitted" }));
             dom.appendChild(section);
         }
+
+        if (dom.childNodes.length < 1) dom.appendChild(createElement("section", "Empty", { styleRef: "x-style-label x-file-view-splitted" }));
+        let ul = document.createElement("ul");
+        appendSection(dom, ul, { styleRef: "x-file-view-menu" });
+        let currentItem = document.createElement("li");
+        currentItem.innerText = info.name;
+        currentItem.className = "x-state-selected";
+        ul.appendChild(currentItem);
+        localWebApp.files.list(parent.path).then(r2 => {
+            if (!r2.data || !r2.data.dirs) return;
+            let names = r2.data.dirs.filter(ele => ele && ele.name).map(ele => {
+                let li = createElement("li", ele.name, { click(ev: any) {
+                    callback(ele);
+                }});
+                if (ele.name === info.name) li.className = "x-state-selected";
+                return li;
+            });
+            if (names.length < 2) return;
+            ul.innerHTML = "";
+            for (let li in names) {
+                ul.appendChild(names[li]);
+            }
+        });
     }
 
     function getIconName(ext: string) {
@@ -401,7 +430,11 @@ namespace FileBrowserDemo {
             case "fon":
             case "ttf":
             case "otf":
-                return "File_Font"
+                return "File_Font";
+            case "lnk":
+                return "Link";
+            case "url":
+                return "Link_Url";
             default:
                 return "File";
         }
@@ -451,6 +484,8 @@ namespace FileBrowserDemo {
         if (!options) return;
         if (options.styleRef) dom.className = options.styleRef;
         if (options.title) dom.title = options.title;
+        if (options.click) dom.addEventListener("click", options.click);
+        if (options.contextmenu) dom.addEventListener("contextmenu", options.click);
     }
 
     function getFileLengthStr(length: number) {

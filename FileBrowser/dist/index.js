@@ -87,6 +87,11 @@ var FileBrowserDemo;
                         case "pdf":
                             localWebApp.files.open(path);
                             break;
+                        case "link":
+                            if (!item.link)
+                                break;
+                            _this.renderFolder(item.link);
+                            break;
                     }
                     return item.type;
                 });
@@ -133,7 +138,7 @@ var FileBrowserDemo;
             });
         };
         Viewer.prototype.renderTextFile = function (file) {
-            this.renderCustomizedFile(file, "text", ["text", "json"], function (dom, file) {
+            this.renderCustomizedFile(file, "text", ["text", "json", "markdown", "html", "image"], function (dom, file) {
                 appendSection(dom, createSpanElement(file.value, { styleRef: "x-file-text-content" }));
             });
         };
@@ -188,11 +193,9 @@ var FileBrowserDemo;
                         var type = getIconName(ele.name).replace("File_", "").toLowerCase();
                         return !ele.name || list.indexOf(type) < 0 ? null : ele;
                     }).filter(function (ele) { return ele; }).map(function (ele) {
-                        var li = document.createElement("li");
-                        li.innerText = ele.name;
-                        li.addEventListener("click", function (ev) {
-                            _this.renderTextFile(ele);
-                        });
+                        var li = createElement("li", ele.name, { click: function (ev) {
+                                _this.renderTextFile(ele);
+                            } });
                         if (ele.name === file.name)
                             li.className = "x-state-selected";
                         return li;
@@ -204,6 +207,7 @@ var FileBrowserDemo;
                         ul.appendChild(names[li]);
                     }
                 });
+            }, function (ex) {
             });
         };
         return Viewer;
@@ -225,6 +229,11 @@ var FileBrowserDemo;
             dom.appendChild(createSpanElement(item.name, { title: true }));
             return "dir";
         }
+        // dom.addEventListener("contextmenu", ev => {
+        //     localWebApp.cryptography.hash("sha256", item.path, { type: "file" }).then(r => {
+        //         alert(r.data.value);
+        //     })
+        // });
         dom.className = "link-long-file";
         dom.appendChild(createImageElement(FileBrowserDemo.settings.iconPath + getIconName(item.name) + ".png", item.name));
         dom.appendChild(createSpanElement(item.name, { title: true }));
@@ -284,7 +293,7 @@ var FileBrowserDemo;
             dom.innerHTML = "";
         var backEle = document.createElement("a");
         backEle.className = "x-file-back";
-        backEle.innerHTML = "&lt;";
+        backEle.innerHTML = "↑";
         if (back)
             backEle.addEventListener("click", back);
         dom.appendChild(backEle);
@@ -301,18 +310,44 @@ var FileBrowserDemo;
                 callback(parent);
             } : null, header);
         }
-        var section = document.createElement("section");
+        var section = createElement("section", null, { styleRef: "x-file-view-splitted" });
         var i = renderItems(dirs, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label" }));
+            dom.appendChild(createElement("h2", "Sub-folders (" + i + ")", { styleRef: "x-style-label x-file-view-splitted" }));
             dom.appendChild(section);
         }
-        section = document.createElement("section");
+        section = createElement("section", null, { styleRef: "x-file-view-splitted" });
         i = renderItems(files, section, callback);
         if (i > 0) {
-            dom.appendChild(createElement("h2", "Files (" + i + ")", { styleRef: "x-style-label" }));
+            dom.appendChild(createElement("h2", "Files (" + i + ")", { styleRef: "x-style-label x-file-view-splitted" }));
             dom.appendChild(section);
         }
+        if (dom.childNodes.length < 1)
+            dom.appendChild(createElement("section", "Empty", { styleRef: "x-style-label x-file-view-splitted" }));
+        var ul = document.createElement("ul");
+        appendSection(dom, ul, { styleRef: "x-file-view-menu" });
+        var currentItem = document.createElement("li");
+        currentItem.innerText = info.name;
+        currentItem.className = "x-state-selected";
+        ul.appendChild(currentItem);
+        localWebApp.files.list(parent.path).then(function (r2) {
+            if (!r2.data || !r2.data.dirs)
+                return;
+            var names = r2.data.dirs.filter(function (ele) { return ele && ele.name; }).map(function (ele) {
+                var li = createElement("li", ele.name, { click: function (ev) {
+                        callback(ele);
+                    } });
+                if (ele.name === info.name)
+                    li.className = "x-state-selected";
+                return li;
+            });
+            if (names.length < 2)
+                return;
+            ul.innerHTML = "";
+            for (var li in names) {
+                ul.appendChild(names[li]);
+            }
+        });
     }
     function getIconName(ext) {
         var i = ext.lastIndexOf('.');
@@ -416,6 +451,10 @@ var FileBrowserDemo;
             case "ttf":
             case "otf":
                 return "File_Font";
+            case "lnk":
+                return "Link";
+            case "url":
+                return "Link_Url";
             default:
                 return "File";
         }
@@ -467,6 +506,10 @@ var FileBrowserDemo;
             dom.className = options.styleRef;
         if (options.title)
             dom.title = options.title;
+        if (options.click)
+            dom.addEventListener("click", options.click);
+        if (options.contextmenu)
+            dom.addEventListener("contextmenu", options.click);
     }
     function getFileLengthStr(length) {
         if (length < 1000)

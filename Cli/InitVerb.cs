@@ -73,6 +73,24 @@ internal class InitVerb : BaseCommandVerb
         UpdateManifest(manifest, "description", skipTyping);
         UpdateManifest(manifest, "website", skipTyping);
         UpdateManifest(manifest, "icon", skipTyping);
+        var outputDir = "dist";
+        if (!skipTyping)
+        {
+            console.Write($"Package directory ({outputDir}): ");
+            try
+            {
+                var inputOutputDir = console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(inputOutputDir)) outputDir = inputOutputDir;
+            }
+            catch (IOException)
+            {
+            }
+        }
+
+        json.SetValue("ref", new JsonObjectNode
+        {
+            { "path", outputDir }
+        });
         console.Write("Initializing…");
         await File.WriteAllTextAsync(Path.Combine(folder.FullName, FileName), json.ToString(IndentStyles.Compact), cancellationToken);
         var rsa = RSA.Create().ExportParameters(true);

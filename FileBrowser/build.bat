@@ -1,0 +1,1 @@
+..\bin\Release\net6.0\lwac.exe build .

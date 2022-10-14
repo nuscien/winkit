@@ -211,6 +211,18 @@ window.localWebApp = {
       if (!options) options = {};
       return sendRequest(null, 'symmetric', { value, alg, key, iv, decrypt: true }, null, options.context, false, options.ref);
     },
+    rsaCreate(options) {
+      if (!options) options = {};
+      return sendRequest(null, 'rsa-create', { pem: options.pem }, null, options.context, false, options.ref);
+    },
+    rsaEncrypt(value, pem, options) {
+      if (!options) options = {};
+      return sendRequest(null, 'rsa', { pem: options.pem, padding: options.padding, type: options.type, decrypt: false }, null, options.context, false, options.ref);
+    },
+    rsaDecrypt(value, pem, options) {
+      if (!options) options = {};
+      return sendRequest(null, 'rsa', { pem: options.pem, padding: options.padding, type: options.type, decrypt: true }, null, options.context, false, options.ref);
+    },
     verify(alg, value, key, test, options) {
       if (!options) options = {};
       return sendRequest(null, 'verify', { value, alg, key, test, type: options.type }, null, options.context, false, options.ref);

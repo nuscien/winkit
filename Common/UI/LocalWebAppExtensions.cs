@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
@@ -184,11 +185,19 @@ internal static class LocalWebAppExtensions
         {
             resp = HandleException(ex);
         }
+        catch (CryptographicException ex)
+        {
+            resp = HandleException(ex);
+        }
         catch (InvalidCastException ex)
         {
             resp = HandleException(ex);
         }
         catch (NullReferenceException ex)
+        {
+            resp = HandleException(ex);
+        }
+        catch (ArithmeticException ex)
         {
             resp = HandleException(ex);
         }
@@ -792,7 +801,7 @@ internal static class LocalWebAppExtensions
             if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
             if (host != null) s = host.GetLocalPath(s, true);
             var file = FileSystemInfoUtility.TryGetFileInfo(s);
-            if (file == null || !file.Exists) return new("Not found.");
+            if (file == null || !file.Exists) return new("Not found the file.");
             s = alg switch
             {
                 "SHA1" => TryHashFile(file, SHA1.Create()),
@@ -804,6 +813,23 @@ internal static class LocalWebAppExtensions
                 "KECCAK384" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK384"))),
                 "KECCAK512" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK256"))),
                 "MD5" => TryHashFile(file, MD5.Create()),
+                _ => null
+            };
+        }
+        else if (type == "base64")
+        {
+            var bytes = Convert.FromBase64String(s);
+            s = alg switch
+            {
+                "SHA1" => HashUtility.ComputeHashString(SHA1.Create, bytes),
+                "SHA256" => HashUtility.ComputeHashString(SHA256.Create, bytes),
+                "SHA384" => HashUtility.ComputeHashString(SHA384.Create, bytes),
+                "SHA512" => HashUtility.ComputeHashString(SHA512.Create, bytes),
+                "KECCAK224" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK224")), bytes),
+                "KECCAK256" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK256")), bytes),
+                "KECCAK384" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK384")), bytes),
+                "KECCAK512" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK512")), bytes),
+                "MD5" => HashUtility.ComputeHashString(MD5.Create, bytes),
                 _ => null
             };
         }
@@ -851,23 +877,32 @@ internal static class LocalWebAppExtensions
         });
         var alg = request.Data.TryGetStringValue("alg")?.Trim()?.ToUpperInvariant();
         if (string.IsNullOrEmpty(alg)) return new("The algorithm should not be null or empty.");
-        s = (request.Data.TryGetBooleanValue("decrypt") ?? false) ? alg switch
+        var isDecrypt = request.Data.TryGetBooleanValue("decrypt") ?? false;
+        s = (isDecrypt) ? alg switch
         {
             "AES" => SymmetricUtility.DecryptText(Aes.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
             "3DES" => SymmetricUtility.DecryptText(TripleDES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "RC2" => SymmetricUtility.DecryptText(RC2.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "DES" => SymmetricUtility.DecryptText(DES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
             _ => null
         } : alg switch
         {
             "AES" => SymmetricUtility.Encrypt(Aes.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
             "3DES" => SymmetricUtility.Encrypt(TripleDES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "RC2" => SymmetricUtility.Encrypt(RC2.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
+            "DES" => SymmetricUtility.Encrypt(DES.Create, s, request.Data.TryGetStringValue("key"), request.Data.TryGetStringValue("iv")),
             _ => null
         };
+
         if (s == null) return new("The algorithm is not supported.");
         return new(new JsonObjectNode()
         {
             { "value", s },
             { "algorithm", alg },
-            { "encode", "hex" }
+            { "encode", "base64" }
+        }, new JsonObjectNode
+        {
+            { "way", isDecrypt ? "decrypt" : "encrypt" }
         });
     }
 
@@ -904,22 +939,28 @@ internal static class LocalWebAppExtensions
                 using var stream = file.OpenRead();
                 test = WebFormat.Base64UrlEncode(sign.Sign(stream));
             }
+            else if (type == "base64")
+            {
+                test = WebFormat.Base64UrlEncode(sign.Sign(Convert.FromBase64String(s)));
+            }
             else
             {
                 test = WebFormat.Base64UrlEncode(sign.Sign(s));
             }
 
-            return new(new JsonObjectNode()
+            return new(new JsonObjectNode
             {
                 { "sign", test },
                 { "algorithm", alg },
                 { "encode", "base64url" }
+            }, new JsonObjectNode
+            {
+                { "inputType", type }
             });
         }
         else
         {
             var bytes = WebFormat.Base64UrlDecode(test);
-            var data = Encoding.UTF8.GetBytes(s);
             var result = false;
             if (type == "file")
             {
@@ -932,13 +973,107 @@ internal static class LocalWebAppExtensions
             }
             else
             {
+                var data = type == "base64" ? Convert.FromBase64String(s) : Encoding.UTF8.GetBytes(s);
                 result = sign.Verify(data, bytes);
+            }
+
+            return new(new JsonObjectNode
+            {
+                { "verify", result },
+                { "algorithm", alg }
+            }, new JsonObjectNode
+            {
+                { "inputType", type }
+            });
+        }
+    }
+
+    public static LocalWebAppResponseMessage CreateRsa(LocalWebAppRequestMessage request, LocalWebAppHost host = null, bool verify = false)
+    {
+        var pem = request?.Data?.TryGetStringValue("pem");
+        using var rsa = CreateRsa(pem);
+        if (rsa == null) return new("The input PEM is not valid.");
+        RSAParameters secret;
+        try
+        {
+            secret = rsa.ExportParameters(true);
+        }
+        catch (CryptographicException)
+        {
+            secret = rsa.ExportParameters(false);
+        }
+
+        return new(new JsonObjectNode
+        {
+            { "publicPem", secret.ToPublicPEMString() },
+            { "privatePem", secret.ToPrivatePEMString(true) },
+            { "publicParams", secret.ToXElement(false).ToString() },
+            { "privateParams", secret.ToXElement(true).ToString() },
+            { "modulus", Convert.ToBase64String(secret.Modulus) },
+            { "exponent", Convert.ToBase64String(secret.Exponent) },
+            { "includePrivate", secret.D == null || secret.D.Length == 0 }
+        }, new JsonObjectNode
+        {
+            { "import", pem != null }
+        });
+    }
+
+    public static LocalWebAppResponseMessage RsaEncrypt(LocalWebAppRequestMessage request, LocalWebAppHost host = null, bool verify = false)
+    {
+        var s = request?.Data?.TryGetStringValue("value");
+        var pem = request?.Data?.TryGetStringValue("pem");
+        if (string.IsNullOrWhiteSpace(pem)) return new("The pem should not be null or empty.");
+        var parameters = RSAParametersConvert.Parse(pem);
+        if (parameters == null) return new("The pem is not valid.");
+        var rsa = RSA.Create(parameters.Value);
+        var padding = (request.Data.TryGetStringTrimmedValue("padding", true)?.ToLowerInvariant() ?? string.Empty) switch
+        {
+            "sha1" or "oaepsha1" => RSAEncryptionPadding.OaepSHA1,
+            "sha256" or "oaepsha256" => RSAEncryptionPadding.OaepSHA256,
+            "sha384" or "oaepsha384" => RSAEncryptionPadding.OaepSHA384,
+            "sha512" or "oaepsha512" => RSAEncryptionPadding.OaepSHA512,
+            _ => RSAEncryptionPadding.Pkcs1
+        };
+        var type = request.Data.TryGetStringTrimmedValue("type", true);
+        if (request.Data.TryGetBooleanValue("decrypt") ?? false)
+        {
+            if (type == "base64")
+            {
+                var bytes = rsa.Decrypt(Convert.FromBase64String(s), padding);
+                s = Convert.ToBase64String(bytes);
+            }
+            else
+            {
+                type = null;
+                s = rsa.DecryptText(s, padding);
             }
 
             return new(new JsonObjectNode()
             {
-                { "verify", result },
-                { "algorithm", alg }
+                { "value", s },
+                { "encode", "base64" }
+            }, new JsonObjectNode
+            {
+                { "way", "decrypt" },
+                { "padding", padding.ToString() },
+                { "inputType", type }
+            });
+        }
+        else
+        {
+            var bytes = type == "base64"
+                ? rsa.Encrypt(Convert.FromBase64String(s), padding)
+                : rsa.Encrypt(s, padding);
+            s = Convert.ToBase64String(bytes);
+            return new(new JsonObjectNode()
+            {
+                { "value", s },
+                { "encode", "base64" }
+            }, new JsonObjectNode
+            {
+                { "way", "encrypt" },
+                { "padding", padding.ToString() },
+                { "inputType", type }
             });
         }
     }
@@ -1175,6 +1310,13 @@ internal static class LocalWebAppExtensions
     public static string GetPath(JsonObjectNode node, string key, LocalWebAppHost host)
         => GetPath(node?.TryGetValue(key), host);
 
+    private static RSA CreateRsa(string pem)
+    {
+        if (string.IsNullOrWhiteSpace(pem)) return RSA.Create();
+        var parameters = RSAParametersConvert.Parse(pem);
+        return parameters.HasValue ? RSA.Create(parameters.Value) : null;
+    }
+
     private static async Task<LocalWebAppResponseMessage> OnLocalWebAppMessageRequestAsync(LocalWebAppRequestMessage request, LocalWebAppHost host, Dictionary<string, ILocalWebAppCommandHandler> handlers, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
     {
         if (string.IsNullOrEmpty(request?.Command)) return null;
@@ -1200,6 +1342,10 @@ internal static class LocalWebAppExtensions
                 return Hash(request, host);
             case "symmetric":
                 return Symmetric(request);
+            case "rsa-create":
+                return CreateRsa(request, host);
+            case "rsa":
+                return RsaEncrypt(request, host);
             case "sign":
                 return Signature(request, host, false);
             case "verify":

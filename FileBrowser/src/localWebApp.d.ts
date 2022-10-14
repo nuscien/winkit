@@ -346,13 +346,13 @@
          * @param iv The IV.
          * @param options The options.
          */
-        encrypt(alg: "aes" | "3des", value: string, key: string, iv: string, options?: {
+        encrypt(alg: "aes" | "3des" | "rc2" | "des", value: string, key: string, iv: string, options?: {
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             value: string;
             algorithm: string;
-            encode: "hex";
+            encode: "base64";
         }>;
 
         /**
@@ -363,13 +363,61 @@
          * @param iv The IV.
          * @param options The options.
          */
-        decrypt(alg: "aes" | "3des", value: string, key: string, iv: string, options?: {
+        decrypt(alg: "aes" | "3des" | "rc2" | "des", value: string, key: string, iv: string, options?: {
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
             value: string;
             algorithm: string;
-            encode: "hex";
+            encode: "base64";
+        }>;
+
+        /**
+         * Creates an RSA parameter.
+         * @param options The options.
+         */
+        rsaCreate(options?: {
+            pem?: string;
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
+        }): HandlerResponse<{
+            publicPem: string;
+            privatePem: string;
+            publicParams: string;
+            privateParams: string;
+            modulus: string;
+            exponent: string;
+            includePrivate: boolean;
+        }>;
+
+        /**
+         * Encrypts by RSA algorithm.
+         * @param options The options.
+         * @param value The value to encrypt.
+         * @param pem The private key.
+         */
+        rsaEncrypt(value: string, pem: string, options?: {
+            type?: "text" | "base64" | null;
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
+        }): HandlerResponse<{
+            value: string;
+            encode: "base64";
+        }>;
+
+        /**
+         * Decrypts by RSA algorithm.
+         * @param options The options.
+         * @param value The value to decrypt.
+         * @param pem The private key.
+         */
+        rsaDecrypt(value: string, pem: string, options?: {
+            type?: "text" | "base64" | null;
+            context?: HandlerInfoContract;
+            ref?: HandlerProcessingReferenceContract;
+        }): HandlerResponse<{
+            value: string;
+            encode: "base64";
         }>;
 
         /**
@@ -381,7 +429,7 @@
          * @param options The options.
          */
         verify(alg: "rs256" | "rs384" | "rs512" | "hs256" | "hs384" | "hs512", value: string, key: string, test: string, options?: {
-            type?: "text" | "file" | null;
+            type?: "text" | "file" | "base64" | null;
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
@@ -397,7 +445,7 @@
          * @param options The options.
          */
         sign(alg: "rs256" | "rs384" | "rs512" | "hs256" | "hs384" | "hs512", value: string, key: string, options?: {
-            type?: "text" | "file" | null;
+            type?: "text" | "file" | "base64" | null;
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{
@@ -412,9 +460,9 @@
          * @param value The text content or the file path.
          * @param options The options.
          */
-        hash(alg: "sha256" | "sha384" | "sha512", value: string, options?: {
+        hash(alg: "sha256" | "sha384" | "sha512" | "md5", value: string, options?: {
             test?: string;
-            type?: "text" | "file" | null;
+            type?: "text" | "file" | "base64" | null;
             context?: HandlerInfoContract;
             ref?: HandlerProcessingReferenceContract;
         }): HandlerResponse<{

@@ -1347,7 +1347,7 @@ public partial class LocalWebAppHost
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
-        var refConfig = config.TryGetObjectValue("ref");
+        var refConfig = config.TryGetObjectValue("ref") ?? new();
 
         // Create manifest.
         var appDir = GetDirectoryInfoByRelative(dir, refConfig.TryGetStringValue("path")?.Trim()) ?? dir;
@@ -1360,39 +1360,42 @@ public partial class LocalWebAppHost
         }
 
         var manifestPath = Path.Combine(appDir.FullName, LocalWebAppExtensions.DefaultManifestFileName);
-        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest");
-        if (manifestJson != null)
+        var manifestJson = config.TryGetObjectValue("package") ?? config.TryGetObjectValue("manifest") ?? new();
+        var packageId = config.TryGetStringValue("id")?.Trim();
+        var curVerKind = manifestJson.GetValueKind("version");
+        if (!string.IsNullOrEmpty(packageId))
         {
-            var packageId = config.TryGetStringValue("id")?.Trim();
-            var curVerKind = manifestJson.GetValueKind("version");
-            if (!string.IsNullOrEmpty(packageId))
-            {
-                manifestJson.SetValue("id", packageId);
-            }
-            else if (manifestJson.GetValueKind("id") != JsonValueKind.String)
-            {
-                var nodeConfigPath = Path.Combine(rootDir.FullName, "package.json");
-                if (!File.Exists(nodeConfigPath)) throw new InvalidOperationException("Miss package identifier.");
-                var nodeConfig = JsonObjectNode.TryParse(new FileInfo(nodeConfigPath));
-                packageId = nodeConfig?.TryGetStringValue("name")?.Trim();
-                if (string.IsNullOrEmpty(packageId)) throw new InvalidOperationException("Miss package identifier.");
-                manifestJson.SetValue("id", packageId);
-                config.SetValue("id", packageId);
-                var ver = nodeConfig.TryGetStringValue("version")?.Trim();
-                if (curVerKind != JsonValueKind.String && curVerKind != JsonValueKind.Number && !string.IsNullOrEmpty(ver))
-                    manifestJson.SetValue("version", ver);
-            }
-
-            curVerKind = manifestJson.GetValueKind("version");
-            if (curVerKind != JsonValueKind.String && curVerKind != JsonValueKind.Number)
-                manifestJson.SetValue("version", "0.0.1");
-            var manifestStr = manifestJson.ToString();
-            File.WriteAllText(manifestPath, manifestStr);
+            manifestJson.SetValue("id", packageId);
+        }
+        else if (manifestJson.GetValueKind("id") != JsonValueKind.String)
+        {
+            var nodeConfigPath = Path.Combine(rootDir.FullName, "package.json");
+            if (!File.Exists(nodeConfigPath)) throw new InvalidOperationException("Miss package identifier.");
+            var nodeConfig = JsonObjectNode.TryParse(new FileInfo(nodeConfigPath));
+            packageId = nodeConfig?.TryGetStringValue("name")?.Trim();
+            if (string.IsNullOrEmpty(packageId)) throw new InvalidOperationException("Miss package identifier.");
+            manifestJson.SetValue("id", packageId);
+            config.SetValue("id", packageId);
+            var ver = nodeConfig.TryGetStringValue("version")?.Trim();
+            if (curVerKind != JsonValueKind.String && curVerKind != JsonValueKind.Number && !string.IsNullOrEmpty(ver))
+                manifestJson.SetValue("version", ver);
+        }
+        else
+        {
+            packageId = manifestJson.TryGetStringTrimmedValue("id", true);
+            if (packageId == null) throw new InvalidOperationException("Miss package identifier.");
         }
 
-        // Copy source.
+        curVerKind = manifestJson.GetValueKind("version");
+        if (curVerKind != JsonValueKind.String && curVerKind != JsonValueKind.Number)
+            manifestJson.SetValue("version", "0.0.1");
+        var manifestStr = manifestJson.ToString();
+        File.WriteAllText(manifestPath, manifestStr);
+
+        // Setup dev environment.
         if (config.TryGetObjectValue("dev", out var devConfig))
         {
+            // Copy source.
             if (devConfig.TryGetArrayValue("copy", out var copyItems))
             {
                 foreach (var item in copyItems.OfType<JsonObjectNode>())
@@ -1463,6 +1466,106 @@ public partial class LocalWebAppHost
                 if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && zip.FullName != outputPath.FullName) zip.CopyTo(outputPath.FullName, true);
                 outputPath = GetFileInfoByRelative(dir, output.TryGetStringValue("config"));
                 if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && configFile.FullName != outputPath.FullName) configFile.CopyTo(outputPath.FullName, true);
+            }
+        }
+
+        // Generate update meta
+        var updateMeta = refConfig.TryGetObjectValue("updateMeta");
+        var updateMetaFile = GetFileInfoByRelative(dir, updateMeta?.TryGetStringTrimmedValue("path"));
+        if (updateMeta != null && updateMetaFile != null)
+        {
+            var umJson = JsonObjectNode.TryParse(updateMetaFile) ?? new();
+            var umProp = updateMeta.TryGetStringTrimmedValue("prop", true) ?? "localwebapp";
+            var umJson2 = umJson.TryGetObjectValue(umProp);
+            if (umJson2 == null)
+            {
+                umJson.SetValue(umProp, new JsonObjectNode());
+                umJson2 = umJson.TryGetObjectValue(umProp);
+            }
+
+            var appCollection = umJson2.TryGetObjectListValue("apps");
+            var um = appCollection?.FirstOrDefault(ele => ele?.TryGetStringTrimmedValue("id") == packageId);
+            if (um == null)
+            {
+                um = new JsonObjectNode
+                {
+                    { "id", packageId }
+                };
+                if (appCollection == null) appCollection = new();
+                appCollection.Add(um);
+                umJson2.SetValue("apps", appCollection);
+            }
+
+            var tempStr = manifestJson.TryGetStringValue("title");
+            if (!string.IsNullOrWhiteSpace(tempStr)) um.SetValue("title", tempStr);
+            tempStr = manifestJson.TryGetStringValue("version");
+            um.SetValue("version", tempStr);
+            if (tempStr == null) tempStr = string.Empty;
+            var umUrl = updateMeta.TryGetStringTrimmedValue("urlTemplate", true);
+            if (umUrl != null) um.SetValue("url", umUrl
+                .Replace("{ver}", tempStr)
+                .Replace("{ver_}", tempStr.Replace('.', '_').Replace('-', '_'))
+                .Replace("{ver/}", tempStr.Replace('.', '/').Replace('-', '/'))
+                .Replace("{id}", packageId.Replace("@", string.Empty))
+                .Replace("{id_}", packageId.Replace("@", string.Empty).Replace('.', '_').Replace('-', '_'))
+                .Replace("{t}", WebFormat.ParseDate(DateTime.Now).ToString("g"))
+                .Replace("{r}", Guid.NewGuid().ToString("N")));
+            var umInfo = updateMeta.TryGetObjectValue("info");
+            if (umInfo != null) um.SetValue("info", umInfo);
+            umInfo = updateMeta.TryGetObjectValue("sign");
+            if (umInfo != null)
+            {
+                um.SetValue("sign", umInfo);
+            }
+            else
+            {
+                var umSign = updateMeta.TryGetStringTrimmedValue("sign", true);
+                if (umSign != null) um.SetValue("sign", umSign);
+                //else um.SetValue("sign", new JsonObjectNode
+                //{
+                //    { "alg", options.SignatureAlgorithm },
+                //    { "key", options.SignatureKey }   // Need export public key
+                //});
+            }
+
+            var umHashAlg = updateMeta.TryGetStringTrimmedValue("hash")?.ToUpperInvariant()?.Replace("-", string.Empty) ?? string.Empty;
+            switch (umHashAlg)
+            {
+                case "SHA256":
+                    um.SetValue("hash", HashUtility.ComputeHashString(SHA256.Create, zip));
+                    break;
+                case "SHA384":
+                    um.SetValue("hash", HashUtility.ComputeHashString(SHA384.Create, zip));
+                    break;
+                case "SHA512":
+                    um.SetValue("hash", HashUtility.ComputeHashString(SHA512.Create, zip));
+                    break;
+                default:
+                    um.Remove("hash");
+                    break;
+            }
+
+            try
+            {
+                File.WriteAllText(updateMetaFile.FullName, umJson.ToString(IndentStyles.Compact));
+            }
+            catch (IOException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (SecurityException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (ExternalException)
+            {
             }
         }
 

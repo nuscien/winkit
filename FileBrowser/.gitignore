@@ -2,3 +2,5 @@ localwebapp.zip
 localwebapp/localwebapp.zip
 localwebapp/data
 localwebapp/cache
+localwebapp/log
+localwebapp/temp

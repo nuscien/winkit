@@ -11,6 +11,11 @@
     "update": {
       "url": "http://localhost/install/Test/LocalWebApp.json"
     },
+    "updateMeta": {
+      "path": ".\\temp\\LocalWebApp.json",
+      "urlTemplate": "http://localhost/install/Test/filebrowser_{ver}.zip",
+      "hash": "SHA256"
+    },
     "path": "..\\..\\bin\\LocalWebApp\\filebrowser\\app",
     "sign": "RS256"
   },

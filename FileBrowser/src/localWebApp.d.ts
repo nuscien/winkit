@@ -506,6 +506,9 @@
         decodeUri(s: string, parameter?: boolean): string;
     };
 
+    /**
+     * The host app API set.
+     * */
     const hostApp: {
 
         /**

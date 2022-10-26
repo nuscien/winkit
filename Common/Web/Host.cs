@@ -1460,9 +1460,9 @@ public partial class LocalWebAppHost
             {
                 if (output == null) continue;
                 var outputPath = GetFileInfoByRelative(dir, output.TryGetStringValue("zip"));
-                if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && outputPath.Exists && zip.FullName != outputPath.FullName) zip.CopyTo(outputPath.FullName, true);
+                if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && zip.FullName != outputPath.FullName) zip.CopyTo(outputPath.FullName, true);
                 outputPath = GetFileInfoByRelative(dir, output.TryGetStringValue("config"));
-                if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && outputPath.Exists && configFile.FullName != outputPath.FullName) configFile.CopyTo(outputPath.FullName, true);
+                if (!string.IsNullOrWhiteSpace(outputPath?.FullName) && configFile.FullName != outputPath.FullName) configFile.CopyTo(outputPath.FullName, true);
             }
         }
 

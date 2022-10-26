@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "LWA project config",
+  "description": "Project configuration for local web app.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The project identifier, such as @demo/app.",
+      "maxLength": 214,
+      "minLength": 1,
+      "pattern": "^(?:@[a-z0-9-*~][a-z0-9-*._~]*/)?[a-z0-9-~][a-z0-9-._~]*$"
+    },
+    "package": {
+      "type": "object",
+      "description": "The package manifest.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The display name of the project."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version must be in node-semver."
+        },
+        "publisher": {
+          "type": "string",
+          "description": "The display name of publisher."
+        },
+        "icon": {
+          "type": "string",
+          "description": "The relative path of the icon."
+        },
+        "description": {
+          "type": "string",
+          "description": "The project description"
+        },
+        "copyright": {
+          "type": "string",
+          "description": "The copyright."
+        },
+        "website": {
+          "type": "string",
+          "description": "The homepage URL of the official website of the project or publisher."
+        },
+        "entry": {
+          "type": "string",
+          "description": "The file name of the homepage."
+        },
+        "dataRes": {
+          "type": "object",
+          "description": "The JSON files which will load on app init to bind.",
+          "patternProperties": {
+            "\\s\\S": {
+              "type": "string",
+              "description": "The relative path of the JSON file to bind."
+            }
+          }
+        },
+        "strRes": {
+          "type": "object",
+          "description": "The plain text files which will load on app init to bind.",
+          "patternProperties": {
+            "\\s\\S": {
+              "type": "string",
+              "description": "The relative path of the plain text file to bind."
+            }
+          }
+        },
+        "host": {
+          "type": "array",
+          "description": "The host app binding information.",
+          "patternProperties": {
+            "\\s\\S": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The host app identifier to match."
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "The host app kind."
+                },
+                "min": {
+                  "type": "string",
+                  "description": "The minimum version to test."
+                },
+                "max": {
+                  "type": "string",
+                  "description": "The maximum verstion to test"
+                }
+              }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "description": "The tags.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Additional metadata."
+        }
+      }
+    },
+    "ref": {
+      "type": "object",
+      "description": "The reference information.",
+      "properties": {
+        "update": {
+          "type": "object",
+          "description": "The update information for client.",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "The URL of Web API to check update."
+            },
+            "params": {
+              "type": "object",
+              "description": "The parameters to append to the url.",
+              "patternProperties": {
+                "\\s\\S": {
+                  "type": "string"
+                }
+              }
+            },
+            "prop": {
+              "type": "string",
+              "description": "The property key in response to read update strategy and information."
+            },
+            "settings": {
+              "type": "object",
+              "description": "The additional settings."
+            }
+          }
+        },
+        "updateMeta": {
+          "type": "object",
+          "description": "The output metadata for update service.",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "The relative path of the output file."
+            },
+            "urlTemplate": {
+              "type": "string",
+              "description": "The URL template for downloading zip file."
+            },
+            "hash": {
+              "type": "string",
+              "description": "The hash algorithm name, e.g. SHA256, SHA384 and SHA512. It will output the hash value of the zip file."
+            },
+            "info": {
+              "type": "object",
+              "description": "The additional information."
+            },
+            "sign": {
+              "type": [ "string", "object" ],
+              "description": "The additional specific signature information."
+            }
+          }
+        },
+        "path": {
+          "type": "string",
+          "description": "The relative directory path of the front-end files."
+        },
+        "output": {
+          "type": "array",
+          "description": "The output files.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "zip": {
+                "type": "string",
+                "description": "The relative path of the resource package compressed file."
+              },
+              "config": {
+                "type": "string",
+                "description": "The relative path of the resource package config file."
+              }
+            }
+          }
+        },
+        "sign": {
+          "type": "string",
+          "description": "The signature algorithm name, e.g. RS256, RS384 and RS512."
+        },
+        "key": {
+          "type": "string",
+          "description": "The PEM with private key."
+        }
+      }
+    },
+    "dev": {
+      "type": "object",
+      "description": "The dev environment settings."
+    }
+  }
+}

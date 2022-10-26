@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "LWA resource package mainfest",
+  "description": "The resource package manifest file of local web app.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The project identifier, such as @demo/app.",
+      "maxLength": 214,
+      "minLength": 1,
+      "pattern": "^(?:@[a-z0-9-*~][a-z0-9-*._~]*/)?[a-z0-9-~][a-z0-9-._~]*$"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 214,
+      "description": "The display name of the project."
+    },
+    "version": {
+      "type": "string",
+      "maxLength": 214,
+      "description": "Version must be in node-semver."
+    },
+    "publisher": {
+      "type": "string",
+      "maxLength": 240,
+      "description": "The display name of publisher."
+    },
+    "icon": {
+      "type": "string",
+      "description": "The relative path of the icon."
+    },
+    "description": {
+      "type": "string",
+      "description": "The project description"
+    },
+    "copyright": {
+      "type": "string",
+      "description": "The copyright."
+    },
+    "website": {
+      "type": "string",
+      "description": "The homepage URL of the official website of the project or publisher."
+    },
+    "entry": {
+      "type": "string",
+      "description": "The file name of the homepage."
+    },
+    "dataRes": {
+      "type": "object",
+      "description": "The JSON files which will load on app init to bind.",
+      "patternProperties": {
+        "\\s\\S": {
+          "type": "string",
+          "description": "The relative path of the JSON file to bind."
+        }
+      }
+    },
+    "strRes": {
+      "type": "object",
+      "description": "The plain text files which will load on app init to bind.",
+      "patternProperties": {
+        "\\s\\S": {
+          "type": "string",
+          "description": "The relative path of the plain text file to bind."
+        }
+      }
+    },
+    "host": {
+      "type": "array",
+      "description": "The host app binding information.",
+      "patternProperties": {
+        "\\s\\S": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The host app identifier to match."
+            },
+            "kind": {
+              "type": "string",
+              "description": "The host app kind."
+            },
+            "min": {
+              "type": "string",
+              "description": "The minimum version to test."
+            },
+            "max": {
+              "type": "string",
+              "description": "The maximum verstion to test"
+            }
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "The tags.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Additional metadata."
+    }
+  }
+}

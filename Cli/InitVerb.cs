@@ -64,6 +64,7 @@ internal class InitVerb : BaseCommandVerb
         var manifest = new JsonObjectNode();
         var json = new JsonObjectNode
         {
+            { "$schema", "https://nuscien.github.io/winkit/schema/localwebapp.project.v6.json" },
             { "package", manifest }
         };
         var skipTyping = Arguments.Has("direct", "d");

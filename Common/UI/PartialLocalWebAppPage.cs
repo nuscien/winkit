@@ -116,7 +116,7 @@ public sealed partial class LocalWebAppPage
     /// <summary>
     /// Gets the identifier of the resource package.
     /// </summary>
-    public string ResourcePackageId => host?.Manifest?.Id;
+    public string ResourcePackageId => host?.Manifest?.Id ?? host?.ResourcePackageId;
 
     /// <summary>
     /// Gets the display name of the resource package.
@@ -481,7 +481,7 @@ public sealed partial class LocalWebAppPage
             {
                 ProgressElement.IsActive = true;
                 SetBrowserVisibility(true);
-                Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+                NavigateHomepage(homepage);
             };
             return;
         }
@@ -495,13 +495,13 @@ public sealed partial class LocalWebAppPage
             {
                 ProgressElement.IsActive = true;
                 SetBrowserVisibility(true);
-                Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+                NavigateHomepage(homepage);
             };
             return;
         }
 
         SetBrowserVisibility(true);
-        Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+        NavigateHomepage(homepage);
     }
 
     /// <summary>
@@ -654,6 +654,19 @@ public sealed partial class LocalWebAppPage
         var title = host.Manifest?.DisplayName?.Trim();
         if (string.IsNullOrEmpty(title)) return;
         TitleChanged?.Invoke(this, new(host.Manifest?.DisplayName));
+    }
+
+    private void NavigateHomepage(string homepage)
+    {
+        try
+        {
+            Browser.CoreWebView2.Navigate(host.GetVirtualPath(homepage));
+        }
+        catch (Exception ex)
+        {
+            LoadFailed?.Invoke(this, new(ex));
+            throw;
+        }
     }
 
     private void OnDocumentTitleChanged(CoreWebView2 sender, object args)

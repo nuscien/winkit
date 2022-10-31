@@ -112,7 +112,7 @@ internal class InitVerb : BaseCommandVerb
         filePath = Path.Combine(folder.FullName, ".gitignore");
         if (!File.Exists(filePath))
         {
-            var s = $"localwebapp.zip{Environment.NewLine}localwebapp/localwebapp.zip{Environment.NewLine}localwebapp/data{Environment.NewLine}localwebapp/cache{Environment.NewLine}localwebapp/log{Environment.NewLine}localwebapp/temp";
+            var s = $"localwebapp.zip{Environment.NewLine}localwebapp/localwebapp.zip{Environment.NewLine}localwebapp/data{Environment.NewLine}localwebapp/cache{Environment.NewLine}localwebapp/logs{Environment.NewLine}localwebapp/temp";
             await File.WriteAllTextAsync(filePath, s, cancellationToken);
         }
 

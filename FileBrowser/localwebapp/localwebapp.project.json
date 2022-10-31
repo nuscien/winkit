@@ -1,4 +1,5 @@
 {
+  "$schema": "https://nuscien.github.io/winkit/schema/localwebapp.project.v6.json",
   "package": {
     "title": "File Browser",
     "publisher": "Nanchang Jinchen Software Co Ltd",

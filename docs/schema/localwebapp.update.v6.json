@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://nuscien.github.io/winkit/schema/localwebapp.update.v6.json",
+  "title": "LWA resource package update information",
+  "description": "The resource package update information configuration file of local web app.",
+  "type": "object",
+  "properties": {
+    "apps": {
+      "type": "array",
+      "description": "The update inforamtion for each LWA resource package.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The project identifier, such as @demo/app.",
+            "maxLength": 214,
+            "minLength": 1,
+            "pattern": "^(?:@[a-z0-9-*~][a-z0-9-*._~]*/)?[a-z0-9-~][a-z0-9-._~]*$"
+          },
+          "title": {
+            "type": "string",
+            "description": "The display name of the project."
+          },
+          "version": {
+            "type": "string",
+            "description": "Version must be in node-semver."
+          },
+          "url": {
+            "type": "string",
+            "description": "The resource package download URL."
+          },
+          "sign": {
+            "type": ["string", "object"],
+            "properties": {
+              "alg": {
+                "type": "string",
+                "description": "Hash algorithm, e.g. RS256, RS384, RS512."
+              },
+              "key": {
+                "type": "string",
+                "description": "The public key in PEM string format."
+              }
+            }
+          },
+          "hash": {
+            "type": "string",
+            "description": "Optional hash for the compressed file."
+          },
+          "info": {
+            "type": "object",
+            "description": "Additional information"
+          }
+        }
+      }
+    },
+    "sign": {
+      "type": "object",
+      "description": "The plain text files which will load on app init to bind.",
+      "patternProperties": {
+        "\\s\\S": {
+          "type": "object",
+          "description": "The signature information collection.",
+          "properties": {
+            "alg": {
+              "type": "string",
+              "description": "Hash algorithm, e.g. RS256, RS384, RS512."
+            },
+            "key": {
+              "type": "string",
+              "description": "The public key in PEM string format."
+            }
+          }
+        }
+      }
+    }
+  }
+}

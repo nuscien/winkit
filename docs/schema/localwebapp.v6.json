@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://nuscien.github.io/winkit/schema/localwebapp.v6.json",
   "title": "LWA resource package mainfest",
   "description": "The resource package manifest file of local web app.",
   "type": "object",

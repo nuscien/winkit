@@ -106,19 +106,72 @@
         };
     }
 
+    interface BaseHandlerRequestOptionsContract {
+
+        /**
+         * The context from request. It will transfer to response.
+         */
+        context?: HandlerInfoContract;
+
+        /**
+         * Additional reference container. The caller will fill the properties after occur.
+         */
+        ref?: HandlerProcessingReferenceContract;
+    }
+
     interface HandlerProcessingReferenceContract {
+
+        /**
+         * The operation trace identifier.
+         */
         trace?: string | undefined;
+
+        /**
+         * The response data.
+         */
         response?: HandlerResponseContract<any> | undefined;
     }
 
     interface FileInfoContract {
+
+        /**
+         * The file name with extension. 
+         */
         name: string;
+
+        /**
+         * The last modification date time. 
+         */
         modified: string;
+
+        /**
+         * The creation date time.
+         */
         created: string;
+
+        /**
+         * The file system attributes.
+         */
         attr: string;
+
+        /**
+         * The file system type.
+         */
         type?: "file" | "dir" | null;
+
+        /**
+         * The file size.
+         */
         length?: number | null;
+
+        /**
+         * The link of the target path if available.
+         */
         link?: string | null;
+
+        /**
+         * The path of the file.
+         */
         path?: string | null;
     }
 
@@ -151,8 +204,20 @@
     }
 
     interface DownloadListContract {
+
+        /**
+         * true if the default download list dialog is shown; otherwise, false.
+         */
         dialog: boolean;
+
+        /**
+         * The maximum count requested.
+         */
         max: number;
+
+        /**
+         * The download item collection
+         */
         list: {
             uri: string;
             file: string;
@@ -162,20 +227,56 @@
             interrupt: string | null;
             mime: string | null;
         }[];
+
+        /**
+         * The enumerated date time.
+         */
         enumerated: string;
     }
 
     interface WindowStateInfoContract {
+
+        /**
+         * The window width.
+         */
         width: number;
+
+        /**
+         * The window height.
+         */
         height: number;
+
+        /**
+         * The top distance to screen (y).
+         */
         top: number;
+
+        /**
+         * The left distance to screen (x).
+         */
         left: number;
+
+        /**
+         * The window state.
+         */
         state: "Maximized" | "Restored" | "Minimized" | "Fullscreen" | "Compact";
+
+        /**
+         * The window title.
+         */
         title: string;
     }
 
     type FilePath = string | {
+
+        /**
+         * The type of parent directory.
+         */
         parent?: null | undefined | "absolute" | "parent" | "asset" | "appdata" | "doc";
+
+        /**
+         * The path.
+         */
         path: string | null;
     }
 
@@ -217,22 +318,22 @@
          * @param dir The path of the directory to list its children.
          * @param options The options.
          */
-        list(dir: string, options?: {
+        list(dir: string, options?: ({
             q?: string;
             showHidden?: boolean | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | string | undefined | null): HandlerResponse<FileListResponseContract>;
+        } & BaseHandlerRequestOptionsContract) | string | undefined | null): HandlerResponse<FileListResponseContract>;
 
         /**
          * Lists drives.
          * @param options The options.
          */
-         listDrives(options?: {
+        listDrives(options?: ({
+
+            /**
+             * true if only return fixed drive; otherwise, false.
+             */
             fixed?: boolean | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | string | undefined | null): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract) | string | undefined | null): HandlerResponse<{
             drives: DriveInfoContract[]
         }>;
 
@@ -242,11 +343,17 @@
          * @param options The options.
          */
         get(path: FilePath, options?: {
+
+            /**
+             * The type of content to read and parse.
+             */
             read?: boolean | "none" | "text" | "json" | "base64";
+
+            /**
+             * The maximum file size to read. If the file is larger than this length, it will skip to read content.
+             */
             maxLength?: number;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<FileGetResponseContract>;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<FileGetResponseContract>;
 
         /**
          * Writes a file.
@@ -255,9 +362,7 @@
          * @param options The options.
          */
         write(path: FilePath, value: { property: string } | any[] | string | null, options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{}>;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{}>;
 
         /**
          * Moves a file or a directory.
@@ -265,12 +370,18 @@
          * @param dest The destination path.
          * @param options The options.
          */
-        move(path: FilePath, dest: FilePath, options?: {
+        move(path: FilePath, dest: FilePath, options?: ({
+
+            /**
+             * true if override the destination file if exists; otherwise, false.
+             */
             override?: boolean;
+
+            /**
+             * true if the path is a directory path, that means it will move a directory but not a file; otherwise, false.
+             */
             dir?: boolean;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | boolean): HandlerResponse<{}>;
+        } & BaseHandlerRequestOptionsContract) | boolean): HandlerResponse<{}>;
 
         /**
          * Copies a file or a directory.
@@ -278,12 +389,18 @@
          * @param dest The destination path.
          * @param options The options.
          */
-        copy(path: FilePath, dest: FilePath, options?: {
+        copy(path: FilePath, dest: FilePath, options?: ({
+
+            /**
+             * true if override the destination file if exists; otherwise, false.
+             */
             override?: boolean;
+
+            /**
+             * true if the path is a directory path, that means it will copy a directory but not a file; otherwise, false.
+             */
             dir?: boolean;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | boolean): HandlerResponse<{}>;
+        } & BaseHandlerRequestOptionsContract) | boolean): HandlerResponse<{}>;
 
         /**
          * Deletes a file or a directory.
@@ -291,10 +408,12 @@
          * @param options The options.
          */
         delete(path: FilePath, options?: {
+
+            /**
+             * true if the path is a directory path, that means it will delete a directory but not a file; otherwise, false.
+             */
             dir?: boolean;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | boolean): HandlerResponse<{}>;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{}>;
 
         /**
          * Makes a directory.
@@ -302,9 +421,7 @@
          * @param options The options.
          */
         md(path: FilePath, options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | boolean): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             existed: boolean;
             info: FileInfoContract;
         }>;
@@ -315,22 +432,67 @@
          * @param options The options.
          */
         open(path: FilePath, options?: {
+
+            /**
+             * The command arguments.
+             */
             args?: string | null;
+
+            /**
+             * The type of path to open.
+             */
             type?: "file" | "dir" | "url" | "exe" | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{}>;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{}>;
+
+        /**
+         * Compresses a folder content.
+         * @param path The directory path to compress.
+         * @param dest The destination path of the zip file.
+         * @param options The options.
+         */
+        zip(path: FilePath, dest: FilePath, options?: {
+
+            /**
+             * true if override the destination file if exists; otherwise, false.
+             */
+            override?: boolean;
+
+            /**
+             * true if include the directory itself; otherwise, false. 
+             */
+            folder?: boolean;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{}>;
+
+        /**
+         * Extracts a zip file.
+         * @param path The directory path to compress.
+         * @param dest The destination path of the zip file.
+         * @param options The options.
+         */
+        unzip(path: FilePath, dest: FilePath, options?: {
+
+            /**
+             * true if override the destination file if exists; otherwise, false.
+             */
+            override?: boolean;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{}>;
 
         /**
          * Lists the download items.
          * @param options The options.
          */
         listDownload(options?: boolean | number | {
+
+            /**
+             * true if display the default download list dialog; otherwise, false.
+             */
             open?: boolean;
+
+            /**
+             * The maximum count of item returned.
+             */
             max?: number;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<DownloadListContract>;
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<DownloadListContract>;
     };
 
     /**
@@ -347,9 +509,7 @@
          * @param options The options.
          */
         encrypt(alg: "aes" | "3des" | "rc2" | "des", value: string, key: string, iv: string, options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             value: string;
             algorithm: string;
             encode: "base64";
@@ -364,9 +524,7 @@
          * @param options The options.
          */
         decrypt(alg: "aes" | "3des" | "rc2" | "des", value: string, key: string, iv: string, options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             value: string;
             algorithm: string;
             encode: "base64";
@@ -377,10 +535,12 @@
          * @param options The options.
          */
         rsaCreate(options?: {
+
+            /**
+             * The RSA PEM.
+             */
             pem?: string;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             publicPem: string;
             privatePem: string;
             publicParams: string;
@@ -397,10 +557,12 @@
          * @param pem The private key.
          */
         rsaEncrypt(value: string, pem: string, options?: {
+
+            /**
+             * The source type of value.
+             */
             type?: "text" | "base64" | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             value: string;
             encode: "base64";
         }>;
@@ -412,10 +574,12 @@
          * @param pem The private key.
          */
         rsaDecrypt(value: string, pem: string, options?: {
+
+            /**
+             * The source type of value.
+             */
             type?: "text" | "base64" | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             value: string;
             encode: "base64";
         }>;
@@ -429,10 +593,12 @@
          * @param options The options.
          */
         verify(alg: "rs256" | "rs384" | "rs512" | "hs256" | "hs384" | "hs512", value: string, key: string, test: string, options?: {
+
+            /**
+             * The source type of value.
+             */
             type?: "text" | "file" | "base64" | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             verify: boolean;
             algorithm: string;
         }>;
@@ -445,10 +611,12 @@
          * @param options The options.
          */
         sign(alg: "rs256" | "rs384" | "rs512" | "hs256" | "hs384" | "hs512", value: string, key: string, options?: {
+
+            /**
+             * The source type of value.
+             */
             type?: "text" | "file" | "base64" | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             sign: string;
             algorithm: string;
             encode: "base64url";
@@ -461,11 +629,17 @@
          * @param options The options.
          */
         hash(alg: "sha256" | "sha384" | "sha512" | "md5", value: string, options?: {
+
+            /**
+             * The test result.
+             */
             test?: string;
+
+            /**
+             * The source type of value.
+             */
             type?: "text" | "file" | "base64" | null;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             value: string;
             algorithm: string;
             encode: "hex";
@@ -516,9 +690,7 @@
          * @param options The options.
          */
         theme(options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             brightness: "dark" | "light";
         }>;
 
@@ -527,9 +699,12 @@
          * @param options The options.
          */
         checkUpdate(options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+
+            /**
+             * true if check update now; false if return current state; or the specific update service URL.
+             */
+            check?: boolean | string | null,
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             version: string;
             has: boolean;
         }>;
@@ -538,26 +713,50 @@
          * Gets or sets the window state.
          * @param value The optional state to set.
          */
-        window(value?: WindowStates | {
+        window(value?: WindowStates | ({
+
+            /**
+             * The window state.
+             */
             state?: WindowStates;
+
+            /**
+             * The window width.
+             */
             width?: number;
+
+            /**
+             * The window height.
+             */
             height?: number;
+
+            /**
+             * The top distance to screen (y).
+             */
             top?: number;
+
+            /**
+             * The left distance to screen (x).
+             */
             left?: number;
+
+            /**
+             * true if focus the window by programming; otherwise, false.
+             */
             focus?: boolean;
+
+            /**
+             * true if the pixel data is based on physical; otherwise, false.
+             */
             physical?: boolean;
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        } | null): HandlerResponse<WindowStateInfoContract>;
+        } & BaseHandlerRequestOptionsContract) | null): HandlerResponse<WindowStateInfoContract>;
 
         /**
          * Lists information of all command handler.
          * @param options The options.
          */
         handlers(options?: {
-            context?: HandlerInfoContract;
-            ref?: HandlerProcessingReferenceContract;
-        }): HandlerResponse<{
+        } & BaseHandlerRequestOptionsContract): HandlerResponse<{
             collection: {
                 id: string;
                 description: string;

@@ -1170,16 +1170,30 @@ internal static class LocalWebAppExtensions
 
     public static async Task<LocalWebAppResponseMessage> CheckUpdateAsync(LocalWebAppRequestMessage request, LocalWebAppHost host = null)
     {
-        var needCheck = request?.Data?.TryGetBooleanValue("check") == true;
-        if (needCheck) await host.UpdateAsync();
+        var info = new JsonObjectNode();
+        if (request?.Data != null)
+        {
+            var needCheck = request.Data.TryGetBooleanValue("check") == true;
+            var url = request.Data.TryGetStringValue("check");
+            if (url != null && url.ToLowerInvariant().StartsWith("https://"))
+            {
+                var uri = TryCreateUri(url);
+                await host.UpdateAsync(uri);
+                info.SetValue("check", true);
+                info.SetValue("url", url);
+            }
+            else if (needCheck)
+            {
+                await host.UpdateAsync();
+                info.SetValue("check", true);
+            }
+        }
+
         return new(new JsonObjectNode()
         {
             { "version", host.NewVersionAvailable ?? host.Manifest?.Version },
             { "has", !string.IsNullOrWhiteSpace(host.NewVersionAvailable) }
-        }, new()
-        {
-            { "check", needCheck }
-        });
+        }, info);
     }
 
     public static LocalWebAppResponseMessage WindowState(LocalWebAppRequestMessage request, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)

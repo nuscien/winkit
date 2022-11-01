@@ -1500,7 +1500,7 @@ public partial class LocalWebAppHost
             if (!string.IsNullOrWhiteSpace(tempStr)) um.SetValue("title", tempStr);
             tempStr = manifestJson.TryGetStringValue("version");
             um.SetValue("version", tempStr);
-            if (tempStr == null) tempStr = string.Empty;
+            tempStr ??= string.Empty;
             var umUrl = updateMeta.TryGetStringTrimmedValue("urlTemplate", true);
             if (umUrl != null) um.SetValue("url", umUrl
                 .Replace("{ver}", tempStr)

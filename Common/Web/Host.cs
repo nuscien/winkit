@@ -1732,7 +1732,7 @@ public partial class LocalWebAppHost
                 var hostBindings = ConvertToBindingInfoList(item.TryGetObjectListValue("host"));
                 var app = arr.FirstOrDefault(ele => {
                     var testId = ele?.ResourcePackageId?.Trim();
-                    if (string.IsNullOrEmpty(testId) == false) return false;
+                    if (string.IsNullOrEmpty(testId)) return false;
                     if (idFormatted != testId?.ToUpperInvariant()?.Replace("@", string.Empty)?.Replace("\\", "/"))
                         return false;
                     return IsForCurrentHost(hostBindings);
@@ -2317,9 +2317,19 @@ public partial class LocalWebAppHost
         {
             try
             {
-                TryDeleteDirectory(dir.FullName);
+                if (dir != null) dir.Refresh();
+                if (dir.Exists) TryDeleteDirectory(dir.FullName);
+            }
+            catch (IOException)
+            {
+            }
+            catch (NullReferenceException)
+            {
             }
             catch (SecurityException)
+            {
+            }
+            catch (ExternalException)
             {
             }
         }

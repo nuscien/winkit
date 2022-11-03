@@ -173,6 +173,28 @@ internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHand
     {
         try
         {
+            var theme = webview.ActualTheme;
+            if (theme == ElementTheme.Light || theme == ElementTheme.Dark)
+                return new JsonObjectNode
+                {
+                    { "brightness", theme.ToString().ToLowerInvariant() }
+                };
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+
+        try
+        {
             return new JsonObjectNode
             {
                 { "brightness", Application.Current.RequestedTheme.ToString().ToLowerInvariant() }

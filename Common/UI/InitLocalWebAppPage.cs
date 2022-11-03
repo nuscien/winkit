@@ -268,7 +268,7 @@ window.localWebApp = {
     window(value) {
       if (!value) value = {};
       else if (typeof value === 'string') value = { state: value };
-      return sendRequest(null, 'window', { state: value.state, width: value.width || value.w, height: value.height || value.h, top: value.top || value.y, left: value.left || value.x, focus: value.focus, physical: value.physical }, null, value.context, false, options.ref);
+      return sendRequest(null, 'window', { state: value.state, width: value.width || value.w, height: value.height || value.h, top: value.top || value.y, left: value.left || value.x, focus: value.focus, physical: value.physical }, null, value.context, false, value.ref);
     },
     handlers(options) {
       if (!options) options = {};

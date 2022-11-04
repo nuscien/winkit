@@ -456,8 +456,17 @@ public sealed partial class LocalWebAppPage
         }
 
         this.host = host;
-        await Browser.EnsureCoreWebView2Async();
-        Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, dir.FullName, CoreWebView2HostResourceAccessKind.Allow);
+        try
+        {
+            await Browser.EnsureCoreWebView2Async();
+            Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(host.VirtualHost, dir.FullName, CoreWebView2HostResourceAccessKind.Allow);
+        }
+        catch (Exception ex)
+        {
+            LoadFailed?.Invoke(this, new(ex));
+            throw;
+        }
+
         var homepage = host.Manifest.HomepagePath?.Trim();
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
         ProgressElement.IsActive = true;

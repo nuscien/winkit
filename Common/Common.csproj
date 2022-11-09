@@ -10,7 +10,7 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>6.6.0-preview2</Version>
+    <Version>6.6.0</Version>
     <AssemblyVersion>6.6.0.0</AssemblyVersion>
     <FileVersion>6.6.0.0</FileVersion>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
@@ -53,8 +53,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
-    <PackageReference Include="Trivial" Version="6.5.6" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageReference Include="Trivial" Version="6.6.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-windows10.0.17763.0;net6.0-windows10.0.19041.0;net6.0-windows10.0.22000.0</TargetFrameworks>
+    <TargetFrameworks>net7.0-windows10.0.17763.0;net7.0-windows10.0.19041.0;net7.0-windows10.0.22000.0;net6.0-windows10.0.17763.0;net6.0-windows10.0.19041.0;net6.0-windows10.0.22000.0</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <AssemblyName>Trivial.WindowsKit</AssemblyName>
     <RootNamespace>Trivial.UI</RootNamespace>
@@ -10,9 +10,9 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>6.6.0</Version>
-    <AssemblyVersion>6.6.0.0</AssemblyVersion>
-    <FileVersion>6.6.0.0</FileVersion>
+    <Version>6.6.1</Version>
+    <AssemblyVersion>6.6.1.0</AssemblyVersion>
+    <FileVersion>6.6.1.0</FileVersion>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <Copyright>Copyright (c) 2022 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221109.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
     <PackageReference Include="Trivial" Version="6.6.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />

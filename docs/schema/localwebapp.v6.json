@@ -70,26 +70,24 @@
     "host": {
       "type": "array",
       "description": "The host app binding information.",
-      "patternProperties": {
-        "\\s\\S": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "description": "The host app identifier to match."
-            },
-            "kind": {
-              "type": "string",
-              "description": "The host app kind."
-            },
-            "min": {
-              "type": "string",
-              "description": "The minimum version to test."
-            },
-            "max": {
-              "type": "string",
-              "description": "The maximum verstion to test"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The host app identifier to match."
+          },
+          "kind": {
+            "type": "string",
+            "description": "The host app kind."
+          },
+          "min": {
+            "type": "string",
+            "description": "The minimum version to test."
+          },
+          "max": {
+            "type": "string",
+            "description": "The maximum verstion to test"
           }
         }
       }

@@ -759,7 +759,7 @@ public partial class LocalWebAppHost
         };
 
         // Test the host app binding information.
-        if (verifyOptions != LocalWebAppVerificationOptions.Disabled && !IsForCurrentHost(manifest.HostBinding))
+        if (verifyOptions == LocalWebAppVerificationOptions.Regular && !IsForCurrentHost(manifest.HostBinding))
             throw new InvalidOperationException("Does not match the current host app.");
 
         // Bind static resources from given files.

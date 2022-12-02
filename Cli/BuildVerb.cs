@@ -42,7 +42,16 @@ internal class BuildVerb : BaseCommandVerb
             return;
         }
 
-        console.WriteLine(ConsoleColor.Green, "Success!");
+        if (host.IsVerified)
+        {
+            console.WriteLine(ConsoleColor.Green, "Success!");
+        }
+        else
+        {
+            console.Write(ConsoleColor.Green, "Success");
+            console.WriteLine(" without verification.");
+        }
+
         console.WriteLine($"{manifest.DisplayName} ({manifest.Id}) v{manifest.Version}");
         if (!string.IsNullOrWhiteSpace(manifest.PublisherName)) console.WriteLine(manifest.PublisherName);
         if (!string.IsNullOrWhiteSpace(manifest.Website)) console.WriteLine(ConsoleColor.Cyan, manifest.Website);

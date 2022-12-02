@@ -32,7 +32,7 @@ internal class BuildVerb : BaseCommandVerb
 
         console.Write("Build and package...");
         var package = LocalWebAppHost.Package(dir);
-        var host = await LocalWebAppHost.LoadAsync(package, false, cancellationToken);
+        var host = await LocalWebAppHost.LoadAsync(package, true, cancellationToken);
         console.BackspaceToBeginning();
         var manifest = host?.Manifest;
         if (string.IsNullOrWhiteSpace(manifest?.Id))

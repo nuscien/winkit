@@ -808,10 +808,12 @@ internal static class LocalWebAppExtensions
                 "SHA256" => TryHashFile(file, SHA256.Create()),
                 "SHA384" => TryHashFile(file, SHA384.Create()),
                 "SHA512" => TryHashFile(file, SHA512.Create()),
+#if NET6_0
                 "KECCAK224" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK224"))),
                 "KECCAK256" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK256"))),
                 "KECCAK384" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK384"))),
                 "KECCAK512" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK256"))),
+#endif
                 "MD5" => TryHashFile(file, MD5.Create()),
                 _ => null
             };
@@ -825,10 +827,12 @@ internal static class LocalWebAppExtensions
                 "SHA256" => HashUtility.ComputeHashString(SHA256.Create, bytes),
                 "SHA384" => HashUtility.ComputeHashString(SHA384.Create, bytes),
                 "SHA512" => HashUtility.ComputeHashString(SHA512.Create, bytes),
+#if NET6_0
                 "KECCAK224" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK224")), bytes),
                 "KECCAK256" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK256")), bytes),
                 "KECCAK384" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK384")), bytes),
-                "KECCAK512" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK512")), bytes),
+#endif
+                "KECCAK512" => HashUtility.ComputeSHA3512String(bytes),
                 "MD5" => HashUtility.ComputeHashString(MD5.Create, bytes),
                 _ => null
             };
@@ -842,10 +846,12 @@ internal static class LocalWebAppExtensions
                 "SHA256" => HashUtility.ComputeHashString(SHA256.Create, s),
                 "SHA384" => HashUtility.ComputeHashString(SHA384.Create, s),
                 "SHA512" => HashUtility.ComputeHashString(SHA512.Create, s),
+#if NET6_0
                 "KECCAK224" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK224")), s),
                 "KECCAK256" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK256")), s),
                 "KECCAK384" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK384")), s),
-                "KECCAK512" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK512")), s),
+#endif
+                "KECCAK512" => HashUtility.ComputeSHA3512String(s),
                 "MD5" => HashUtility.ComputeHashString(MD5.Create, s),
                 _ => null
             };

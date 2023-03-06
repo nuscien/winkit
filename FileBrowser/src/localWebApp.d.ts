@@ -31,7 +31,7 @@
     interface CommandHandlerContract {
 
         /**
-         * Gets the handler identifier.
+         * Gets the command handler identifier.
          */
         id(): string;
 
@@ -41,8 +41,9 @@
          * @param data The input data.
          * @param context The optional context data which will be returned in response for reference.
          * @param info The additional information.
+         * @param ref The additional reference object.
          */
-        call(cmd: string, data: any, context?: HandlerInfoContract | undefined | null, info?: HandlerInfoContract | undefined | null): void;
+        call(cmd: string, data: any, context?: HandlerInfoContract | undefined | null, info?: HandlerInfoContract | undefined | null, ref?: any): void;
 
         /**
          * Sends request to get result.
@@ -50,8 +51,9 @@
          * @param data The input data.
          * @param context The optional context data which will be returned in response for reference.
          * @param info The additional information.
+         * @param ref The additional reference object.
          */
-        request<T>(cmd: string, data: any, context?: HandlerInfoContract | undefined | null, info?: HandlerInfoContract | undefined | null): Promise<T>;
+        request<T>(cmd: string, data: any, context?: HandlerInfoContract | undefined | null, info?: HandlerInfoContract | undefined | null, ref?: any): Promise<T>;
     }
 
     interface HandlerResponseContract<T> {

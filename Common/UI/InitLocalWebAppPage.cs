@@ -119,7 +119,7 @@ window.localWebApp = {
       call(cmd, data, context, info, ref) {
         sendRequest(id, cmd, data, info, context, false, ref)
       },
-      request(cmd, data, context, info) {
+      request(cmd, data, context, info, ref) {
         return sendRequest(id, cmd, data, info, context, true, ref)
       }
     };

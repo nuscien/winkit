@@ -2,6 +2,11 @@
 
 This is a WinUI app to show about usage of `Trivial.WindowsKit` library.
 
+### Before build
+
+Please download the [Demo LWA package](https://github.com/nuscien/winkit/releases/download/v6.6/FileLwaDemo.zip) into `\FileBrowser\localwebapp` directory
+and rename it to `localwebapp.zip` before build this project.
+
 ### Data Source
 
 This demo uses following 3rd-party data sources.

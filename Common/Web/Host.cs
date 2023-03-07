@@ -45,7 +45,7 @@ public partial class LocalWebAppHost
 
         if (string.IsNullOrEmpty(appDomain)) appDomain = "privateapp";
         VirtualHost = options?.CustomizedVirtualHost ?? LocalWebAppSettings.VirtualHostGenerator?.Invoke(manifest, options);
-        if (string.IsNullOrWhiteSpace(VirtualHost)) VirtualHost = string.Concat(appDomain, '.', UI.LocalWebAppExtensions.VirtualRootDomain);
+        if (string.IsNullOrWhiteSpace(VirtualHost)) VirtualHost = string.Concat(appDomain, '.', LocalWebAppExtensions.VirtualRootDomain);
     }
 
     /// <summary>
@@ -743,7 +743,7 @@ public partial class LocalWebAppHost
 
         // Load manifest.
         var manifestFileName = options.ManifestFileName;
-        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
+        if (string.IsNullOrWhiteSpace(manifestFileName)) manifestFileName = LocalWebAppExtensions.DefaultManifestFileName;
         var file = appDir.EnumerateFiles(manifestFileName).FirstOrDefault();
         if (file == null || !file.Exists) throw new FileNotFoundException("The resource manifest is not found.");
         using var stream = file.OpenRead();
@@ -1000,7 +1000,7 @@ public partial class LocalWebAppHost
         if (output)
         {
             fileName = Options?.ManifestFileName?.Trim();
-            if (string.IsNullOrEmpty(fileName)) fileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
+            if (string.IsNullOrEmpty(fileName)) fileName = LocalWebAppExtensions.DefaultManifestFileName;
             fileName = GetSubFileName(fileName, "files");
         }
 
@@ -1020,7 +1020,7 @@ public partial class LocalWebAppHost
     public LocalWebAppFileCollection Sign(ISignatureProvider signatureProvider, out bool hasWritenFile)
     {
         var fileName = Options?.ManifestFileName?.Trim();
-        if (string.IsNullOrEmpty(fileName)) fileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
+        if (string.IsNullOrEmpty(fileName)) fileName = LocalWebAppExtensions.DefaultManifestFileName;
         fileName = GetSubFileName(fileName, "files");
         var col = Sign(ResourcePackageDirectory, signatureProvider, fileName, out hasWritenFile);
         if (col != null) IsVerified = true;
@@ -1076,7 +1076,7 @@ public partial class LocalWebAppHost
         {
             Files = new()
         };
-        var manifestPath = Path.Combine(dir.FullName, UI.LocalWebAppExtensions.DefaultManifestFileName);
+        var manifestPath = Path.Combine(dir.FullName, LocalWebAppExtensions.DefaultManifestFileName);
         var manifest = FileSystemInfoUtility.TryGetFileInfo(manifestPath);
         files.Insert(0, manifest);
         foreach (var file in files)
@@ -1229,7 +1229,7 @@ public partial class LocalWebAppHost
     public static LocalWebAppFileCollection Sign(DirectoryInfo dir, LocalWebAppOptions options, ISignatureProvider signatureProvider)
     {
         var fileName = options?.ManifestFileName;
-        if (string.IsNullOrWhiteSpace(fileName)) fileName = UI.LocalWebAppExtensions.DefaultManifestFileName;
+        if (string.IsNullOrWhiteSpace(fileName)) fileName = LocalWebAppExtensions.DefaultManifestFileName;
         fileName = GetSubFileName(fileName, "files");
         try
         {
@@ -1285,7 +1285,7 @@ public partial class LocalWebAppHost
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
         var config = LoadBuildConfig(dir, out _);
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
-        var keyFile = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
+        var keyFile = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
         if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
         return LoadOptions(config, keyFile);
     }
@@ -1299,7 +1299,7 @@ public partial class LocalWebAppHost
     /// <returns>The file output.</returns>
     public static FileInfo Package(DirectoryInfo dir, ISignatureProvider signatureProvider, string outputFileName = null)
     {
-        Sign(dir, signatureProvider, UI.LocalWebAppExtensions.DefaultManifestGeneratedFileName);
+        Sign(dir, signatureProvider, LocalWebAppExtensions.DefaultManifestGeneratedFileName);
         if (string.IsNullOrWhiteSpace(outputFileName))
             outputFileName = string.Concat(dir.FullName, ".zip");
         if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
@@ -2405,7 +2405,7 @@ public partial class LocalWebAppHost
 
     private static JsonObjectNode LoadBuildConfig(DirectoryInfo dir, out FileInfo file)
     {
-        file = dir.EnumerateFiles(GetSubFileName(UI.LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
+        file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
         if (file == null || !file.Exists) throw new FileNotFoundException("The config file does not exist.");
         return JsonObjectNode.TryParse(file);
     }

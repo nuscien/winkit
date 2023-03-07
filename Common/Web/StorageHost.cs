@@ -29,7 +29,6 @@ namespace Trivial.Web;
 /// </summary>
 public partial class LocalWebAppHost
 {
-
     /// <summary>
     /// Removes a specific resource package.
     /// </summary>

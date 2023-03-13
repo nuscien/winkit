@@ -302,7 +302,7 @@
      * Gets the command handler.
      * @param id The handler identifier.
      */
-    function getCommandHandler(id: string): CommandHandlerContract;
+    function getHandler(id: string): CommandHandlerContract;
 
     /**
      * Gets a value in the specific cookie item.

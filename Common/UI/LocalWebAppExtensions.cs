@@ -644,6 +644,7 @@ internal static class LocalWebAppExtensions
     {
         var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The path should not be null or empty.");
+        if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
         var info = new JsonObjectNode
         {
             { "path", path }
@@ -666,6 +667,7 @@ internal static class LocalWebAppExtensions
     {
         var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
         var dest = GetPath(request?.Data, "dest", host) ?? GetPath(request?.Data, "destination", host);
         var isToCopy = request.Data.TryGetBooleanValue("copy") ?? false;
         var isDir = request.Data.TryGetBooleanValue("dir") ?? false;
@@ -755,6 +757,7 @@ internal static class LocalWebAppExtensions
         var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
         var dest = GetPath(request?.Data, "dest", host) ?? GetPath(request?.Data, "destination", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
         if (string.IsNullOrWhiteSpace(dest)) return new("The destination path should not be null or empty.");
         if (!Directory.Exists(path)) return new("The source compressed directory does not exist.");
         if (request.Data.TryGetBooleanValue("override") == true && File.Exists(path)) File.Delete(path);
@@ -774,6 +777,7 @@ internal static class LocalWebAppExtensions
         var path = GetPath(request?.Data, "path", host) ?? GetPath(request?.Data, "source", host);
         var dest = GetPath(request?.Data, "dest", host) ?? GetPath(request?.Data, "destination", host);
         if (string.IsNullOrWhiteSpace(path)) return new("The source path should not be null or empty.");
+        if (!request.IsFullTrusted) return new("No permission. The domain is not trusted.");
         if (string.IsNullOrWhiteSpace(dest)) return new("The destination path should not be null or empty.");
         if (!File.Exists(path)) return new("The source compressed file does not exist.");
         Directory.CreateDirectory(dest);

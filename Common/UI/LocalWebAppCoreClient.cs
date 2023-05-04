@@ -4,114 +4,60 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Trivial.Collection;
 using Trivial.Data;
-using Trivial.Reflection;
 using Trivial.Text;
 using Trivial.Web;
-using Windows.Foundation;
 
 namespace Trivial.UI;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// The core browser client of local web app.
 /// </summary>
-public sealed partial class LocalWebAppPage
+public class LocalWebAppCoreClient
 {
     private LocalWebAppHost host;
     private readonly Dictionary<string, ILocalWebAppCommandHandler> proc = new();
     private readonly LocalWebAppBrowserMessageHandler messageHandler;
     private bool isDevEnv;
-    private Action continueHandler;
 
     /// <summary>
-    /// Occurs when the web view core processes failed.
+    /// Initializes a new instance of the LocalWebAppCoreClient class.
     /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2ProcessFailedEventArgs> CoreProcessFailed;
+    /// <param name="browser">The browser instance.</param>
+    public LocalWebAppCoreClient(WebView2 browser)
+    {
+        if (browser is null) return;
+        Browser = browser;
+        messageHandler = new(Browser);
+        _ = OnInitAsync();
+    }
 
-    /// <summary>
-    /// Occurs when the web view core has initialized.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2InitializedEventArgs> CoreWebView2Initialized;
-
-    /// <summary>
-    /// Occurs when the navigation is completed.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationCompletedEventArgs> NavigationCompleted;
-
-    /// <summary>
-    /// Occurs when the navigation is starting.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationStartingEventArgs> NavigationStarting;
-
-    /// <summary>
-    /// Occurs when the web message core has received.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2WebMessageReceivedEventArgs> WebMessageReceived;
-
-    /// <summary>
-    /// Occurs when the new window request sent.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
-
-    /// <summary>
-    /// Occurs when the webpage send request to close itself.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, object> WindowCloseRequested;
-
-    /// <summary>
-    /// Occurs when the downloading is starting.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2DownloadStartingEventArgs> DownloadStarting;
-
-    /// <summary>
-    /// Occurs when the downloading is starting.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2PermissionRequestedEventArgs> PermissionRequested;
-
-    /// <summary>
-    /// Occurs when the navigation of a frame in web page is created.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2FrameCreatedEventArgs> FrameCreated;
-
-    /// <summary>
-    /// Occurs when the navigation of a frame in web page is completed.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationCompletedEventArgs> FrameNavigationCompleted;
-
-    /// <summary>
-    /// Occurs when the navigation of a frame in web page is starting.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, CoreWebView2NavigationStartingEventArgs> FrameNavigationStarting;
-
-    /// <summary>
-    /// Occurs when the history has changed.
-    /// </summary>
-    public event TypedEventHandler<LocalWebAppPage, object> HistoryChanged;
-
-    /// <summary>
-    /// Occurs when fullscreen request sent including to enable and disable.
-    /// </summary>
-    public event DataEventHandler<bool> ContainsFullScreenElementChanged;
-
-    /// <summary>
-    /// Adds or removes an event occured on title changed.
-    /// </summary>
-    public event DataEventHandler<string> TitleChanged;
+    private async Task OnInitAsync()
+    {
+        await Browser.EnsureCoreWebView2Async();
+        Browser.WebMessageReceived += OnWebMessageReceived;
+        Browser.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
+    }
 
     /// <summary>
     /// Adds or removes an event occured on load failed.
     /// </summary>
     public event DataEventHandler<Exception> LoadFailed;
+
+    /// <summary>
+    /// Adds or removes an event occured on load succeeded.
+    /// </summary>
+    public event DataEventHandler<string> Loaded;
+
+    /// <summary>
+    /// Gets or sets the alert handler during load the package which is not trusted.
+    /// </summary>
+    public Action<Action> Alert { get; set; }
 
     /// <summary>
     /// Gets the identifier of the resource package.
@@ -200,16 +146,6 @@ public sealed partial class LocalWebAppPage
     public string NewVersionAvailable => host?.NewVersionAvailable;
 
     /// <summary>
-    /// Gets or sets a value indicating whether disable to create a default tabbed browser for new window request.
-    /// </summary>
-    public bool DisableNewWindowRequestHandling { get; set; }
-
-    /// <summary>
-    /// Gets or sets the handler occuring on the default browser window is created.
-    /// </summary>
-    public Action<TabbedWebViewWindow> OnWindowCreate { get; set; }
-
-    /// <summary>
     /// Gets the options.
     /// </summary>
     public LocalWebAppOptions Options => host?.Options;
@@ -225,43 +161,14 @@ public sealed partial class LocalWebAppPage
     public IBasicWindowStateController WindowController { get; set; }
 
     /// <summary>
-    /// Gets the a value indicating whether contains the full screen element.
+    /// Gets or sets the Tabbed web view window instance.
     /// </summary>
-    public bool ContainsFullScreenElement => Browser.CoreWebView2?.ContainsFullScreenElement ?? false;
+    public TabbedWebViewWindow TabbedWindow;
 
     /// <summary>
-    /// Gets a value indicating whether the browser can go back.
+    /// Gets the browser.
     /// </summary>
-    public bool CanGoBack => Browser.CanGoBack;
-
-    /// <summary>
-    /// Gets a value indicating whether the browser can go forward.
-    /// </summary>
-    public bool CanGoForward => Browser.CanGoForward;
-
-    /// <summary>
-    /// Goes back.
-    /// </summary>
-    public void GoBack()
-        => Browser.GoBack();
-
-    /// <summary>
-    /// Goes back.
-    /// </summary>
-    public void GoForward()
-        => Browser.GoForward();
-
-    /// <summary>
-    /// Goes back.
-    /// </summary>
-    public void ReloadPage()
-        => Browser.Reload();
-
-    /// <summary>
-    /// Gets absolute icon path of resource package.
-    /// </summary>
-    public string GetResourcePackageIconPath()
-        => host?.GetResourcePackageIconPath();
+    public WebView2 Browser { get; }
 
     /// <summary>
     /// Tests if the host loaded is the specific one.
@@ -316,10 +223,7 @@ public sealed partial class LocalWebAppPage
         }
 
         IsDevEnvironmentEnabled = true;
-        ShowTitle(host);
-        SetInfoViewContainerVisibility(true);
-        ProgressElement.IsActive = false;
-        continueHandler = () => _ = LoadAsync(host);
+        Alert?.Invoke(() => _ = LoadAsync(host));
     }
 
     /// <summary>
@@ -436,19 +340,13 @@ public sealed partial class LocalWebAppPage
     /// <param name="showInfo">true if show the information before loading; otherwise, false.</param>
     public async Task LoadAsync(LocalWebAppHost host, bool showInfo)
     {
-        //Browser.NavigateToString(@"<html><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" ><base target=""_blank"" /></head><body></body></html>");
-        SetInfoViewContainerVisibility(false);
         if (host == null)
         {
             OnLoadError(new ArgumentNullException(nameof(host)));
             return;
         }
 
-        SetBrowserVisibility(false);
         var dir = host.ResourcePackageDirectory;
-        InfoView.Model = host.Manifest;
-        var icon = host.GetResourcePackageIconPath();
-        if (!string.IsNullOrWhiteSpace(icon)) InfoView.Icon = icon;
         if (dir == null || !dir.Exists)
         {
             OnLoadError(new DirectoryNotFoundException("The app directory is not found."));
@@ -469,47 +367,33 @@ public sealed partial class LocalWebAppPage
 
         var homepage = host.Manifest.HomepagePath?.Trim();
         if (string.IsNullOrEmpty(homepage)) homepage = "index.html";
-        ProgressElement.IsActive = true;
         if (!host.IsVerified)
         {
-            ShowTitle(host);
-            NotificationBar.Title = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle) ? "Error" : LocalWebAppSettings.CustomizedLocaleStrings.ErrorTitle;
-            NotificationBar.Message = string.IsNullOrWhiteSpace(LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature) ? "Invalid file signatures." : LocalWebAppSettings.CustomizedLocaleStrings.InvalidFileSignature;
-            NotificationBar.Severity = InfoBarSeverity.Error;
-            NotificationBar.IsOpen = true;
-            ProgressElement.IsActive = false;
-            MonitorSingleton?.OnErrorNotification(this, NotificationBar, new SecurityException("Invalid file signatures."));
             if (!IsDevEnvironmentEnabled)
             {
-                SetInfoViewContainerVisibility(true);
+                OnLoad(homepage);
                 return;
             }
 
-            SetInfoViewContainerVisibility(true);
-            continueHandler = () =>
+            Alert?.Invoke(() =>
             {
-                ProgressElement.IsActive = true;
-                SetBrowserVisibility(true);
+                OnLoad(homepage);
                 NavigateHomepage(homepage);
-            };
+            });
             return;
         }
 
         if (showInfo)
         {
-            ShowTitle(host);
-            ProgressElement.IsActive = false;
-            SetInfoViewContainerVisibility(true);
-            continueHandler = () =>
+            Alert?.Invoke(() =>
             {
-                ProgressElement.IsActive = true;
-                SetBrowserVisibility(true);
+                OnLoad(homepage);
                 NavigateHomepage(homepage);
-            };
+            });
             return;
         }
 
-        SetBrowserVisibility(true);
+        OnLoad(homepage);
         NavigateHomepage(homepage);
     }
 
@@ -608,63 +492,6 @@ public sealed partial class LocalWebAppPage
     public bool RemoveCommandHandler(string id)
         => proc.Remove(id);
 
-    /// <summary>
-    /// Maps a folder as a virtual host name.
-    /// </summary>
-    /// <param name="hostName">The virtual host name.</param>
-    /// <param name="folderPath">The folder path to map.</param>
-    /// <param name="accessKind">The access kind.</param>
-    public void SetVirtualHostNameToFolderMapping(string hostName, string folderPath, CoreWebView2HostResourceAccessKind accessKind)
-        => Browser.CoreWebView2?.SetVirtualHostNameToFolderMapping(hostName, folderPath, accessKind);
-
-    /// <summary>
-    /// Clears the mapping of the specific virtual host name.
-    /// </summary>
-    /// <param name="hostName">The virtual host name.</param>
-    public void ClearVirtualHostNameToFolderMapping(string hostName)
-        => Browser.CoreWebView2?.ClearVirtualHostNameToFolderMapping(hostName);
-
-    /// <summary>
-    /// Prints to PDF format file.
-    /// </summary>
-    /// <param name="path">The output path of the PDF format file.</param>
-    /// <param name="printSettings">The print settings.</param>
-    /// <returns>true if print succeeded; otherwise, false.</returns>
-    public async Task<bool> PrintToPdfAsync(string path, CoreWebView2PrintSettings printSettings)
-    {
-        await Browser.EnsureCoreWebView2Async();
-        return await Browser.CoreWebView2.PrintToPdfAsync(path, printSettings);
-    }
-
-    /// <summary>
-    /// Opens the default download dialog.
-    /// </summary>
-    public void OpenDefaultDownloadDialog()
-        => Browser.CoreWebView2?.OpenDefaultDownloadDialog();
-
-    /// <summary>
-    /// Closes the default download dialog.
-    /// </summary>
-    public void CloseDefaultDownloadDialog()
-        => Browser.CoreWebView2?.CloseDefaultDownloadDialog();
-
-    /// <summary>
-    /// Gets the browser settings.
-    /// </summary>
-    /// <returns>The browser settings.</returns>
-    public async Task<CoreWebView2Settings> GetBrowserSettingsAsync()
-    {
-        await Browser.EnsureCoreWebView2Async();
-        return Browser.CoreWebView2.Settings;
-    }
-
-    private void ShowTitle(LocalWebAppHost host)
-    {
-        var title = host.Manifest?.DisplayName?.Trim();
-        if (string.IsNullOrEmpty(title)) return;
-        TitleChanged?.Invoke(this, new(host.Manifest?.DisplayName));
-    }
-
     private void NavigateHomepage(string homepage)
     {
         try
@@ -678,51 +505,18 @@ public sealed partial class LocalWebAppPage
         }
     }
 
-    private void OnDocumentTitleChanged(CoreWebView2 sender, object args)
-        => TitleChanged?.Invoke(this, new DataEventArgs<string>(sender.DocumentTitle));
-
     private void OnDownloadStarting(CoreWebView2 sender, CoreWebView2DownloadStartingEventArgs args)
     {
         DownloadList.Add(args.DownloadOperation);
-        DownloadStarting?.Invoke(this, args);
     }
-
-    private void OnPermissionRequested(CoreWebView2 sender, CoreWebView2PermissionRequestedEventArgs args)
-        => PermissionRequested?.Invoke(this, args);
-
-    private void OnContainsFullScreenElementChanged(CoreWebView2 sender, object args)
-        => ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<bool>(Browser.CoreWebView2.ContainsFullScreenElement));
 
     private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
     {
-        NewWindowRequested?.Invoke(this, args);
-        if (DisableNewWindowRequestHandling) return;
-        _ = OnNewWindowRequestedAsync(sender, args);
+        var window = TabbedWindow;
+        if (window is null) return;
+        _ = LocalWebAppPage.OnNewWindowRequestedAsync(args, window, OnWebViewTabInitialized, Browser.RequestedTheme);
+        window.Activate();
     }
-
-    private void OnWindowCloseRequested(CoreWebView2 sender, object args)
-        => WindowCloseRequested?.Invoke(this, args);
-
-    private void OnFrameCreated(CoreWebView2 sender, CoreWebView2FrameCreatedEventArgs args)
-        => FrameCreated?.Invoke(this, args);
-
-    private void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
-        => FrameNavigationStarting?.Invoke(this, args);
-
-    private void OnFrameNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
-        => FrameNavigationCompleted?.Invoke(this, args);
-
-    private void OnHistoryChanged(CoreWebView2 sender, object args)
-        => HistoryChanged?.Invoke(this, args);
-
-    private void OnNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
-    {
-        ProgressElement.IsActive = false;
-        NavigationCompleted?.Invoke(this, args);
-    }
-
-    private void OnNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
-        => NavigationStarting?.Invoke(this, args);
 
     private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
     {
@@ -747,7 +541,6 @@ public sealed partial class LocalWebAppPage
         }
 
         _ = OnWebMessageReceivedAsync(sender, json);
-        WebMessageReceived?.Invoke(this, args);
     }
 
     private async Task OnWebMessageReceivedAsync(WebView2 sender, JsonObjectNode json)
@@ -757,14 +550,20 @@ public sealed partial class LocalWebAppPage
         sender.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
-    private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)
-    {
-        ProgressElement.IsActive = false;
-        CoreProcessFailed?.Invoke(this, args);
-    }
-
     private void OnWebViewTabInitialized(CoreWebView2 webview)
     {
         webview.DownloadStarting += OnDownloadStarting;
+    }
+
+    private void OnLoad(string homepage)
+    {
+        LocalWebAppPage.AppendEnvironmentInfo(Browser, host, isDevEnv);
+        Loaded?.Invoke(this, new DataEventArgs<string>(homepage));
+    }
+
+    private void OnLoadError(Exception ex)
+    {
+        if (ex == null) return;
+        LoadFailed?.Invoke(this, new DataEventArgs<Exception>(ex));
     }
 }

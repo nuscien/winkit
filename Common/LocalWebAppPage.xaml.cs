@@ -26,6 +26,7 @@ using Trivial.Text;
 using Trivial.Web;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.WebUI;
 
 namespace Trivial.UI;
 
@@ -78,8 +79,7 @@ public sealed partial class LocalWebAppPage : Page
     /// <returns>The async task.</returns>
     public async Task LoadDevPackageAsync(Window window, CancellationToken cancellationToken = default)
     {
-        var dir = await VisualUtility.SelectFolderAsync(window);
-        if (dir == null) throw new InvalidOperationException("Requires a directory.", new OperationCanceledException("No directory selected."));
+        var dir = await VisualUtility.SelectFolderAsync(window) ?? throw new InvalidOperationException("Requires a directory.", new OperationCanceledException("No directory selected."));
         cancellationToken.ThrowIfCancellationRequested();
         await LoadDevPackageAsync(dir, cancellationToken);
     }
@@ -167,39 +167,32 @@ public sealed partial class LocalWebAppPage : Page
         TitleChanged?.Invoke(this, new DataEventArgs<string>(title));
     }
 
-    private async Task OnNewWindowRequestedAsync(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+    internal static async Task EnsureRun(WebView2 webview, Action<CoreWebView2> handler)
+    {
+        if (webview is null) return;
+        await webview.EnsureCoreWebView2Async();
+        handler?.Invoke(webview.CoreWebView2);
+    }
+
+    internal static async Task<bool> OnNewWindowRequestedAsync(CoreWebView2NewWindowRequestedEventArgs args, TabbedWebViewWindow window, Action<CoreWebView2> callback, ElementTheme theme)
     {
         var uri = VisualUtility.TryCreateUri(args.Uri);
-        if (uri == null) return;
+        if (uri == null) return false;
         args.Handled = true;
         var deferral = args.GetDeferral();
-        var window = tabbedWebViewWindowInstance;
-        if (tabbedWebViewWindowInstance == null)
-        {
-            window = new TabbedWebViewWindow
-            {
-                IsReadOnly = true,
-                DownloadList = DownloadList
-            };
-            OnWindowCreate?.Invoke(window);
-        }
-
+        if (window == null) return false;
         var webview = window.Add(uri);
         await webview.EnsureCoreWebView2Async();
         args.NewWindow = webview.CoreWebView2;
-        OnWebViewTabInitialized(webview.CoreWebView2);
+        callback?.Invoke(webview.CoreWebView2);
         deferral.Complete();
         window.TabView.WebViewTabCreated += (sender2, args2) =>
         {
-            _ = OnWebViewTabInitializedAsync(window, args2.WebView);
-        };
-        window.Closed += (sender2, args2) =>
-        {
-            tabbedWebViewWindowInstance = null;
+            _ = EnsureRun(args2.WebView?.WebView2, callback);
         };
         try
         {
-            window.TabView.RequestedTheme = Browser.RequestedTheme;
+            window.TabView.RequestedTheme = theme;
         }
         catch (ArgumentException)
         {
@@ -226,6 +219,30 @@ public sealed partial class LocalWebAppPage : Page
         {
         }
 
+        return true;
+    }
+
+    private async Task OnNewWindowRequestedAsync(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+    {
+        var uri = VisualUtility.TryCreateUri(args.Uri);
+        if (uri == null) return;
+        args.Handled = true;
+        var window = tabbedWebViewWindowInstance;
+        if (tabbedWebViewWindowInstance == null)
+        {
+            window = new TabbedWebViewWindow
+            {
+                IsReadOnly = true,
+                DownloadList = DownloadList
+            };
+            window.Closed += (sender2, args2) =>
+            {
+                tabbedWebViewWindowInstance = null;
+            };
+            OnWindowCreate?.Invoke(window);
+        }
+
+        await OnNewWindowRequestedAsync(args, window, OnWebViewTabInitialized, Browser.RequestedTheme);
         tabbedWebViewWindowInstance = window;
         window.Activate();
     }

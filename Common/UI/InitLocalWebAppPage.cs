@@ -27,23 +27,13 @@ namespace Trivial.UI;
 /// </summary>
 public sealed partial class LocalWebAppPage
 {
-    private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
+    internal static void AppendEnvironmentInfo(WebView2 sender, LocalWebAppHost host, bool dev = false)
     {
-        var settings = sender.CoreWebView2.Settings;
-        var isDebug = IsDevEnvironmentEnabled;
+        var settings = sender?.CoreWebView2?.Settings;
+        if (settings is null || host is null) return;
+        var isDebug = dev;
         settings.AreDevToolsEnabled = isDebug;
         settings.AreDefaultContextMenusEnabled = false;
-        sender.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;
-        sender.CoreWebView2.DownloadStarting += OnDownloadStarting;
-        sender.CoreWebView2.FrameCreated += OnFrameCreated;
-        sender.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
-        sender.CoreWebView2.FrameNavigationCompleted += OnFrameNavigationCompleted;
-        sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
-        sender.CoreWebView2.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged;
-        sender.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
-        sender.CoreWebView2.WindowCloseRequested += OnWindowCloseRequested;
-        sender.CoreWebView2.PermissionRequested += OnPermissionRequested;
-        CoreWebView2Initialized?.Invoke(this, args);
         var sb = new StringBuilder();
         sb.Append(@"(function () { if (window.localWebApp) return;
 let postMsg = window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function' ? function (data) { window.chrome.webview.postMessage(data); } : function (data) { };
@@ -284,6 +274,22 @@ window.localWebApp = {
         resourceReg.SetRange(host.DataStrings);
         sb.Append(resourceReg.ToString(IndentStyles.Compact));
         sb.AppendLine(" }; })();");
-        _ = Browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(sb.ToString());
+        _ = sender.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(sb.ToString());
+    }
+
+    private void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
+    {
+        sender.CoreWebView2.DocumentTitleChanged += OnDocumentTitleChanged;
+        sender.CoreWebView2.DownloadStarting += OnDownloadStarting;
+        sender.CoreWebView2.FrameCreated += OnFrameCreated;
+        sender.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
+        sender.CoreWebView2.FrameNavigationCompleted += OnFrameNavigationCompleted;
+        sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
+        sender.CoreWebView2.ContainsFullScreenElementChanged += OnContainsFullScreenElementChanged;
+        sender.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
+        sender.CoreWebView2.WindowCloseRequested += OnWindowCloseRequested;
+        sender.CoreWebView2.PermissionRequested += OnPermissionRequested;
+        CoreWebView2Initialized?.Invoke(this, args);
+        AppendEnvironmentInfo(sender, host, IsDevEnvironmentEnabled);
     }
 }

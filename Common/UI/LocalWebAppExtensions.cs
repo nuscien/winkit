@@ -833,9 +833,9 @@ internal static class LocalWebAppExtensions
                 "SHA512" => HashUtility.ComputeHashString(SHA512.Create, bytes),
 #if NET6_0
                 "KECCAK224" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK224")), bytes),
-                "KECCAK256" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK256")), bytes),
-                "KECCAK384" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK384")), bytes),
 #endif
+                "KECCAK256" => HashUtility.ComputeSHA3256String(bytes),
+                "KECCAK384" => HashUtility.ComputeSHA3384String(bytes),
                 "KECCAK512" => HashUtility.ComputeSHA3512String(bytes),
                 "MD5" => HashUtility.ComputeHashString(MD5.Create, bytes),
                 _ => null
@@ -852,9 +852,9 @@ internal static class LocalWebAppExtensions
                 "SHA512" => HashUtility.ComputeHashString(SHA512.Create, s),
 #if NET6_0
                 "KECCAK224" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK224")), s),
-                "KECCAK256" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK256")), s),
-                "KECCAK384" => HashUtility.ComputeHashString(HashUtility.Create(new HashAlgorithmName("KECCAK384")), s),
 #endif
+                "KECCAK256" => HashUtility.ComputeSHA3256String(s),
+                "KECCAK384" => HashUtility.ComputeSHA3384String(s),
                 "KECCAK512" => HashUtility.ComputeSHA3512String(s),
                 "MD5" => HashUtility.ComputeHashString(MD5.Create, s),
                 _ => null
@@ -1591,19 +1591,7 @@ internal static class LocalWebAppExtensions
     {
         try
         {
-            byte[] retVal;
-            using (var stream = file.OpenRead())
-            {
-                retVal = hash.ComputeHash(stream);
-            }
-
-            var sb = new StringBuilder();
-            for (int i = 0; i < retVal.Length; i++)
-            {
-                sb.Append(retVal[i].ToString("x2"));
-            }
-
-            return sb.ToString();
+            return HashUtility.ComputeHashString(hash, file);
         }
         catch (UnauthorizedAccessException)
         {

@@ -814,10 +814,10 @@ internal static class LocalWebAppExtensions
                 "SHA512" => TryHashFile(file, SHA512.Create()),
 #if NET6_0
                 "KECCAK224" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK224"))),
-                "KECCAK256" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK256"))),
-                "KECCAK384" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK384"))),
-                "KECCAK512" => TryHashFile(file, HashUtility.Create(new HashAlgorithmName("KECCAK256"))),
 #endif
+                "KECCAK256" => TryHashFile(file, HashUtility.ComputeSHA3256String),
+                "KECCAK384" => TryHashFile(file, HashUtility.ComputeSHA3384String),
+                "KECCAK512" => TryHashFile(file, HashUtility.ComputeSHA3512String),
                 "MD5" => TryHashFile(file, MD5.Create()),
                 _ => null
             };
@@ -1593,6 +1593,9 @@ internal static class LocalWebAppExtensions
         {
             return HashUtility.ComputeHashString(hash, file);
         }
+        catch (ArgumentException)
+        {
+        }
         catch (UnauthorizedAccessException)
         {
         }
@@ -1603,6 +1606,43 @@ internal static class LocalWebAppExtensions
         {
         }
         catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the hash value of a file.
+    /// </summary>
+    /// <param name="file">The file to hash.</param>
+    /// <param name="hash">The hash algorithm.</param>
+    /// <returns>The hash value.</returns>
+    private static string TryHashFile(FileInfo file, Func<FileInfo, string> hash)
+    {
+        try
+        {
+            return hash(file);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
         {
         }
 

@@ -561,6 +561,12 @@ internal class TextViewModel : ObservableProperties
         internal set => SetCurrentProperty(value);
     }
 
+    public Visibility Visibility
+    {
+        get => GetCurrentProperty<Visibility>();
+        internal set => SetCurrentProperty(value);
+    }
+
     /// <summary>
     /// Gets the text highlighters.
     /// </summary>

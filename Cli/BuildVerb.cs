@@ -12,6 +12,7 @@ namespace Trivial.Web;
 
 internal class BuildVerb : BaseCommandVerb
 {
+    /// <inheritdoc />
     protected override async Task OnProcessAsync(CancellationToken cancellationToken = default)
     {
         var console = GetConsole();

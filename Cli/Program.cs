@@ -15,6 +15,7 @@ class Program
         var dispatcher = new CommandDispatcher();
         dispatcher.Register<BuildVerb>("build");
         dispatcher.Register<InitVerb>("init");
+        dispatcher.Register<VersionVerb>("version");
         return dispatcher.ProcessAsync();
     }
 }

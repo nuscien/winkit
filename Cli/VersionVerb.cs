@@ -146,6 +146,13 @@ internal class VersionVerb : BaseCommandVerb
             build = build[..dash];
         }
 
+        var suffix = Arguments.GetFirst("suffix")?.TryGet(0);
+        if (Arguments.Has("suffix"))
+        {
+            if (string.IsNullOrEmpty(suffix)) rest = string.Empty;
+            else rest = suffix.StartsWith('+') || suffix.StartsWith('-') || suffix.StartsWith('_') || suffix.StartsWith('.') ? suffix : string.Concat('-', suffix);
+        }
+
         if (!int.TryParse(build, out var b))
         {
             console.Write(ConsoleColor.Red, "Error!");
@@ -208,6 +215,7 @@ internal class VersionVerb : BaseCommandVerb
 
         json = buildJson;
         int b = 0;
+        var oldVer = version;
         if (!string.IsNullOrEmpty(newVersion))
         {
             version = newVersion;
@@ -235,6 +243,10 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         json.SetValue("number", b);
+        json.SetValue("previousVerson", json.TryGetStringTrimmedValue("version"));
+        json.SetValue("oldVersion", oldVer);
+        json.SetValue("version", version);
+        json.SetValue("update", DateTime.Now);
         build = b;
         config.WriteTo(file.FullName, IndentStyles.Compact);
         return version;

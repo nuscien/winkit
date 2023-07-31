@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,7 @@ internal class VersionVerb : BaseCommandVerb
         var console = GetConsole();
         if (string.IsNullOrEmpty(Arguments.Verb?.Value))
         {
-            console.Write(ConsoleColor.Red, "Error!");
-            console.WriteLine(" Please type the directory path.");
+            console.WriteLine(Assembly.GetExecutingAssembly().GetName().Version?.ToString());
             return;
         }
 
@@ -60,9 +60,25 @@ internal class VersionVerb : BaseCommandVerb
             return;
         }
 
-        console.WriteLine(id);
+        var title = packageConfig?.TryGetStringTrimmedValue("title", true);
+        if (title != null && title != id) console.WriteLine($"{title} ({id})");
+        else console.WriteLine(ConsoleColor.Magenta, id);
         var newVersion = Arguments.GetFirst("set")?.TryGet(0)?.Trim();
-        if (!string.IsNullOrEmpty(newVersion))
+        var minVer = config?.TryGetObjectValue("ref")?.TryGetInt32Value("minBuildNumber") ?? 0;
+        if (string.IsNullOrEmpty(newVersion))
+        {
+            if (Arguments.Has("set") && Arguments.Has("file"))
+            {
+                newVersion = SetVersion(id, version, dir, null, minVer, out _);
+                console.WriteLine(string.Concat(version ?? "?", " -> ", newVersion));
+                Update(id, newVersion, nodePackage, nodePackageFile, config, configFile);
+            }
+            else
+            {
+                console.WriteLine(version ?? "0.0.1");
+            }
+        }
+        else
         {
             switch (newVersion.ToLowerInvariant())
             {
@@ -70,14 +86,10 @@ internal class VersionVerb : BaseCommandVerb
                 case "increase":
                 case "increasement":
                     newVersion = SetVersion(version ?? "0.0.0", null);
+                    SetVersion(id, version, dir, newVersion, minVer, out _);
                     break;
                 case "file":
-                    newVersion = Arguments.GetMergedValue("set")[5..];
-                    newVersion = SetVersion(id, version, dir, newVersion.Length > 5 ? newVersion : "./localwebapp/localwebapp.cache.json", config?.TryGetObjectValue("ref")?.TryGetInt32Value("minBuildNumber") ?? 0, out _);
-                    break;
-                case "cache":
-                    newVersion = Arguments.GetMergedValue("set")[6..];
-                    newVersion = SetVersion(id, version, dir, newVersion.Length > 6 ? newVersion : "./localwebapp/localwebapp.cache.json", config?.TryGetObjectValue("ref")?.TryGetInt32Value("minBuildNumber") ?? 0, out _);
+                    newVersion = SetVersion(id, version, dir, null, minVer, out _);
                     break;
                 default:
                     if (!newVersion.Contains('.'))
@@ -87,6 +99,7 @@ internal class VersionVerb : BaseCommandVerb
                         return;
                     }
 
+                    SetVersion(id, version, dir, newVersion, minVer, out _);
                     break;
             }
 
@@ -94,15 +107,12 @@ internal class VersionVerb : BaseCommandVerb
             {
                 console.Write(ConsoleColor.Red, "Error!");
                 console.WriteLine(" The new version is invalid.");
+                if (version != null) console.WriteLine(version);
                 return;
             }
 
             console.WriteLine(string.Concat(version ?? "?", " -> ", newVersion));
             Update(id, newVersion, nodePackage, nodePackageFile, config, configFile);
-        }
-        else
-        {
-            console.WriteLine(version ?? "0.0.1");
         }
     }
 
@@ -152,12 +162,22 @@ internal class VersionVerb : BaseCommandVerb
         return string.Join('.', split);
     }
 
-    private string SetVersion(string id, string version, DirectoryInfo root, string path, int minBuildNumber, out int build)
+    private string SetVersion(string id, string version, DirectoryInfo root, string newVersion, int minBuildNumber, out int build)
     {
+        var console = GetConsole();
+        var path = Arguments.GetFirst("file")?.Value;
+        if (string.IsNullOrEmpty(path))
+        {
+            build = -1;
+            return null;
+        }
+
         var file = LocalWebAppHost.GetFileInfoByRelative(root, path);
         var json = file.Length > 0 ? JsonObjectNode.TryParse(file) : new();
         if (json == null)
         {
+            console.Write(ConsoleColor.Red, "Error!");
+            console.WriteLine(" The cache file is invalid.");
             build = -1;
             return null;
         }
@@ -187,7 +207,17 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         json = buildJson;
-        if (json.TryGetInt32Value("number", out var b))
+        int b = 0;
+        if (!string.IsNullOrEmpty(newVersion))
+        {
+            version = newVersion;
+            SetVersion(version, oldVersion =>
+            {
+                b = oldVersion;
+                return b;
+            });
+        }
+        else if (json.TryGetInt32Value("number", out b))
         {
             b++;
             if (b < minBuildNumber) b = minBuildNumber;

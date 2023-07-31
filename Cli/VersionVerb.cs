@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -32,12 +33,12 @@ internal class VersionVerb : BaseCommandVerb
             return;
         }
 
-        await RunAsync();
-        var config = LocalWebAppHost.LoadBuildConfig(dir, out var configFile);
+        await RunAsync(null, cancellationToken);
+        var config = LocalWebAppHost.TryLoadBuildConfig(dir, out var configFile);
         if (config == null)
         {
             var dir2 = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
-            if (dir2 != null) config = LocalWebAppHost.LoadBuildConfig(dir2, out configFile);
+            if (dir2 != null) config = LocalWebAppHost.TryLoadBuildConfig(dir2, out configFile);
         }
 
         var packageConfig = GetManifest(config);
@@ -51,7 +52,7 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         var id = config?.TryGetStringTrimmedValue("id", true) ?? packageConfig?.TryGetStringTrimmedValue("id", true) ?? nodePackage?.TryGetStringTrimmedValue("name", true);
-        var version = packageConfig?.TryGetStringTrimmedValue("version", true) ?? config.TryGetStringTrimmedValue("version", true);
+        var version = packageConfig?.TryGetStringTrimmedValue("version", true) ?? nodePackage.TryGetStringTrimmedValue("version", true);
         if (id == null)
         {
             console.Write(ConsoleColor.Red, "Error!");
@@ -60,14 +61,19 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         console.WriteLine(id);
-        var newVersion = Arguments.GetFirst("set")?.Value?.Trim();
+        var newVersion = Arguments.GetFirst("set")?.TryGet(0)?.Trim();
         if (!string.IsNullOrEmpty(newVersion))
         {
-            version ??= "0.0.0";
             switch (newVersion.ToLowerInvariant())
             {
+                case "++":
                 case "increase":
-                    newVersion = Increase(version);
+                case "increasement":
+                    newVersion = SetVersion(version ?? "0.0.0", null);
+                    break;
+                case "file":
+                    newVersion = Arguments.GetMergedValue("set")[5..];
+                    newVersion = SetVersion(id, version, dir, newVersion.Length > 5 ? newVersion : "./localwebapp/localwebapp.cache.json", out _);
                     break;
                 default:
                     if (!newVersion.Contains('.'))
@@ -87,7 +93,7 @@ internal class VersionVerb : BaseCommandVerb
                 return;
             }
 
-            console.WriteLine(string.Concat(version, " -> ", newVersion));
+            console.WriteLine(string.Concat(version ?? "?", " -> ", newVersion));
             Update(id, newVersion, nodePackage, nodePackageFile, config, configFile);
         }
         else
@@ -96,7 +102,7 @@ internal class VersionVerb : BaseCommandVerb
         }
     }
 
-    private string Increase(string version)
+    private string SetVersion(string version, Func<int, int> update)
     {
         var console = GetConsole();
         var split = version.Split('.');
@@ -133,10 +139,69 @@ internal class VersionVerb : BaseCommandVerb
             return null;
         }
 
-        b++;
+        if (update != null)
+            b = update(b);
+        else
+            b++;
         build = string.Concat(b, rest);
         split[2] = build;
         return string.Join('.', split);
+    }
+
+    private string SetVersion(string id, string version, DirectoryInfo root, string path, out int build)
+    {
+        var file = LocalWebAppHost.GetFileInfoByRelative(root, path);
+        var json = file.Length > 0 ? JsonObjectNode.TryParse(file) : new();
+        if (json == null)
+        {
+            build = -1;
+            return null;
+        }
+
+        if (json.Count == 0) json.SetValue("localwebapps", new JsonArrayNode());
+        var config = json;
+        var arr = json.TryGetArrayValue("localwebapps");
+        if (arr != null)
+        {
+            json = arr.OfType<JsonObjectNode>().FirstOrDefault(ele => ele.TryGetStringTrimmedValue("id") == id);
+            if (json == null)
+            {
+                json = new()
+                {
+                    { "id", id }
+                };
+                arr.Add(json);
+            }
+        }
+
+        var buildJson = json.TryGetObjectValue("build");
+        if (buildJson == null)
+        {
+            buildJson = new();
+            json.SetValue("build", buildJson);
+        }
+
+        json = buildJson;
+        if (json.TryGetInt32Value("number", out var b))
+        {
+            b++;
+            if (b < 0) b = 0;
+            version = SetVersion(version, oldVersion => b);
+        }
+        else
+        {
+            b = -1;
+            version = SetVersion(version, oldVersion =>
+            {
+                b = oldVersion + 1;
+                return b;
+            });
+        }
+
+        json.SetValue("number", b);
+        build = b;
+        config.WriteTo(file.FullName, IndentStyles.Compact);
+        return version;
     }
 
     private static void Update(string id, string version, JsonObjectNode nodePackage, FileInfo nodePackageFile, JsonObjectNode config, FileInfo configFile)
@@ -145,9 +210,9 @@ internal class VersionVerb : BaseCommandVerb
         if (nodePackage != null && nodePackage.TryGetStringTrimmedValue("name") == id)
         {
             nodePackage.SetValue("version", version);
-            if (config != null && config.ContainsKey("version"))
+            if (packageConfig != null && packageConfig.ContainsKey("version"))
             {
-                config.Remove("version");
+                packageConfig.Remove("version");
                 config.WriteTo(configFile.FullName, IndentStyles.Compact);
             }
 

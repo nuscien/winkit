@@ -1326,16 +1326,7 @@ public partial class LocalWebAppHost
     {
         // Load options.
         if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The root directory is not found.");
-        JsonObjectNode config = null;
-        FileInfo configFile = null;
-        try
-        {
-            config = LoadBuildConfig(dir, out configFile);
-        }
-        catch (IOException)
-        {
-        }
-
+        var config = TryLoadBuildConfig(dir, out var configFile);
         var rootDir = dir;
         if (config == null)
         {
@@ -1468,13 +1459,6 @@ public partial class LocalWebAppHost
         var updateMeta = refConfig.TryGetObjectValue("updateMeta");
         if (updateMeta != null)
         {
-            var updateMetaSourceFile = GetFileInfoByRelative(dir, updateMeta.TryGetStringTrimmedValue("sourcePath"));
-            if (updateMetaSourceFile != null && updateMetaSourceFile.Exists)
-            {
-                var updateMetaFilePath = GetFilePathByRelative(dir, updateMeta.TryGetStringTrimmedValue("path"));
-                updateMetaSourceFile.CopyTo(updateMetaFilePath, true);
-            }
-
             var updateMetaFile = GetFileInfoByRelative(dir, updateMeta.TryGetStringTrimmedValue("path"));
             if (updateMetaFile != null && updateMetaFile.Exists)
             {
@@ -1552,6 +1536,12 @@ public partial class LocalWebAppHost
                 try
                 {
                     File.WriteAllText(updateMetaFile.FullName, umJson.ToString(IndentStyles.Compact));
+                    var updateMetaBackupRelaPath = updateMeta.TryGetStringTrimmedValue("backupPath", true);
+                    if (updateMetaBackupRelaPath != null)
+                    {
+                        var updateMetaBackupPath = GetFilePathByRelative(dir, updateMetaBackupRelaPath);
+                        if (updateMetaBackupPath != null) updateMetaFile.CopyTo(updateMetaBackupPath, true);
+                    }
                 }
                 catch (IOException)
                 {
@@ -1949,11 +1939,17 @@ public partial class LocalWebAppHost
         return Path.Combine(path, relative);
     }
 
-    internal static JsonObjectNode LoadBuildConfig(DirectoryInfo dir, out FileInfo file)
+    internal static JsonObjectNode TryLoadBuildConfig(DirectoryInfo dir, out FileInfo file)
     {
         file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
-        if (file == null || !file.Exists) throw new FileNotFoundException("The config file does not exist.");
+        if (file == null || !file.Exists) return null;
         return JsonObjectNode.TryParse(file);
+    }
+
+    internal static JsonObjectNode LoadBuildConfig(DirectoryInfo dir, out FileInfo file)
+    {
+        var json = TryLoadBuildConfig(dir, out file) ?? throw new FileNotFoundException("The config file does not exist.");
+        return json;
     }
 
     /// <summary>

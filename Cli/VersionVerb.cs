@@ -73,7 +73,11 @@ internal class VersionVerb : BaseCommandVerb
                     break;
                 case "file":
                     newVersion = Arguments.GetMergedValue("set")[5..];
-                    newVersion = SetVersion(id, version, dir, newVersion.Length > 5 ? newVersion : "./localwebapp/localwebapp.cache.json", out _);
+                    newVersion = SetVersion(id, version, dir, newVersion.Length > 5 ? newVersion : "./localwebapp/localwebapp.cache.json", config?.TryGetObjectValue("ref")?.TryGetInt32Value("minBuildNumber") ?? 0, out _);
+                    break;
+                case "cache":
+                    newVersion = Arguments.GetMergedValue("set")[6..];
+                    newVersion = SetVersion(id, version, dir, newVersion.Length > 6 ? newVersion : "./localwebapp/localwebapp.cache.json", config?.TryGetObjectValue("ref")?.TryGetInt32Value("minBuildNumber") ?? 0, out _);
                     break;
                 default:
                     if (!newVersion.Contains('.'))
@@ -148,7 +152,7 @@ internal class VersionVerb : BaseCommandVerb
         return string.Join('.', split);
     }
 
-    private string SetVersion(string id, string version, DirectoryInfo root, string path, out int build)
+    private string SetVersion(string id, string version, DirectoryInfo root, string path, int minBuildNumber, out int build)
     {
         var file = LocalWebAppHost.GetFileInfoByRelative(root, path);
         var json = file.Length > 0 ? JsonObjectNode.TryParse(file) : new();
@@ -158,6 +162,7 @@ internal class VersionVerb : BaseCommandVerb
             return null;
         }
 
+        if (minBuildNumber < 0) minBuildNumber = 0;
         if (json.Count == 0) json.SetValue("localwebapps", new JsonArrayNode());
         var config = json;
         var arr = json.TryGetArrayValue("localwebapps");
@@ -185,7 +190,7 @@ internal class VersionVerb : BaseCommandVerb
         if (json.TryGetInt32Value("number", out var b))
         {
             b++;
-            if (b < 0) b = 0;
+            if (b < minBuildNumber) b = minBuildNumber;
             version = SetVersion(version, oldVersion => b);
         }
         else
@@ -194,6 +199,7 @@ internal class VersionVerb : BaseCommandVerb
             version = SetVersion(version, oldVersion =>
             {
                 b = oldVersion + 1;
+                if (b < minBuildNumber) b = minBuildNumber;
                 return b;
             });
         }

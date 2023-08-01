@@ -1460,6 +1460,15 @@ public partial class LocalWebAppHost
         if (updateMeta != null)
         {
             var updateMetaFile = GetFileInfoByRelative(dir, updateMeta.TryGetStringTrimmedValue("path"));
+            var updateMetaBackupPath = GetFilePathByRelative(dir, updateMeta.TryGetStringTrimmedValue("backupPath", true));
+            if ((updateMetaFile == null || !updateMetaFile.Exists) && !string.IsNullOrEmpty(updateMetaBackupPath) && File.Exists(updateMetaBackupPath))
+            {
+                var updateMetaPath = GetFilePathByRelative(dir, updateMeta.TryGetStringTrimmedValue("path"));
+                if (!string.IsNullOrEmpty(updateMetaPath)) File.Copy(updateMetaBackupPath, updateMetaPath, true);
+                updateMetaFile = GetFileInfoByRelative(dir, updateMeta.TryGetStringTrimmedValue("path"));
+                updateMetaFile.Refresh();
+            }
+
             if (updateMetaFile != null && updateMetaFile.Exists)
             {
                 var umJson = JsonObjectNode.TryParse(updateMetaFile) ?? new();
@@ -1536,12 +1545,7 @@ public partial class LocalWebAppHost
                 try
                 {
                     File.WriteAllText(updateMetaFile.FullName, umJson.ToString(IndentStyles.Compact));
-                    var updateMetaBackupRelaPath = updateMeta.TryGetStringTrimmedValue("backupPath", true);
-                    if (updateMetaBackupRelaPath != null)
-                    {
-                        var updateMetaBackupPath = GetFilePathByRelative(dir, updateMetaBackupRelaPath);
-                        if (updateMetaBackupPath != null) updateMetaFile.CopyTo(updateMetaBackupPath, true);
-                    }
+                    if (!string.IsNullOrEmpty(updateMetaBackupPath)) updateMetaFile.CopyTo(updateMetaBackupPath, true);
                 }
                 catch (IOException)
                 {

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Trivial.CommandLine;
 using Trivial.IO;
@@ -248,7 +252,7 @@ internal class VersionVerb : BaseCommandVerb
         json.SetValue("version", version);
         json.SetValue("update", DateTime.Now);
         build = b;
-        config.WriteTo(file.FullName, IndentStyles.Compact);
+        WriteFile(config, file);
         return version;
     }
 
@@ -261,18 +265,60 @@ internal class VersionVerb : BaseCommandVerb
             if (packageConfig != null && packageConfig.ContainsKey("version"))
             {
                 packageConfig.Remove("version");
-                config.WriteTo(configFile.FullName, IndentStyles.Compact);
+                WriteFile(config, configFile);
             }
 
-            nodePackage.WriteTo(nodePackageFile.FullName, IndentStyles.Compact);
+            WriteFile(nodePackage, nodePackageFile);
             return;
         }
 
         if (packageConfig == null) return;
         packageConfig.SetValue("version", version);
-        config.WriteTo(configFile.FullName, IndentStyles.Compact);
+        WriteFile(config, configFile);
     }
 
     private static JsonObjectNode GetManifest(JsonObjectNode config)
         => config?.TryGetObjectValue("package") ?? config?.TryGetObjectValue("manifest");
+
+    private static bool WriteFile(JsonObjectNode json, FileInfo file)
+    {
+        try
+        {
+            File.WriteAllText(file.FullName, json.ToString(IndentStyles.Compact) ?? "null");
+            file.Refresh();
+            return true;
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (JsonException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (ApplicationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return false;
+    }
 }

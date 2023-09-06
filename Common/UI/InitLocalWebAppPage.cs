@@ -115,10 +115,10 @@ window.localWebApp = {
         return id;
       },
       call(cmd, data, context, info, ref) {
-        sendRequest(id, cmd, data, info, context, false, ref)
+        sendRequest(id, cmd, data, info, context, false, ref);
       },
       request(cmd, data, context, info, ref) {
-        return sendRequest(id, cmd, data, info, context, true, ref)
+        return sendRequest(id, cmd, data, info, context, true, ref);
       },
       onMessage(type, callback) {
         if (!callback) return;
@@ -129,7 +129,7 @@ window.localWebApp = {
         hs.push(item); return {
           dispose() { removeMessageHandler(item); }
         };
-      },
+      }
     };
   },
   getCookie: function (key) {

@@ -130,7 +130,7 @@ internal static class LocalWebAppExtensions
             else if (string.IsNullOrEmpty(req.MessageHandlerId))
                 resp = await OnLocalWebAppMessageRequestAsync(req, host, handlers, window, browserHandler);
             else if (handlers.TryGetValue(req.MessageHandlerId, out var h) && h != null)
-                resp = await h.Process(req, host?.Manifest);
+                resp = await h.Process(req, new LocalWebAppCommandHandlerContext(host, window, browserHandler));
             else
                 resp = new LocalWebAppResponseMessage(string.Concat("Not supported for this handler. ", req.MessageHandlerId));
         }
@@ -373,7 +373,8 @@ internal static class LocalWebAppExtensions
             var readBoolean2 = request.Data.TryGetBooleanValue("read");
             if (string.IsNullOrEmpty(readMethod2) || readMethod2 == "none" || readBoolean2 == false) return new("The path is not valid.");
             using var http = LocalWebAppSettings.CreateHttpClient();
-            using var httpContent = (await http.GetAsync(path))?.Content;
+            var httpResponse = await http.GetAsync(path);
+            using var httpContent = httpResponse?.Content;
             var httpInfo = new JsonObjectNode()
             {
                 { "type", "url" },
@@ -389,6 +390,8 @@ internal static class LocalWebAppExtensions
             if (httpContent == null) return httpResp;
             var httpLen = httpContent.Headers?.ContentLength;
             if (httpLen.HasValue) httpInfo.SetValue("length", httpLen.Value);
+            httpResp.Data.SetValue("source", path.StartsWith("http//") ? "http" : "https");
+            httpResp.Data.SetValue("status", (int)httpResponse.StatusCode);
             if (readMethod2 == "base64")
             {
                 var httpBytes = await httpContent.ReadAsByteArrayAsync();
@@ -460,6 +463,7 @@ internal static class LocalWebAppExtensions
             if (dir == null || !dir.Exists) return new("Not found.");
             var resp2 = new LocalWebAppResponseMessage(new JsonObjectNode()
                 {
+                    { "source", "dir" },
                     { "info", ToJson(dir) },
                     { "valueType", "dir" }
                 }, new()
@@ -497,6 +501,7 @@ internal static class LocalWebAppExtensions
         if (file == null || !file.Exists) return new("Not found.");
         var resp = new LocalWebAppResponseMessage(new JsonObjectNode()
             {
+                { "source", "file" },
                 { "info", ToJson(file) }
             }, new()
             {

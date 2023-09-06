@@ -248,7 +248,7 @@ public sealed partial class LocalWebAppPage : Page
     }
 
     private void OnActualThemeChanged(FrameworkElement sender, object args)
-        => Notify("themeChanged", new(messageHandler?.GetTheme(), "system"));
+        => Notify(null as string, "themeChanged", new(messageHandler?.GetTheme()));
 
     private void OnCloseInfoButton(object sender, RoutedEventArgs e)
     {

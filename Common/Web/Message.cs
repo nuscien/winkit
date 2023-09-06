@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Trivial.Collection;
@@ -136,12 +139,10 @@ public class LocalWebAppNotificationMessage
     /// Initializes a new instance of the LocalWebAppNotificationMessage class.
     /// </summary>
     /// <param name="data">The data.</param>
-    /// <param name="source">The data provider source.</param>
     /// <param name="info">The additional information.</param>
-    public LocalWebAppNotificationMessage(JsonObjectNode data, string source, JsonObjectNode info = null)
+    public LocalWebAppNotificationMessage(JsonObjectNode data, JsonObjectNode info = null)
     {
         Data = data;
-        Source = source;
         AdditionalInfo = info;
     }
 
@@ -150,10 +151,9 @@ public class LocalWebAppNotificationMessage
     /// </summary>
     /// <param name="message">The error message.</param>
     /// <param name="data">The data.</param>
-    /// <param name="source">The data provider source.</param>
     /// <param name="info">The additional information.</param>
-    public LocalWebAppNotificationMessage(string message, JsonObjectNode data, string source, JsonObjectNode info = null)
-        : this(data, source, info)
+    public LocalWebAppNotificationMessage(string message, JsonObjectNode data, JsonObjectNode info = null)
+        : this(data, info)
     {
         Message = message;
     }
@@ -172,11 +172,58 @@ public class LocalWebAppNotificationMessage
     /// Gets or sets the state message.
     /// </summary>
     public string Message { get; set; }
+}
+
+/// <summary>
+/// The context of local web app command handler.
+/// </summary>
+public class LocalWebAppCommandHandlerContext
+{
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppCommandHandlerContext class.
+    /// </summary>
+    /// <param name="host">The host.</param>
+    /// <param name="window">The window state controller.</param>
+    /// <param name="browserHandler">The browser handler.</param>
+    public LocalWebAppCommandHandlerContext(LocalWebAppHost host, IBasicWindowStateController window, ILocalWebAppBrowserMessageHandler browserHandler)
+    {
+        Manifest = host.Manifest;
+        WindowStateController = window;
+        BrowserHandler = browserHandler;
+        DataDirectory = host.DataDirectory;
+        DataResources = host.DataResources;
+        DataStrings = host.DataStrings;
+    }
 
     /// <summary>
-    /// Gets or sets the data provider source.
+    /// Gets the manifest.
     /// </summary>
-    public string Source { get; set; }
+    public LocalWebAppManifest Manifest { get; }
+
+    /// <summary>
+    /// Gets the window state controller.
+    /// </summary>
+    public IBasicWindowStateController WindowStateController { get; }
+
+    /// <summary>
+    /// Gets the browser handler.
+    /// </summary>
+    public ILocalWebAppBrowserMessageHandler BrowserHandler { get; }
+
+    /// <summary>
+    /// Gets the data directory.
+    /// </summary>
+    public DirectoryInfo DataDirectory { get; }
+
+    /// <summary>
+    /// Gets the data resources.
+    /// </summary>
+    public JsonObjectNode DataResources { get; }
+
+    /// <summary>
+    /// Gets the data strings.
+    /// </summary>
+    public IDictionary<string, string> DataStrings { get; }
 }
 
 /// <summary>
@@ -185,20 +232,65 @@ public class LocalWebAppNotificationMessage
 public interface ILocalWebAppCommandHandler
 {
     /// <summary>
-    /// Gets or sets the description of the command handler.
+    /// Gets the identifier.
     /// </summary>
-    public string Description { get; set; }
+    string Id { get; }
 
     /// <summary>
-    /// Gets or sets the version of the command handler.
+    /// Gets or sets the description of the command handler.
     /// </summary>
-    public string Version { get; set; }
+    string Description { get; }
+
+    /// <summary>
+    /// Gets the version of the command handler.
+    /// </summary>
+    string Version { get; }
 
     /// <summary>
     /// Processes.
     /// </summary>
     /// <param name="request">The request message.</param>
-    /// <param name="manifest">The manifest of the local web app.</param>
+    /// <param name="args">The manifest of the local web app.</param>
     /// <returns>The response message.</returns>
-    public Task<LocalWebAppResponseMessage> Process(LocalWebAppRequestMessage request, LocalWebAppManifest manifest);
+    public Task<LocalWebAppResponseMessage> Process(LocalWebAppRequestMessage request, LocalWebAppCommandHandlerContext args);
+}
+
+/// <summary>
+/// The command handler for local standalone web app.
+/// </summary>
+public abstract class BaseLocalWebAppCommandHandler : ILocalWebAppCommandHandler
+{
+    /// <summary>
+    /// Initializes a new instance of the BaseLocalWebAppCommandHandler class.
+    /// </summary>
+    /// <param name="id">The handler identifer.</param>
+    /// <param name="version">The handler version.</param>
+    public BaseLocalWebAppCommandHandler(string id, string version = null)
+    {
+        Id = id;
+        Version = version;
+    }
+
+    /// <summary>
+    /// Gets the identifier.
+    /// </summary>
+    public string Id { get; }
+
+    /// <summary>
+    /// Gets the version of the command handler.
+    /// </summary>
+    public string Description { get; protected set; }
+
+    /// <summary>
+    /// Gets the version of the command handler.
+    /// </summary>
+    public string Version { get; }
+
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="request">The request message.</param>
+    /// <param name="args">The manifest of the local web app.</param>
+    /// <returns>The response message.</returns>
+    public abstract Task<LocalWebAppResponseMessage> Process(LocalWebAppRequestMessage request, LocalWebAppCommandHandlerContext args);
 }

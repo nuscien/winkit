@@ -54,6 +54,17 @@
          * @param ref The additional reference object.
          */
         request<T>(cmd: string, data: any, context?: HandlerInfoContract | undefined | null, info?: HandlerInfoContract | undefined | null, ref?: any): Promise<T>;
+
+        /**
+         * Adds an event handler on message.
+         * @param type The message type.
+         * @param callback The callback.
+         */
+        onMessage(type: string, callback: EventCallback): {
+            type: string;
+            handler: string;
+            dispose(): void;
+        }
     }
 
     interface HandlerResponseContract<T> {
@@ -294,9 +305,12 @@
      * Adds an event handler on message.
      * @param type The message type.
      * @param callback The callback.
-     * @param options The options.
      */
-    function onMessage(type: string, callback: EventCallback): void;
+    function onMessage(type: string, callback: EventCallback): {
+        type: string;
+        handler: string;
+        dispose(): void;
+    };
 
     /**
      * Gets the command handler.
@@ -771,14 +785,48 @@
      * Host information.
      */
     const hostInfo: {
+
+        /**
+         * Host app information.
+         */
         hostApp: {
+
+            /**
+             * Host type identifier.
+             */
             id: string;
+
+            /**
+             * Host app version.
+             */
             version: string;
+
+            /**
+             * Host display name.
+             */
             name: string;
+
+            /**
+             * Assembly full name.
+             */
             value: string;
+
+            /**
+             * Host additional string.
+             */
             additional: string;
+
+            /**
+             * Additional information.
+             */
+            info: any;
         };
-        intro: {
+
+        /**
+         * The resource package information.
+         * The values are filled in the manifest of the resource package.
+         */
+        package: {
             id: string;
             icon: string | null;
             description: string | null;
@@ -788,32 +836,124 @@
             version: string | null;
             tags: string[];
         };
+
+        /**
+         * The runtime information.
+         */
         runtime: {
+
+            /**
+             * The runtime kind.
+             */
             kind: "wasdk" | "wpf" | string;
+
+            /**
+             * The runtime version.
+             */
             version: string | null;
+
+            /**
+             * The .NET version information.
+             */
             netfx: string | null;
+
+            /**
+             * The runtime identifier.
+             */
             id: string | null;
+
+            /**
+             * The version of Edge WebView2.
+             */
             webview2: string | null;
+
+            /**
+             * The architecture of runtime.
+             */
             arch: ArchValue;
         };
+
+        /**
+         * The operation system information.
+         */
         os: {
+
+            /**
+             * The version information of operation system.
+             */
             value: string | null;
+
+            /**
+             * The architecture of operation system.
+             */
             arch: ArchValue;
+
+            /**
+             * The version of operation system.
+             */
             version: string | null;
-            platform: string | null;
+
+            /**
+             * The operation system kind.
+             */
+            platform: string | "Win32NT" | "Xbox" | "Unix" | "MacOSX" | "Other" | null;
         };
+
+        /**
+         * The startup command line.
+         */
         cmdLine: {
+
+            /**
+             * The arguments to start current app.
+             */
             args: string[];
+
+            /**
+             * The machine name and user account logged in.
+             */
             systemAccount: string;
         };
+
+        /**
+         * The language, time zone and region information.
+         */
         mkt: {
+
+            /**
+             * The language and region code.
+             */
             value: string | null;
+
+            /**
+             * The display name of language and region.
+             */
             name: string | null;
+
+            /**
+             * A value indicating whether its text is right to left.
+             */
             rtl: boolean;
+
+            /**
+             * Time zone information.
+             */
             timeZone: string | null;
+
+            /**
+             * Time zone display name.
+             */
             timeZoneDisplayName: string | null;
+
+            /**
+             * Current offset.
+             */
             baseOffset: string | null;
         };
+
+        /**
+         * The device information.
+         */
         device: {
             form: "Unknown" | "Phone" | "Tablet" | "Desktop" | "Notebook" | "Convertible" | "Detachable" | "All-in-One" | "Stick PC" | "Puck" | "Surface Hub" | "Head-mounted display" | "Industry handheld" | "Industry tablet" | "Banking" | "Building automation" | "Digital signage" | "Gaming" | "Home automatio" | "Industrial automation" | "Kiosk" | "Maker board" | "Medical" | "Networking" | "Point of Service" | "Printing" | "Thin client" | "Toy" | "Vending" | "Industry other" | string;
             family: "Windows.Desktop" | "Windows.Mobile" | string | null;

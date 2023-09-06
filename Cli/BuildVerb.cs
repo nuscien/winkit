@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -32,7 +33,7 @@ internal class BuildVerb : BaseCommandVerb
         }
 
         console.Write("Build and package...");
-        var package = LocalWebAppHost.Package(dir);
+        var package = LocalWebAppHost.Package(dir, TryGetCompressionLevel(), null);
         var host = await LocalWebAppHost.LoadAsync(package, true, cancellationToken);
         console.BackspaceToBeginning();
         var manifest = host?.Manifest;
@@ -65,5 +66,20 @@ internal class BuildVerb : BaseCommandVerb
         console.WriteLine($"SHA256 \t{hash}");
         hash = HashUtility.ComputeHashString(SHA512.Create, zip);
         console.WriteLine($"SHA512 \t{hash}");
+    }
+
+    private CompressionLevel? TryGetCompressionLevel()
+    {
+        var compress = Arguments.GetFirst("compress")?.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(compress)) return null;
+        if (Enum.TryParse<CompressionLevel>(compress, true, out var c)) return c;
+        return compress.ToLowerInvariant() switch
+        {
+            "auto" => CompressionLevel.Optimal,
+            "fast" => CompressionLevel.Fastest,
+            "no" or "none" => CompressionLevel.NoCompression,
+            "smallest" or "small" => CompressionLevel.SmallestSize,
+            _ => null
+        };
     }
 }

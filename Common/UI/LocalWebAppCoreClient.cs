@@ -418,23 +418,13 @@ public class LocalWebAppCoreClient
     /// <summary>
     /// Sends a notification message to webpage.
     /// </summary>
+    /// <param name="handler">The sender.</param>
     /// <param name="type">The message type.</param>
     /// <param name="message">The message body to send.</param>
-    public void Notify(string type, LocalWebAppNotificationMessage message)
+    public void Notify(ILocalWebAppCommandHandler handler, string type, LocalWebAppNotificationMessage message)
     {
-        type = type?.Trim();
-        if (string.IsNullOrEmpty(type) || message == null || Browser.CoreWebView2 == null) return;
-        var json = new JsonObjectNode
-        {
-            { "type", type },
-            { "data", message.Data ?? new() },
-            { "info", message.AdditionalInfo ?? new() },
-            { "source", message.Source },
-            { "message", message.Message },
-            { "sent", DateTime.Now },
-            { "id", Guid.NewGuid() }
-        };
-        Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
+        if (string.IsNullOrEmpty(handler?.Id)) return;
+        Notify(handler.Id, type, message);
     }
 
     /// <summary>
@@ -491,6 +481,29 @@ public class LocalWebAppCoreClient
     /// <returns>true if remove succeeded; otherwise, false.</returns>
     public bool RemoveCommandHandler(string id)
         => proc.Remove(id);
+
+    /// <summary>
+    /// Sends a notification message to webpage.
+    /// </summary>
+    /// <param name="handler">The sender.</param>
+    /// <param name="type">The message type.</param>
+    /// <param name="message">The message body to send.</param>
+    internal void Notify(string handler, string type, LocalWebAppNotificationMessage message)
+    {
+        type = type?.Trim();
+        if (string.IsNullOrEmpty(type) || message == null || Browser.CoreWebView2 == null) return;
+        var json = new JsonObjectNode
+        {
+            { "type", type },
+            { "data", message.Data ?? new() },
+            { "info", message.AdditionalInfo ?? new() },
+            { "handler", handler },
+            { "message", message.Message },
+            { "sent", DateTime.Now },
+            { "id", Guid.NewGuid() }
+        };
+        Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
+    }
 
     private void NavigateHomepage(string homepage)
     {

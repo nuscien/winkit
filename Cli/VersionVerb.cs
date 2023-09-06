@@ -92,6 +92,9 @@ internal class VersionVerb : BaseCommandVerb
                     newVersion = SetVersion(version ?? "0.0.0", null);
                     SetVersion(id, version, dir, newVersion, minVer, out _);
                     break;
+                case "sync":
+                    newVersion = SetVersion(id, version, dir, "*", minVer, out _);
+                    break;
                 case "file":
                     newVersion = SetVersion(id, version, dir, null, minVer, out _);
                     break;
@@ -220,7 +223,19 @@ internal class VersionVerb : BaseCommandVerb
         json = buildJson;
         int b = 0;
         var oldVer = version;
-        if (!string.IsNullOrEmpty(newVersion))
+        if (newVersion == "*")
+        {
+            if (json.TryGetInt32Value("number", out b))
+            {
+                if (b < minBuildNumber) b = minBuildNumber;
+                version = SetVersion(version, oldVersion => b);
+            }
+            else if (string.IsNullOrEmpty(version))
+            {
+                version = "1.0.0";
+            }
+        }
+        else if (!string.IsNullOrEmpty(newVersion))
         {
             version = newVersion;
             SetVersion(version, oldVersion =>

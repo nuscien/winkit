@@ -1313,6 +1313,26 @@ public partial class LocalWebAppHost
     /// Creates a package.
     /// </summary>
     /// <param name="dir">The app path.</param>
+    /// <param name="signatureProvider">The signature provider with private key.</param>
+    /// <param name="compressionLevel">The compression level.</param>
+    /// <param name="outputFileName">The file name of the zip.</param>
+    /// <returns>The file output.</returns>
+    public static FileInfo Package(DirectoryInfo dir, ISignatureProvider signatureProvider, CompressionLevel compressionLevel, string outputFileName = null)
+    {
+        Sign(dir, signatureProvider, LocalWebAppExtensions.DefaultManifestGeneratedFileName);
+        if (string.IsNullOrWhiteSpace(outputFileName))
+            outputFileName = string.Concat(dir.FullName, ".zip");
+        if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
+            outputFileName = Path.Combine((dir.Parent ?? dir).FullName, outputFileName);
+        File.Delete(outputFileName);
+        ZipFile.CreateFromDirectory(dir.FullName, outputFileName, compressionLevel, false);
+        return FileSystemInfoUtility.TryGetFileInfo(outputFileName);
+    }
+
+    /// <summary>
+    /// Creates a package.
+    /// </summary>
+    /// <param name="dir">The app path.</param>
     /// <param name="outputFileName">The file name of the zip.</param>
     /// <returns>The file output.</returns>
     /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
@@ -1323,6 +1343,23 @@ public partial class LocalWebAppHost
     /// <exception cref="SecurityException">The security exception during file access.</exception>
     /// <exception cref="UnauthorizedAccessException">One or more files are unauthorized to access.</exception>
     public static LocalWebAppPackageResult Package(DirectoryInfo dir, string outputFileName = null)
+        => Package(dir, null as CompressionLevel?, outputFileName);
+
+    /// <summary>
+    /// Creates a package.
+    /// </summary>
+    /// <param name="dir">The app path.</param>
+    /// <param name="compressionLevel">The compression level.</param>
+    /// <param name="outputFileName">The file name of the zip.</param>
+    /// <returns>The file output.</returns>
+    /// <exception cref="DirectoryNotFoundException">dir was not found.</exception>
+    /// <exception cref="DirectoryNotFoundException">The private key was not found.</exception>
+    /// <exception cref="InvalidOperationException">The configuration is not valid.</exception>
+    /// <exception cref="NotSupportedException">The signature algorithm was not supported.</exception>
+    /// <exception cref="IOException">IO exception.</exception>
+    /// <exception cref="SecurityException">The security exception during file access.</exception>
+    /// <exception cref="UnauthorizedAccessException">One or more files are unauthorized to access.</exception>
+    public static LocalWebAppPackageResult Package(DirectoryInfo dir, CompressionLevel? compressionLevel, string outputFileName = null)
     {
         // Load options.
         if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The root directory is not found.");
@@ -1438,7 +1475,8 @@ public partial class LocalWebAppHost
         if (!outputFileName.Contains('\\') && !outputFileName.Contains('/'))
             outputFileName = Path.Combine(dir.FullName, outputFileName);
         File.Delete(outputFileName);
-        ZipFile.CreateFromDirectory(appDir.FullName, outputFileName);
+        if (compressionLevel.HasValue) ZipFile.CreateFromDirectory(appDir.FullName, outputFileName, compressionLevel.Value, false);
+        else ZipFile.CreateFromDirectory(appDir.FullName, outputFileName);
         var zip = FileSystemInfoUtility.TryGetFileInfo(outputFileName);
 
         // Copy

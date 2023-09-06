@@ -59,12 +59,18 @@ function sendRequest(handlerId, cmd, data, info, context, noResp, ref) {
   postMsg(req); try { if (ref) ref.trace = req.trace; } catch (ex) { }
   return promise;
 }
+function removeMessageHandler(item) {
+  if (!item) return;
+  let j = hs.indexOf(item); if (j < 0) return;
+  hs.splice(j, 1); if (typeof item.dispose === 'function') item.dispose();
+}
 if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
   try {
     window.chrome.webview.addEventListener('message', function (ev) {
       let removing = [];
       for (let i in hs) {
         let source = hs[i] ?? {}; if (!ev || !ev.data || source.type != ev.data.type) continue;
+        if (source.handler && ev.data.handler !== source.handler) continue;
         let item = source.h; if (!item) continue;
         if (typeof item.proc === 'function') {
           if (item.invalid != null) {
@@ -86,10 +92,7 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
         if (typeof item === 'function') item(ev);
       }
       for (let i in removing) {
-        let item = removing[i]; if (!item) continue;
-        let j = hs.indexOf(removing[i]);
-        if (j >= 0) hs.splice(j, 1);
-        if (typeof item.dispose === 'function') item.dispose();
+        removeMessageHandler(removing[i]);
       }
     });
   } catch (ex) { }
@@ -97,8 +100,13 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
 window.localWebApp = { 
   onMessage(type, callback) {
     if (!callback) return;
-    if (typeof callback !== 'function' && typeof callback.proc !== 'function') return;
-    hs.push({ h: callback, type });
+    if (typeof callback !== 'function' && typeof callback.proc !== 'function') return {
+      type, dispose() { }
+    };
+    let item = { h: callback, type };
+    hs.push(item); return {
+      dispose() { removeMessageHandler(item); }
+    };
   },
   getHandler(id) {
     if (!id || typeof id !== 'string') return null;
@@ -111,7 +119,17 @@ window.localWebApp = {
       },
       request(cmd, data, context, info, ref) {
         return sendRequest(id, cmd, data, info, context, true, ref)
-      }
+      },
+      onMessage(type, callback) {
+        if (!callback) return;
+        if (typeof callback !== 'function' && typeof callback.proc !== 'function') return {
+          type, handler, dispose() { }
+        };
+        let item = { h: callback, type, handler: id };
+        hs.push(item); return {
+          dispose() { removeMessageHandler(item); }
+        };
+      },
     };
   },
   getCookie: function (key) {

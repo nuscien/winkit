@@ -319,10 +319,11 @@ public sealed partial class LocalWebAppWindow : Window
     /// <summary>
     /// Sends a notification message to webpage.
     /// </summary>
+    /// <param name="handler">The sender.</param>
     /// <param name="type">The message type.</param>
     /// <param name="message">The message body to send.</param>
-    public void Notify(string type, LocalWebAppNotificationMessage message)
-        => MainElement.Notify(type, message);
+    public void Notify(ILocalWebAppCommandHandler handler, string type, LocalWebAppNotificationMessage message)
+        => MainElement.Notify(handler, type, message);
 
     /// <summary>
     /// Stops progress ring.
@@ -377,11 +378,10 @@ public sealed partial class LocalWebAppWindow : Window
     /// <summary>
     /// Registers a command handler. It will override the existed one.
     /// </summary>
-    /// <param name="id">The handler identifier.</param>
-    /// <param name="handler">The process handler.</param>
+    /// <param name="handler">The process handler to add.</param>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public void RegisterCommandHandler(string id, ILocalWebAppCommandHandler handler)
-        => MainElement.RegisterCommandHandler(id, handler);
+    public void RegisterCommandHandler(ILocalWebAppCommandHandler handler)
+        => MainElement.RegisterCommandHandler(handler);
 
     /// <summary>
     /// Removes the command handler.
@@ -390,6 +390,14 @@ public sealed partial class LocalWebAppWindow : Window
     /// <returns>true if remove succeeded; otherwise, false.</returns>
     public bool RemoveCommandHandler(string id)
         => MainElement.RemoveCommandHandler(id);
+
+    /// <summary>
+    /// Removes the command handler.
+    /// </summary>
+    /// <param name="handler">The process handler to remove.</param>
+    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    public bool RemoveCommandHandler(ILocalWebAppCommandHandler handler)
+        => MainElement.RemoveCommandHandler(handler);
 
     /// <summary>
     /// Maps a folder as a virtual host name.

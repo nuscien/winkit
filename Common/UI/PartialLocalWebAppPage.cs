@@ -534,23 +534,13 @@ public sealed partial class LocalWebAppPage
     /// <summary>
     /// Sends a notification message to webpage.
     /// </summary>
+    /// <param name="handler">The sender.</param>
     /// <param name="type">The message type.</param>
     /// <param name="message">The message body to send.</param>
-    public void Notify(string type, LocalWebAppNotificationMessage message)
+    public void Notify(ILocalWebAppCommandHandler handler, string type, LocalWebAppNotificationMessage message)
     {
-        type = type?.Trim();
-        if (string.IsNullOrEmpty(type) || message == null || Browser.CoreWebView2 == null) return;
-        var json = new JsonObjectNode
-        {
-            { "type", type },
-            { "data", message.Data ?? new() },
-            { "info", message.AdditionalInfo ?? new() },
-            { "source", message.Source },
-            { "message", message.Message },
-            { "sent", DateTime.Now },
-            { "id", Guid.NewGuid() }
-        };
-        Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
+        if (string.IsNullOrEmpty(handler?.Id)) return;
+        Notify(handler.Id, type, message);
     }
 
     /// <summary>
@@ -594,11 +584,13 @@ public sealed partial class LocalWebAppPage
     /// <summary>
     /// Registers a command handler. It will override the existed one.
     /// </summary>
-    /// <param name="id">The handler identifier.</param>
-    /// <param name="handler">The command handler.</param>
+    /// <param name="handler">The command handler to add.</param>
     /// <exception cref="ArgumentNullException">id was null.</exception>
-    public void RegisterCommandHandler(string id, ILocalWebAppCommandHandler handler)
-        => proc[id] = handler;
+    public void RegisterCommandHandler(ILocalWebAppCommandHandler handler)
+    {
+        if (string.IsNullOrEmpty(handler?.Id)) return;
+        proc[handler.Id] = handler;
+    }
 
     /// <summary>
     /// Removes the command handler.
@@ -606,7 +598,18 @@ public sealed partial class LocalWebAppPage
     /// <param name="id">The handler identifier.</param>
     /// <returns>true if remove succeeded; otherwise, false.</returns>
     public bool RemoveCommandHandler(string id)
-        => proc.Remove(id);
+    {
+        if (string.IsNullOrEmpty(id)) return false;
+        return proc.Remove(id);
+    }
+
+    /// <summary>
+    /// Removes the command handler.
+    /// </summary>
+    /// <param name="handler">The command handler to remove.</param>
+    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    public bool RemoveCommandHandler(ILocalWebAppCommandHandler handler)
+        => proc.Remove(handler?.Id);
 
     /// <summary>
     /// Maps a folder as a virtual host name.
@@ -656,6 +659,29 @@ public sealed partial class LocalWebAppPage
     {
         await Browser.EnsureCoreWebView2Async();
         return Browser.CoreWebView2.Settings;
+    }
+
+    /// <summary>
+    /// Sends a notification message to webpage.
+    /// </summary>
+    /// <param name="handler">The sender.</param>
+    /// <param name="type">The message type.</param>
+    /// <param name="message">The message body to send.</param>
+    internal void Notify(string handler, string type, LocalWebAppNotificationMessage message)
+    {
+        type = type?.Trim();
+        if (string.IsNullOrEmpty(type) || message == null || Browser.CoreWebView2 == null) return;
+        var json = new JsonObjectNode
+        {
+            { "type", type },
+            { "data", message.Data ?? new() },
+            { "info", message.AdditionalInfo ?? new() },
+            { "handler", handler },
+            { "message", message.Message },
+            { "sent", DateTime.Now },
+            { "id", Guid.NewGuid() }
+        };
+        Browser.CoreWebView2.PostWebMessageAsJson(json.ToString());
     }
 
     private void ShowTitle(LocalWebAppHost host)

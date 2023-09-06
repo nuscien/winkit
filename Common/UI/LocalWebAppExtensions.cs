@@ -50,7 +50,8 @@ internal static class LocalWebAppExtensions
                 { "version", entryAssembly?.Version?.ToString() },
                 { "name", entryAssembly?.Name },
                 { "value", entryAssembly?.FullName },
-                { "additional", LocalWebAppSettings.HostAdditionalString }
+                { "additional", LocalWebAppSettings.HostAdditionalString },
+                { "info", LocalWebAppSettings.HostAdditionalInfo }
             } },
             { "package", new JsonObjectNode
             {
@@ -373,7 +374,8 @@ internal static class LocalWebAppExtensions
             var readBoolean2 = request.Data.TryGetBooleanValue("read");
             if (string.IsNullOrEmpty(readMethod2) || readMethod2 == "none" || readBoolean2 == false) return new("The path is not valid.");
             using var http = LocalWebAppSettings.CreateHttpClient();
-            var httpResponse = await http.GetAsync(path);
+            var postData = request.Data.TryGetObjectValue("post");
+            var httpResponse = postData == null ? await http.GetAsync(path) : await http.PostAsync(path, HttpClientExtensions.CreateJsonContent(postData));
             using var httpContent = httpResponse?.Content;
             var httpInfo = new JsonObjectNode()
             {
@@ -1385,7 +1387,7 @@ internal static class LocalWebAppExtensions
                 {
                     var maxCount = request.Data?.TryGetInt32Value("max");
                     var open = request.Data?.TryGetBooleanValue("open");
-                    return new(browserHandler?.DownloadListInfo(open, maxCount ?? 256), new()
+                    return new(browserHandler?.DownloadListInfo(open, maxCount ?? 512)?.ToJson(), new()
                     {
                         { "open", open },
                         { "max", maxCount }
@@ -1393,7 +1395,7 @@ internal static class LocalWebAppExtensions
                 }
             case "theme":
                 {
-                    var theme = browserHandler?.GetTheme();
+                    var theme = browserHandler?.GetTheme()?.ToJson();
                     return theme != null ? new(theme) : new("Failed to load theme information.");
                 }
             case "check-update":

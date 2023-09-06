@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Web.WebView2.Core;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ using Trivial.Maths;
 using Trivial.Text;
 using Trivial.UI;
 using Windows.Graphics;
+using Windows.UI.WebUI;
+using static Trivial.Reflection.ExceptionHandler;
 
 namespace Trivial.Web;
 
@@ -28,13 +31,13 @@ public interface ILocalWebAppBrowserMessageHandler
     /// <param name="open">true if open the default dialog; false if hide; or null, no action.</param>
     /// <param name="maxCount">The maximum count of download item to return.</param>
     /// <returns>The result.</returns>
-    JsonObjectNode DownloadListInfo(bool? open, int maxCount = 256);
+    LocalWebAppDownloadList DownloadListInfo(bool? open, int maxCount = 256);
 
     /// <summary>
     /// Gets light or dark information.
     /// </summary>
     /// <returns>The result.</returns>
-    JsonObjectNode GetTheme();
+    LocalWebAppThemeInfo GetTheme();
 
     /// <summary>
     /// Focuses the browser.
@@ -133,7 +136,7 @@ internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHand
     /// </summary>
     /// <param name="open">true if open the default dialog; false if hide; or null, no action.</param>
     /// <param name="maxCount">The maximum count of download item to return.</param>
-    public JsonObjectNode DownloadListInfo(bool? open, int maxCount = 256)
+    public LocalWebAppDownloadList DownloadListInfo(bool? open, int maxCount = 256)
     {
         if (open.HasValue)
         {
@@ -141,44 +144,26 @@ internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHand
             else webview.CoreWebView2.CloseDefaultDownloadDialog();
         }
 
-        var arr = new JsonArrayNode();
+        var list = new LocalWebAppDownloadList(open ?? webview.CoreWebView2.IsDefaultDownloadDialogOpen, maxCount);
         foreach (var item in DownloadList)
         {
-            arr.Add(new JsonObjectNode
-            {
-                { "uri", item.Uri },
-                { "file", item.ResultFilePath },
-                { "state", item.State.ToString() },
-                { "received", item.BytesReceived },
-                { "length", item.TotalBytesToReceive },
-                { "interrupt", item.InterruptReason.ToString() },
-                { "mime", item.MimeType }
-            });
+            list.Add(item.Uri, item.ResultFilePath, item.State.ToString(), item.BytesReceived, item.TotalBytesToReceive, item.InterruptReason.ToString(), item.MimeType);
         }
 
-        return new JsonObjectNode
-        {
-            { "dialog", open ?? webview.CoreWebView2.IsDefaultDownloadDialogOpen },
-            { "max", maxCount },
-            { "list", arr },
-            { "enumerated", DateTime.Now }
-        };
+        return list;
     }
 
     /// <summary>
     /// Gets light or dark information.
     /// </summary>
     /// <returns>The result.</returns>
-    public JsonObjectNode GetTheme()
+    public LocalWebAppThemeInfo GetTheme()
     {
         try
         {
             var theme = webview.ActualTheme;
-            if (theme == ElementTheme.Light || theme == ElementTheme.Dark)
-                return new JsonObjectNode
-                {
-                    { "brightness", theme.ToString().ToLowerInvariant() }
-                };
+            if (theme == ElementTheme.Light) return new(false);
+            if (theme == ElementTheme.Dark) return new(true);
         }
         catch (InvalidOperationException)
         {
@@ -195,10 +180,7 @@ internal class LocalWebAppBrowserMessageHandler : ILocalWebAppBrowserMessageHand
 
         try
         {
-            return new JsonObjectNode
-            {
-                { "brightness", Application.Current.RequestedTheme.ToString().ToLowerInvariant() }
-            };
+            return new(Application.Current.RequestedTheme == ApplicationTheme.Dark);
         }
         catch (InvalidOperationException)
         {
@@ -505,4 +487,107 @@ public class BasicWindowStateController : IBasicWindowStateController
         if (r < 0.2) return 1;
         return round ? r : Math.Round(r * 100) / 100;
     }
+}
+
+/// <summary>
+/// The theme information of local web app.
+/// </summary>
+public class LocalWebAppThemeInfo
+{
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppThemeInfo class.
+    /// </summary>
+    /// <param name="isDarkMode">true if it is dark mode; otherwise, false.</param>
+    public LocalWebAppThemeInfo(bool isDarkMode)
+    {
+        Brightness = isDarkMode ? "dark" : "light";
+    }
+
+    /// <summary>
+    /// Gets the brightness.
+    /// </summary>
+    public string Brightness { get; set; }
+
+    /// <summary>
+    /// Converts to JSON object node.
+    /// </summary>
+    /// <returns></returns>
+    public JsonObjectNode ToJson()
+        => new()
+        {
+            { "brightness", Brightness?.ToLowerInvariant() }
+        };
+}
+
+/// <summary>
+/// The download list of local web app.
+/// </summary>
+public class LocalWebAppDownloadList
+{
+    private readonly JsonArrayNode arr = new();
+
+    /// <summary>
+    /// Initializes a new instance of the LocalWebAppDownloadList class.
+    /// </summary>
+    /// <param name="isDialogOpen">true if the default download dialog is open; otherwise, false.</param>
+    /// <param name="max">The maximum count of record to return.</param>
+    /// <param name="enumeratingTime">The enumerating date time.</param>
+    public LocalWebAppDownloadList(bool isDialogOpen, int max, DateTime? enumeratingTime = null)
+    {
+        IsDialogOpen = isDialogOpen;
+        MaxCount = max;
+        EnumeratingTime = enumeratingTime ?? DateTime.Now;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the default download dialog is open.
+    /// </summary>
+    public bool IsDialogOpen { get; }
+
+    /// <summary>
+    /// Gets the maximum count limited of record to return.
+    /// </summary>
+    public int MaxCount { get; }
+
+    /// <summary>
+    /// Gets the date time that enumerates.
+    /// </summary>
+    public DateTime EnumeratingTime { get; }
+
+    /// <summary>
+    /// Adds a download record.
+    /// </summary>
+    /// <param name="uri">The URI to download.</param>
+    /// <param name="filePath">The file path to save.</param>
+    /// <param name="state">The download state.</param>
+    /// <param name="bytesReceived">The byte count received.</param>
+    /// <param name="totalBytes">The total byte count to receive.</param>
+    /// <param name="interruptReason">The interrupt reason.</param>
+    /// <param name="mime">The content type (MIME).</param>
+    public void Add(string uri, string filePath, string state, long bytesReceived, long totalBytes, string interruptReason, string mime)
+    {
+        arr.Add(new JsonObjectNode
+        {
+            { "uri", uri },
+            { "file", filePath },
+            { "state", state },
+            { "received", bytesReceived },
+            { "length", totalBytes },
+            { "interrupt", interruptReason },
+            { "mime", mime }
+        });
+    }
+
+    /// <summary>
+    /// Converts to JSON object node.
+    /// </summary>
+    /// <returns></returns>
+    public JsonObjectNode ToJson()
+        => new()
+        {
+            { "dialog", IsDialogOpen },
+            { "max", MaxCount },
+            { "list", arr },
+            { "enumerated", EnumeratingTime }
+        };
 }

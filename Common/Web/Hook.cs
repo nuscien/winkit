@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Trivial.Text;
 using Trivial.Web;
 
 namespace Trivial.Web;
@@ -101,6 +102,11 @@ public static class LocalWebAppSettings
     /// Gets or sets the additional string of host.
     /// </summary>
     public static string HostAdditionalString { get; set; }
+
+    /// <summary>
+    /// Gets or sets the additional data of host.
+    /// </summary>
+    public static JsonObjectNode HostAdditionalInfo { get; } = new();
 
     /// <summary>
     /// Gets or sets the default icon path of app.

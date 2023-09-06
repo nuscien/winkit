@@ -99,35 +99,27 @@ if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
 }
 window.localWebApp = { 
   onMessage(type, callback) {
-    if (!callback) return;
-    if (typeof callback !== 'function' && typeof callback.proc !== 'function') return {
-      type, dispose() { }
+    if (!callback || (typeof callback !== 'function' && typeof callback.proc !== 'function')) return {
+      type, dispose() { }, invalid: true
     };
     let item = { h: callback, type };
     hs.push(item); return {
-      dispose() { removeMessageHandler(item); }
+      type, dispose() { removeMessageHandler(item); }
     };
   },
   getHandler(id) {
     if (!id || typeof id !== 'string') return null;
     return {
-      id() {
-        return id;
-      },
-      call(cmd, data, context, info, ref) {
-        sendRequest(id, cmd, data, info, context, false, ref);
-      },
-      request(cmd, data, context, info, ref) {
-        return sendRequest(id, cmd, data, info, context, true, ref);
-      },
+      id() { return id; },
+      call(cmd, data, context, info, ref) { sendRequest(id, cmd, data, info, context, false, ref); },
+      request(cmd, data, context, info, ref) { return sendRequest(id, cmd, data, info, context, true, ref); },
       onMessage(type, callback) {
-        if (!callback) return;
-        if (typeof callback !== 'function' && typeof callback.proc !== 'function') return {
-          type, handler, dispose() { }
+        if (!callback || (typeof callback !== 'function' && typeof callback.proc !== 'function')) return {
+          type, handler, dispose() { }, invalid: true
         };
         let item = { h: callback, type, handler: id };
         hs.push(item); return {
-          dispose() { removeMessageHandler(item); }
+          type, handler, dispose() { removeMessageHandler(item); }
         };
       }
     };

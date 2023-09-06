@@ -819,7 +819,9 @@
             /**
              * Additional information.
              */
-            info: any;
+            info: {
+                [property: string]: any;
+            };
         };
 
         /**

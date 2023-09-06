@@ -136,7 +136,7 @@ window.localWebApp = {
     if (!key) return document.cookie;
     key = key + '='; let ca = document.cookie.split(';');
     for (let i in ca) {
-      let c = ca[i]; while (c.charAt(0) == ' ') { c = c.substring(1); } if (c.startsWith(key)) return c.substring(key.length);
+      let c = ca[i]; while (c.charAt(0) == ' ') { c = c.substring(1); } if (c.startsWith(key)) return decodeURIComponent(c.substring(key.length));
     }
     return '';
   },

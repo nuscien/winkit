@@ -54,7 +54,7 @@ function sendRequest(handlerId, cmd, data, info, context, noResp, ref) {
         if (ev.data.error) reject(ev.data);
         else resolve(ev.data);
         try { if (ref) ref.response = ev.data; } catch (ex) { }
-    }; hs.push({ h: handler, type: null });
+    }; hs.push({ h: handler, handler: handlerId, type: null });
   }); }
   postMsg(req); try { if (ref) ref.trace = req.trace; } catch (ex) { }
   return promise;

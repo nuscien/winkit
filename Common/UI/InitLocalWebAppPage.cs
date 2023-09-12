@@ -111,8 +111,8 @@ window.localWebApp = {
     if (!id || typeof id !== 'string') return null;
     return {
       id() { return id; },
-      call(cmd, data, context, info, ref) { sendRequest(id, cmd, data, info, context, false, ref); },
-      request(cmd, data, context, info, ref) { return sendRequest(id, cmd, data, info, context, true, ref); },
+      call(cmd, data, context, info, ref) { sendRequest(id, cmd, data, info, context, true, ref); },
+      request(cmd, data, context, info, ref) { return sendRequest(id, cmd, data, info, context, false, ref); },
       onMessage(type, callback) {
         if (!callback || (typeof callback !== 'function' && typeof callback.proc !== 'function')) return {
           type, handler, dispose() { }, invalid: true

@@ -260,7 +260,7 @@ window.localWebApp = {
   hostApp: {
     theme(options) {
       if (!options) options = {};
-      if (typeof options.callback === function) onMessageRecieved('themeChanged', options.callback);
+      if (typeof options.callback === 'function') onMessageRecieved('themeChanged', options.callback);
       return sendRequest(null, 'theme', {}, null, options.context, false, options.ref);
     },
     checkUpdate(options) {

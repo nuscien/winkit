@@ -1580,6 +1580,10 @@ public partial class LocalWebAppHost
                         break;
                 }
 
+                var hostInfo = manifestJson.TryGetArrayValue("host");
+                if (hostInfo != null) um.SetValue("host", hostInfo);
+                var updateMetaMessage = updateMeta.TryGetStringTrimmedValue("message", true);
+                if (updateMetaMessage != null) um.SetValue("message", updateMetaMessage);
                 try
                 {
                     File.WriteAllText(updateMetaFile.FullName, umJson.ToString(IndentStyles.Compact));

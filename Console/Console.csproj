@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net6.0;net48;net462;net461</TargetFrameworks>
+    <AssemblyName>Trivial.Console</AssemblyName>
+    <RootNamespace>Trivial</RootNamespace>
+    <PackageId>Trivial.Console</PackageId>
+    <Description>The rich user interface console controls and utilities.</Description>
+    <PackageProjectUrl>https://github.com/nuscien/trivial/wiki/console</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageIcon>cmd.png</PackageIcon>
+    <PackageIconUrl>https://github.com/nuscien/trivial/raw/master/Materials/logo.png</PackageIconUrl>
+    <PackageTags>console</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Materials\cmd.png" Pack="true" PackagePath="cmd.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="CommandLine\Resource.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CommandLine\Resource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

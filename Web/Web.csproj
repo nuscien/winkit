@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net6.0;</TargetFrameworks>
+    <AssemblyName>Trivial.Web</AssemblyName>
+    <RootNamespace>Trivial</RootNamespace>
+    <PackageId>Trivial.Web</PackageId>
+    <Description>A library for web API.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageIcon>web.png</PackageIcon>
+    <PackageIconUrl>https://github.com/nuscien/trivial/raw/master/Materials/logo.png</PackageIconUrl>
+    <PackageTags>web mvc</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.Web.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Materials\web.png" Pack="true" PackagePath="web.png" />
+  </ItemGroup>
+
+</Project>

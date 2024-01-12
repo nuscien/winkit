@@ -16,7 +16,6 @@ using Trivial.Text;
 using Trivial.UI;
 using Windows.Graphics;
 using Windows.UI.WebUI;
-using static Trivial.Reflection.ExceptionHandler;
 
 namespace Trivial.Web;
 

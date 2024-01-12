@@ -118,11 +118,11 @@ window.localWebApp = {
       request(cmd, data, context, info, ref) { return sendRequest(id, cmd, data, info, context, false, ref); },
       onMessage(type, callback) {
         if (!callback || (typeof callback !== 'function' && typeof callback.proc !== 'function')) return {
-          type, handler, dispose() { }, invalid: true
+          type, handler: id, dispose() { this.disposed = true; }, invalid: true
         };
         let item = { h: callback, type, handler: id };
         hs.push(item); return {
-          type, handler, dispose() { removeMessageHandler(item); this.disposed = true; }
+          type, handler: id, dispose() { removeMessageHandler(item); this.disposed = true; }
         };
       }
     };

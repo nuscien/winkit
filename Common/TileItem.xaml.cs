@@ -791,6 +791,24 @@ public sealed partial class TileItem : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the content of image cover zone.
+    /// </summary>
+    public UIElement ImageBackgroundContent
+    {
+        get => ImageBack.Child;
+        set => ImageBack.Child = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the content of text cover zone.
+    /// </summary>
+    public UIElement TextBackgroundContent
+    {
+        get => TextBack.Child;
+        set => TextBack.Child = value;
+    }
+
+    /// <summary>
     /// Gets or sets the content of customized zone before text.
     /// </summary>
     public UIElement BeforeTextContent

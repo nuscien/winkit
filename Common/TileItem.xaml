@@ -111,6 +111,7 @@
         <StackPanel Orientation="{x:Bind Orientation}" >
             <Border x:Name="Top" ></Border>
             <Grid x:Name="ImageContainer" CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" HorizontalAlignment="{x:Bind ImageHorizontalAlignment}" >
+                <Border x:Name="ImageBack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
                 <Image x:Name="ImageControl" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="{x:Bind ImageContainer.ActualWidth}" MinHeight="{x:Bind ImageContainer.ActualHeight}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" >
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ImageUri}" />
@@ -119,6 +120,7 @@
                 <Border x:Name="ImageCover" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
             </Grid>
             <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" BackgroundSizing="{x:Bind TextBackgroundSizing}" Padding="{x:Bind TextPadding}" Margin="{x:Bind TextMargin}" >
+                <Border x:Name="TextBack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="{x:Bind TextHeight}" >
                     <Border x:Name="BeforeText" HorizontalAlignment="Stretch" ></Border>
                     <TextBlock x:Name="TitleText" Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" MaxHeight="{x:Bind TitleMaxHeight}" Foreground="{x:Bind TitleForeground}" HorizontalAlignment="{x:Bind TitleHorizontalAlignment}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind TitleLineHeight}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TitleText_IsTextTrimmedChanged" />

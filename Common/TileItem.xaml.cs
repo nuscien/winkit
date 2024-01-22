@@ -95,6 +95,16 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty TextMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(TextMargin));
 
     /// <summary>
+    /// The dependency property of text border brush.
+    /// </summary>
+    public static readonly DependencyProperty TextBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(TextBorderBrush));
+
+    /// <summary>
+    /// The dependency property of text thickness brush.
+    /// </summary>
+    public static readonly DependencyProperty TextBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(TextBorderThickness));
+
+    /// <summary>
     /// The dependency property of text corner radius.
     /// </summary>
     public static readonly DependencyProperty TextCornerRadiusProperty = DependencyObjectProxy.RegisterProperty<CornerRadius>(nameof(TextCornerRadius));
@@ -253,6 +263,16 @@ public sealed partial class TileItem : UserControl
     /// The dependency property of image margin.
     /// </summary>
     public static readonly DependencyProperty ImageMarginProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(ImageMargin));
+
+    /// <summary>
+    /// The dependency property of image border brush.
+    /// </summary>
+    public static readonly DependencyProperty ImageBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(ImageBorderBrush));
+
+    /// <summary>
+    /// The dependency property of image thickness brush.
+    /// </summary>
+    public static readonly DependencyProperty ImageBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(ImageBorderThickness));
 
     /// <summary>
     /// The dependency property of image corner radius.
@@ -437,6 +457,24 @@ public sealed partial class TileItem : UserControl
     {
         get => (Thickness)GetValue(TextMarginProperty);
         set => SetValue(TextMarginProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the border brush of text zone.
+    /// </summary>
+    public Brush TextBorderBrush
+    {
+        get => (Brush)GetValue(TextBorderBrushProperty);
+        set => SetValue(TextBorderBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the border thickness of text zone.
+    /// </summary>
+    public Thickness TextBorderThickness
+    {
+        get => (Thickness)GetValue(TextBorderThicknessProperty);
+        set => SetValue(TextBorderThicknessProperty, value);
     }
 
     /// <summary>
@@ -725,6 +763,24 @@ public sealed partial class TileItem : UserControl
     {
         get => (Thickness)GetValue(ImageMarginProperty);
         set => SetValue(ImageMarginProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the border brush of image.
+    /// </summary>
+    public Brush ImageBorderBrush
+    {
+        get => (Brush)GetValue(ImageBorderBrushProperty);
+        set => SetValue(ImageBorderBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the border thickness of image.
+    /// </summary>
+    public Thickness ImageBorderThickness
+    {
+        get => (Thickness)GetValue(ImageBorderThicknessProperty);
+        set => SetValue(ImageBorderThicknessProperty, value);
     }
 
     /// <summary>

@@ -110,18 +110,18 @@
         </Button.Resources>
         <StackPanel Orientation="{x:Bind Orientation}" >
             <Border x:Name="Top" ></Border>
-            <Grid x:Name="ImageContainer" CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Padding="{x:Bind ImagePadding}" Margin="{x:Bind ImageMargin}" HorizontalAlignment="{x:Bind ImageHorizontalAlignment}" >
+            <Grid x:Name="ImageContainer" CornerRadius="{x:Bind ImageCornerRadius}" Width="{x:Bind ImageWidth}" Height="{x:Bind ImageHeight}" Background="{x:Bind ImageBackground}" BackgroundSizing="{x:Bind ImageBackgroundSizing}" Margin="{x:Bind ImageMargin}" BorderBrush="{x:Bind ImageBorderBrush}" BorderThickness="{x:Bind ImageBorderThickness}" HorizontalAlignment="{x:Bind ImageHorizontalAlignment}" >
                 <Border x:Name="ImageBack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
-                <Image x:Name="ImageControl" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="{x:Bind ImageContainer.ActualWidth}" MinHeight="{x:Bind ImageContainer.ActualHeight}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" >
+                <Image x:Name="ImageControl" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="{x:Bind ImageContainer.ActualWidth}" MinHeight="{x:Bind ImageContainer.ActualHeight}" Margin="{x:Bind ImagePadding}" ImageFailed="ImageControl_ImageFailed" ImageOpened="ImageControl_ImageOpened" >
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ImageUri}" />
                     </Image.Source>
                 </Image>
                 <Border x:Name="ImageCover" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
             </Grid>
-            <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" BackgroundSizing="{x:Bind TextBackgroundSizing}" Padding="{x:Bind TextPadding}" Margin="{x:Bind TextMargin}" >
+            <Grid CornerRadius="{x:Bind TextCornerRadius}" Background="{x:Bind TextBackground}" BackgroundSizing="{x:Bind TextBackgroundSizing}" Width="{x:Bind TextWidth}" Height="{x:Bind TextHeight}" Margin="{x:Bind TextMargin}" BorderBrush="{x:Bind TextBorderBrush}" BorderThickness="{x:Bind TextBorderThickness}" >
                 <Border x:Name="TextBack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ></Border>
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="{x:Bind TextHeight}" >
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{x:Bind TextPadding}" >
                     <Border x:Name="BeforeText" HorizontalAlignment="Stretch" ></Border>
                     <TextBlock x:Name="TitleText" Text="{x:Bind Title}" Width="{x:Bind TitleWidth}" Height="{x:Bind TitleHeight}" MaxHeight="{x:Bind TitleMaxHeight}" Foreground="{x:Bind TitleForeground}" HorizontalAlignment="{x:Bind TitleHorizontalAlignment}" FontSize="{x:Bind TitleFontSize}" FontWeight="{x:Bind TitleFontWeight}" FontStyle="{x:Bind TitleFontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind TitleLineHeight}" TextWrapping="{x:Bind TitleWrapping}" TextTrimming="{x:Bind TitleTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="TitleText_IsTextTrimmedChanged" />
                     <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Foreground="{x:Bind DescriptionForeground}" HorizontalAlignment="{x:Bind DescriptionHorizontalAlignment}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" LineHeight="{x:Bind DescriptionLineHeight}" TextWrapping="{x:Bind DescriptionWrapping}" TextTrimming="{x:Bind DescriptionTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextTrimmedChanged="DescriptionText_IsTextTrimmedChanged" />

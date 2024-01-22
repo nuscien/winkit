@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Trivial.Data;
+using Trivial.Net;
 using Trivial.Tasks;
 using Windows.UI.Text;
 
@@ -151,6 +152,22 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterFontWeightProperty(string name, Action<TControl, ChangeEventArgs<FontWeight>, DependencyProperty> callback = null, FontWeight? defaultValue = null)
         => RegisterProperty(name, callback, defaultValue ?? FontWeights.Normal);
+
+    /// <summary>
+    /// Registers a dependency property for a control.
+    /// </summary>
+    /// <param name="name">The property name.</param>
+    /// <param name="callback">The event handler on property value changed.</param>
+    /// <param name="defaultValue">The default value of the property.</param>
+    /// <param name="stillUpdateEvenIfSame">true if still raise the event handler even on same; otherwise, false.</param>
+    /// <returns>A dependency property.</returns>
+    public static DependencyProperty RegisterUriProperty(string name, Action<TControl, ChangeEventArgs<Uri>, DependencyProperty> callback, Uri defaultValue = null, bool stillUpdateEvenIfSame = false)
+        => RegisterProperty(name, callback, defaultValue, v => {
+            if (v is null) return defaultValue;
+            if (v is Uri u) return u;
+            if (v is string s) return new Uri(s, UriKind.RelativeOrAbsolute);
+            return (Uri)v;
+        }, stillUpdateEvenIfSame);
 
     /// <summary>
     /// Finds a visual child of the control type.

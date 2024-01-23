@@ -29,6 +29,7 @@ namespace Trivial.UI;
 public sealed partial class LocalWebAppWindow : Window
 {
     private readonly SystemBackdropClient backdrop;
+    private double titleHeight = 28;
 
     /// <summary>
     /// Initializes a new instance of the LocalWebAppWindow class.
@@ -107,6 +108,23 @@ public sealed partial class LocalWebAppWindow : Window
     /// Occurs when the downloading is starting.
     /// </summary>
     public event TypedEventHandler<LocalWebAppWindow, CoreWebView2DownloadStartingEventArgs> DownloadStarting;
+
+    /// <summary>
+    /// Gets or sets the title height.
+    /// </summary>
+    public double TitleHeight
+    {
+        get
+        {
+            return titleHeight;
+        }
+
+        set
+        {
+            titleHeight = value;
+            TitleRow.Height = new(value);
+        }
+    }
 
     /// <summary>
     /// Gets the identifier of the resource package.
@@ -439,7 +457,7 @@ public sealed partial class LocalWebAppWindow : Window
     internal void SetFullScreen(bool value)
     {
         VisualUtility.SetFullScreenMode(value, this);
-        TitleRow.Height = value ? new(0) : new(28);
+        TitleRow.Height = value ? new(0) : new(titleHeight);
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

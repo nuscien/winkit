@@ -263,6 +263,15 @@ public sealed partial class TabbedWebView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets an instance style that is applied for the tab view during layout and rendering.
+    /// </summary>
+    public Style TabStyle
+    {
+        get => HostElement.Style;
+        set => HostElement.Style = value;
+    }
+
+    /// <summary>
     /// Gets or sets the handler to create default URI.
     /// </summary>
     public Func<Uri> DefaultUriCreator { get; set; }

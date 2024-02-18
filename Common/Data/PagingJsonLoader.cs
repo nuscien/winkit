@@ -21,10 +21,16 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// <param name="value">The data value.</param>
     /// <param name="page">The page index.</param>
     /// <param name="kind">The source kind.</param>
-    public JsonPagingEventArgs(JsonObjectNode value, int page, WebApiResultSourceTypes kind) : base(value)
+    /// <param name="pendingTime">The job pending date time.</param>
+    /// <param name="requestTime">The data request date time.</param>
+    /// <param name="responseTime">The data response date time.</param>
+    public JsonPagingEventArgs(JsonObjectNode value, int page, WebApiResultSourceTypes kind, DateTime pendingTime, DateTime? requestTime = null, DateTime? responseTime = null) : base(value)
     {
         Page = page;
         Kind = kind;
+        PendingTime = pendingTime;
+        RequestTime = requestTime ?? pendingTime;
+        ResponseTime = responseTime ?? DateTime.Now;
     }
 
     /// <summary>
@@ -36,6 +42,21 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// Gets the source kind.
     /// </summary>
     public WebApiResultSourceTypes Kind { get; private set; }
+
+    /// <summary>
+    /// Gets the job pending date time.
+    /// </summary>
+    public DateTime PendingTime { get; private set; }
+
+    /// <summary>
+    /// Gets the data request date time.
+    /// </summary>
+    public DateTime RequestTime { get; private set; }
+
+    /// <summary>
+    /// Gets the data response date time.
+    /// </summary>
+    public DateTime ResponseTime { get; private set; }
 }
 
 /// <summary>
@@ -91,6 +112,11 @@ public abstract class BaseJsonPagingLoader
     public event EventHandler<DataEventArgs<FailedHttpException>> NetworkAccessFailed;
 
     /// <summary>
+    /// Occurs on data is loaded.
+    /// </summary>
+    public event EventHandler<ChangeEventArgs<int>> PageIndexChanged;
+
+    /// <summary>
     /// Gets the page index.
     /// </summary>
     public int PageIndex { get; private set; } = -1;
@@ -109,8 +135,20 @@ public abstract class BaseJsonPagingLoader
     /// <param name="value">The data result.</param>
     /// <param name="page">The page index.</param>
     /// <param name="kind">The source kind.</param>
-    protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online)
-        => ReceiveResult(value, page, false, kind);
+    /// <param name="requestTime">The data request date time.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, DateTime? requestTime = null)
+        => ReceiveResult(value, page, false, kind, requestTime);
+
+    /// <summary>
+    /// Raises the event.
+    /// </summary>
+    /// <param name="value">The data result.</param>
+    /// <param name="page">The page index.</param>
+    /// <param name="requestTime">The data request date time.</param>
+    /// <param name="kind">The source kind.</param>
+    /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, DateTime requestTime, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, bool skipToUpdateCache = false)
+        => ReceiveResult(value, page, skipToUpdateCache, kind, requestTime);
 
     /// <summary>
     /// Raises the event.
@@ -119,10 +157,11 @@ public abstract class BaseJsonPagingLoader
     /// <param name="page">The page index.</param>
     /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
     /// <param name="kind">The source kind.</param>
-    protected void ReceiveResult(JsonObjectNode value, int page, bool skipToUpdateCache, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online)
+    /// <param name="requestTime">The data request date time.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, bool skipToUpdateCache, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, DateTime? requestTime = null)
     {
         if (!skipToUpdateCache) cache[page] = value;
-        DataLoaded?.Invoke(this, new(value, page, kind));
+        DataLoaded?.Invoke(this, new(value, page, kind, requestTime ?? DateTime.Now));
     }
 
     /// <summary>
@@ -137,7 +176,12 @@ public abstract class BaseJsonPagingLoader
     /// Resets page index.
     /// </summary>
     public void ResetPageIndex()
-        => PageIndex = -1;
+    {
+        if (PageIndex == -1) return;
+        var old = PageIndex;
+        PageIndex = -1;
+        PageIndexChanged?.Invoke(this, new(old, PageIndex, nameof(PageIndex)));
+    }
 
     /// <summary>
     /// Clears cache.
@@ -145,7 +189,7 @@ public abstract class BaseJsonPagingLoader
     public void ClearCache()
     {
         cache.Clear();
-        PageIndex = -1;
+        ResetPageIndex();
     }
 
     /// <summary>
@@ -168,6 +212,9 @@ public abstract class BaseJsonPagingLoader
     {
         if (page < 0) return null;
         if (!wait && slim.CurrentCount < 0) return null;
+        var pendingTime = DateTime.Now;
+        JsonObjectNode result;
+        int old;
         try
         {
             try
@@ -183,7 +230,9 @@ public abstract class BaseJsonPagingLoader
                 return null;
             }
 
-            if (cache.TryGetValue(page, out var result) && result != null) return result;
+            old = PageIndex;
+            if (cache.TryGetValue(page, out result) && result != null) return result;
+            var requestTime = DateTime.Now;
             try
             {
                 result = await GetPageDataAsync(page, cancellationToken);
@@ -204,11 +253,10 @@ public abstract class BaseJsonPagingLoader
             if (!disableAutoRaise)
             {
                 cache[page] = result;
-                DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online));
+                DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online, pendingTime, requestTime));
             }
 
             PageIndex = page;
-            return result;
         }
         finally
         {
@@ -223,5 +271,8 @@ public abstract class BaseJsonPagingLoader
             {
             }
         }
+
+        PageIndexChanged?.Invoke(this, new(old, page, nameof(PageIndex)));
+        return result;
     }
 }

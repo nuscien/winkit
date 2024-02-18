@@ -928,7 +928,8 @@ public sealed partial class TileItem : UserControl
     /// </summary>
     public void UseImageUriPrepared()
     {
-        if (imageUri != null) ImageUri = imageUri;
+        if (imageUri == null) return;
+        ImageUri = imageUri;
     }
 
     /// <summary>

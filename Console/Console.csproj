@@ -7,11 +7,9 @@
     <AssemblyName>Trivial.Console</AssemblyName>
     <RootNamespace>Trivial</RootNamespace>
     <PackageId>Trivial.Console</PackageId>
-    <Description>The rich user interface console controls and utilities.</Description>
+    <Description>The console utilities and rich user interface console.</Description>
     <PackageProjectUrl>https://github.com/nuscien/trivial/wiki/console</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageIcon>cmd.png</PackageIcon>
     <PackageIconUrl>https://github.com/nuscien/trivial/raw/master/Materials/logo.png</PackageIconUrl>
     <PackageTags>console</PackageTags>

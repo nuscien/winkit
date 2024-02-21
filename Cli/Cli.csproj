@@ -11,8 +11,6 @@
     <Description>CLI for local web app.</Description>
     <PackageProjectUrl>https://github.com/nuscien/winkit</PackageProjectUrl>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>cli lwa</PackageTags>
   </PropertyGroup>

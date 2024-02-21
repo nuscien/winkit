@@ -12,8 +12,6 @@
     <UseWinUI>true</UseWinUI>
     <Description>Some advanced visual controls and utilities for Windows app.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>ui tiles lwa</PackageTags>
   </PropertyGroup>

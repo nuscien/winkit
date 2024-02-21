@@ -15,6 +15,11 @@
     <PackageTags>console</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\Materials\cmd.png" Pack="true" PackagePath="cmd.png" />
   </ItemGroup>

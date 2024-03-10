@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Trivial" Version="8.0.0-preview1" />
+    <PackageReference Include="Trivial" Version="8.0.0-preview7" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net481' OR '$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'net461'">

@@ -3,7 +3,7 @@
   <Import Project="..\Common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-windows10.0.17763.0;net8.0-windows10.0.19041.0;net8.0-windows10.0.22000.0;net7.0-windows10.0.17763.0;net7.0-windows10.0.19041.0;net7.0-windows10.0.22000.0;net6.0-windows10.0.17763.0;net6.0-windows10.0.19041.0;net6.0-windows10.0.22000.0</TargetFrameworks>
+    <TargetFrameworks>net8.0-windows10.0.17763.0;net8.0-windows10.0.19041.0;net8.0-windows10.0.22000.0</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <AssemblyName>Trivial.WindowsKit</AssemblyName>
     <RootNamespace>Trivial.UI</RootNamespace>
@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
   </ItemGroup>
 
   <ItemGroup>

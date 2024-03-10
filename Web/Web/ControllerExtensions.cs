@@ -354,12 +354,24 @@ public static class ControllerExtensions
     /// <param name="request">The HTTP request.</param>
     /// <param name="encoding">The optional encoding.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding encoding = null)
+    public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, Encoding encoding = null)
     {
         if (request == null || request.Body == null) return null;
         encoding ??= Encoding.UTF8;
         using var reader = new StreamReader(request.Body, encoding);
-        var query = await reader.ReadToEndAsync();
+        return await reader.ReadToEndAsync();
+    }
+
+    /// <summary>
+    /// Gets the query data.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="encoding">The optional encoding.</param>
+    /// <returns>The string value; or null, if non-exist.</returns>
+    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding encoding = null)
+    {
+        var query = await ReadBodyAsStringAsync(request, encoding);
+        if (query == null) return null;
         var q = new QueryData();
         q.ParseSet(query, false, encoding);
         return q;

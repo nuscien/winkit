@@ -510,7 +510,7 @@ public class LocalWebAppThemeInfo
     /// <summary>
     /// Converts to JSON object node.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>dark or light.</returns>
     public JsonObjectNode ToJson()
         => new()
         {

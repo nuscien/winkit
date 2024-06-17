@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Trivial.Net;
 using Trivial.Reflection;
@@ -192,7 +195,7 @@ namespace Trivial.Data
     /// The menu item header information.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
-    public class BasicMenuItemInfo<T> : NameValueObservableProperties<T>
+    public class BasicMenuItemInfo<T> : NameValueObservableModel<T>
     {
         /// <summary>
         /// Initializes a new instance of the BasicMenuItemInfo class.
@@ -236,6 +239,9 @@ namespace Trivial.Data
         /// <summary>
         /// Gets or sets the additional identifier.
         /// </summary>
+        [DataMember(Name = "id")]
+        [JsonPropertyName("id")]
+        [Description("The optional identifier of the menu item.")]
         public string Id
         {
             get => GetCurrentProperty<string>();
@@ -245,6 +251,9 @@ namespace Trivial.Data
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
+        [DataMember(Name = "desc")]
+        [JsonPropertyName("desc")]
+        [Description("The optional description of the menu item.")]
         public string Description
         {
             get => GetCurrentProperty<string>();
@@ -254,6 +263,9 @@ namespace Trivial.Data
         /// <summary>
         /// Gets or sets the icon URI.
         /// </summary>
+        [DataMember(Name = "icon")]
+        [JsonPropertyName("icon")]
+        [Description("The icon URL of the menu item.")]
         public Uri Icon
         {
             get => GetCurrentProperty<Uri>();
@@ -263,6 +275,7 @@ namespace Trivial.Data
         /// <summary>
         /// Gets or sets the header.
         /// </summary>
+        [JsonIgnore]
         public BasicMenuItemInfo<T> Group
         {
             get => GetCurrentProperty<BasicMenuItemInfo<T>>();
@@ -270,8 +283,23 @@ namespace Trivial.Data
         }
 
         /// <summary>
-        /// Gets or sets the additional tag.
+        /// Gets or sets the group identifier.
         /// </summary>
-        public object Tag { get; set; }
+        [JsonPropertyName("group")]
+        public string GroupId
+        {
+            get
+            {
+                return Group?.Id;
+            }
+            set
+            {
+                if (Group?.Id == value) return;
+                Group = string.IsNullOrWhiteSpace(value) ? null : new()
+                {
+                    Id = value
+                };
+            }
+        }
     }
 }

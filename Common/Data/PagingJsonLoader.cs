@@ -60,7 +60,7 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
 }
 
 /// <summary>
-/// The film library page.
+/// The paging loader.
 /// </summary>
 public abstract class BaseJsonPagingLoader
 {

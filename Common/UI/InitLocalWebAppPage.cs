@@ -37,7 +37,7 @@ public sealed partial class LocalWebAppPage
         var sb = new StringBuilder();
         sb.Append(@"(function () { if (window.localWebApp) return;
 let postMsg = window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function' ? function (data) { window.chrome.webview.postMessage(data); } : function (data) { };
-let hs = []; let stepNumber = 0;
+let hs = []; let stepNumber = 0; let tempStore = { data: {}, strFrag: {}, propFrag: {} };
 function genRandomStr() {
   if (stepNumber >= Number.MAX_SAFE_INTEGER) stepNumber = 0; stepNumber++;
   return 'r' + Math.floor(Math.random() * 46655).toString(36) + stepNumber.toString(36) + (new Date().getTime().toString(36));
@@ -73,40 +73,70 @@ function onMessageRecieved(type, callback) {
     type, dispose() { removeMessageHandler(item); this.disposed = true; }
   };
 }
+function onNativeMessageReceive(ev) {
+  let removing = [];
+  for (let i in hs) {
+    let source = hs[i] ?? {}; if (!ev || !ev.data || source.type != ev.data.type) continue;
+    if (source.handler && ev.data.handler !== source.handler) continue;
+    let item = source.h; if (!item) continue;
+    if (typeof item.proc === 'function') {
+      if (item.invalid != null) {
+        let toRemove = false;
+        if (item.invalid === true) {
+          toRemove = true;
+        } else if (typeof item.invalid === 'function') {
+          if (item.invalid(ev)) toRemove = true;
+        } else if (typeof item.invalid === 'number') {
+          if (item.invalid <= 0) toRemove = true;
+          else item.invalid--;
+        }
+        if (toRemove && !item.keep) {
+          removing.push(source); continue;
+        }
+      }
+      item.proc(ev); continue;
+    }
+    if (typeof item === 'function') item(ev);
+  }
+  for (let i in removing) {
+    removeMessageHandler(removing[i]);
+  }
+}
 if (postMsg && typeof window.chrome.webview.addEventListener === 'function') {
   try {
-    window.chrome.webview.addEventListener('message', function (ev) {
-      let removing = [];
-      for (let i in hs) {
-        let source = hs[i] ?? {}; if (!ev || !ev.data || source.type != ev.data.type) continue;
-        if (source.handler && ev.data.handler !== source.handler) continue;
-        let item = source.h; if (!item) continue;
-        if (typeof item.proc === 'function') {
-          if (item.invalid != null) {
-            let toRemove = false;
-            if (item.invalid === true) {
-              toRemove = true;
-            } else if (typeof item.invalid === 'function') {
-              if (item.invalid(ev)) toRemove = true;
-            } else if (typeof item.invalid === 'number') {
-              if (item.invalid <= 0) toRemove = true;
-              else item.invalid--;
-            }
-            if (toRemove && !item.keep) {
-              removing.push(source); continue;
-            }
-          }
-          item.proc(ev); continue;
-        }
-        if (typeof item === 'function') item(ev);
-      }
-      for (let i in removing) {
-        removeMessageHandler(removing[i]);
-      }
-    });
+    window.chrome.webview.addEventListener('message', onNativeMessageReceive);
   } catch (ex) { }
 }
 window.localWebApp = { 
+  internal: {
+    forceSendMessageByNative(ev) {
+      onNativeMessageReceive(ev);
+    },
+    pushStrFrag(id, v) {
+      if (!tempStore.strFrag[id]) tempStore.strFrag[id] = [];
+      tempStore.strFrag[id].push(v);
+    },
+    appendPropFrag(id, key, v) {
+      if (!tempStore.propFrag[id]) tempStore.propFrag[id] = {};
+      tempStore.propFrag[id][key] = v;
+    },
+    clearStrFrag(id) {
+      if (!tempStore.strFrag[id]) return;
+      delete tempStore.strFrag[id];  
+    },
+    clearPropFrag(id, key) {
+      if (!tempStore.propFrag[id]) return;
+      if (key) delete tempStore.strFrag[id][key];
+      else delete tempStore.strFrag[id];
+    },
+    getStrFrag(id, remove) {
+      let objArr = tempStore.strFrag[id]; if (!objArr) return;
+      let objStr = '';
+      for (let objInd in objArr) { if (objArr[objInd]) objStr += objArr[objInd]; }
+      if (remove) delete tempStore.strFrag[id];
+      return objStr;
+    }
+  },
   onMessage(type, callback) {
     return onMessageRecieved(type, callback);
   },
@@ -220,11 +250,11 @@ window.localWebApp = {
     },
     rsaEncrypt(value, pem, options) {
       if (!options) options = {};
-      return sendRequest(null, 'rsa', { pem: options.pem, padding: options.padding, type: options.type, decrypt: false }, null, options.context, false, options.ref);
+      return sendRequest(null, 'rsa', { value, pem, padding: options.padding, type: options.type, decrypt: false }, null, options.context, false, options.ref);
     },
     rsaDecrypt(value, pem, options) {
       if (!options) options = {};
-      return sendRequest(null, 'rsa', { pem: options.pem, padding: options.padding, type: options.type, decrypt: true }, null, options.context, false, options.ref);
+      return sendRequest(null, 'rsa', { value, pem, padding: options.padding, type: options.type, decrypt: true }, null, options.context, false, options.ref);
     },
     verify(alg, value, key, test, options) {
       if (!options) options = {};

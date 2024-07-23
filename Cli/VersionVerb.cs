@@ -23,6 +23,7 @@ internal class VersionVerb : BaseCommandVerb
     protected override async Task OnProcessAsync(CancellationToken cancellationToken = default)
     {
         var console = GetConsole();
+        var now = DateTime.Now;
         if (string.IsNullOrEmpty(Arguments.Verb?.Value))
         {
             console.WriteLine(Assembly.GetExecutingAssembly().GetName().Version?.ToString());
@@ -120,6 +121,19 @@ internal class VersionVerb : BaseCommandVerb
 
             console.WriteLine(string.Concat(version ?? "?", " -> ", newVersion));
             Update(id, newVersion, nodePackage, nodePackageFile, config, configFile);
+        }
+
+        var replaceVer = config?.TryGetObjectValue("ref")?.TryGetObjectListValue("replaceVersion");
+        if (replaceVer == null)
+        {
+            var replaceVerSinge = config?.TryGetObjectValue("ref")?.TryGetObjectValue("replaceVersion");
+            if (replaceVerSinge != null) replaceVer = new List<JsonObjectNode> { replaceVerSinge };
+        }
+
+        if (replaceVer == null) return;
+        foreach (var replaceVerSingle in replaceVer)
+        {
+            ReplaceStrings(replaceVerSingle, dir, id, title, newVersion, now);
         }
     }
 
@@ -290,6 +304,43 @@ internal class VersionVerb : BaseCommandVerb
         if (packageConfig == null) return;
         packageConfig.SetValue("version", version);
         WriteFile(config, configFile);
+    }
+
+    private IEnumerable<FileInfo> ReplaceStrings(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
+    {
+        var files = json?.TryGetStringListValue("files");
+        if (files == null || files.Count < 1) yield break;
+        var placeholders = json.TryGetObjectValue("placeholders");
+        var encodingStr = json.TryGetStringTrimmedValue("encoding") ?? string.Empty;
+        var encoding = encodingStr.Trim().ToLowerInvariant().Replace("-", string.Empty) switch
+        {
+            "utf8" or "" => Encoding.UTF8,
+            "unicode" or "utf16" => Encoding.Unicode,
+            "ascii" => Encoding.ASCII,
+            "utf32" => Encoding.UTF32,
+            _ => Encoding.GetEncoding(encodingStr) ?? Encoding.UTF8
+        };
+        if (placeholders == null) yield break;
+        var idOriginal = placeholders.TryGetStringTrimmedValue("id", true);
+        var titleOriginal = placeholders.TryGetStringTrimmedValue("title", true);
+        var versionOriginal = placeholders.TryGetStringTrimmedValue("version", true);
+        var timeOriginal = placeholders.TryGetStringTrimmedValue("tick", true);
+        var tickStr = WebFormat.ParseDate(now).ToString("g");
+        foreach (var filePath in files)
+        {
+            var file = LocalWebAppHost.GetFileInfoByRelative(root, filePath);
+            if (file == null || !file.Exists) continue;
+            var s = File.ReadAllText(file.FullName, encoding);
+            var old = s;
+            if (s == null) continue;
+            if (idOriginal != null) s = s.Replace(idOriginal, id);
+            if (titleOriginal != null) s = s.Replace(titleOriginal, title);
+            if (versionOriginal != null) s = s.Replace(versionOriginal, version);
+            if (timeOriginal != null) s = s.Replace(timeOriginal, tickStr);
+            if (old == s) continue;
+            File.WriteAllText(file.FullName, s, encoding);
+            yield return file;
+        }
     }
 
     private static JsonObjectNode GetManifest(JsonObjectNode config)

@@ -320,7 +320,7 @@ internal class VersionVerb : BaseCommandVerb
             "utf32" => Encoding.UTF32,
             _ => Encoding.GetEncoding(encodingStr) ?? Encoding.UTF8
         };
-        if (placeholders == null) yield break;
+        if (placeholders == null || json.TryGetBooleanValue("disable") == true) yield break;
         var idOriginal = placeholders.TryGetStringTrimmedValue("id", true);
         var titleOriginal = placeholders.TryGetStringTrimmedValue("title", true);
         var versionOriginal = placeholders.TryGetStringTrimmedValue("version", true);

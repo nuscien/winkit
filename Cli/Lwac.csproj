@@ -18,6 +18,7 @@
   <PropertyGroup>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
     <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\lwac.xml</DocumentationFile>
+    <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,10 @@
     <Compile Include="..\Common\Web\Manifest.cs" Link="Manifest.cs" />
     <Compile Include="..\Common\Web\Options.cs" Link="Options.cs" />
     <Compile Include="..\Common\Web\SignatureException.cs" Link="SignatureException.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Materials\WinKit.ico" Link="WinKit.cs" />
   </ItemGroup>
 
   <ItemGroup>

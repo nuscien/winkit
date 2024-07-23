@@ -57,7 +57,7 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         var id = config?.TryGetStringTrimmedValue("id", true) ?? packageConfig?.TryGetStringTrimmedValue("id", true) ?? nodePackage?.TryGetStringTrimmedValue("name", true);
-        var version = packageConfig?.TryGetStringTrimmedValue("version", true) ?? nodePackage.TryGetStringTrimmedValue("version", true);
+        var version = packageConfig?.TryGetStringTrimmedValue("version", true) ?? nodePackage?.TryGetStringTrimmedValue("version", true);
         if (id == null)
         {
             console.Write(ConsoleColor.Red, "Error!");
@@ -133,7 +133,7 @@ internal class VersionVerb : BaseCommandVerb
         if (replaceVer == null) return;
         foreach (var replaceVerSingle in replaceVer)
         {
-            ReplaceStrings(replaceVerSingle, dir, id, title, newVersion, now);
+            ReplaceStrings(replaceVerSingle, dir, id, title, newVersion ?? version ?? "0.0.1", now);
         }
     }
 
@@ -307,6 +307,9 @@ internal class VersionVerb : BaseCommandVerb
     }
 
     private IEnumerable<FileInfo> ReplaceStrings(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
+        => ReplaceStringsInternal(json, root, id, title, version, now).ToList();
+
+    private IEnumerable<FileInfo> ReplaceStringsInternal(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
     {
         var files = json?.TryGetStringListValue("files");
         if (files == null || files.Count < 1) yield break;

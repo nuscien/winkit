@@ -1988,6 +1988,13 @@ public partial class LocalWebAppHost
     internal static JsonObjectNode TryLoadBuildConfig(DirectoryInfo dir, out FileInfo file)
     {
         file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
+        if (file == null || !file.Exists)
+        {
+            dir = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
+            if (dir != null && dir.Exists)
+                file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
+        }
+
         if (file == null || !file.Exists) return null;
         return JsonObjectNode.TryParse(file);
     }

@@ -1285,8 +1285,7 @@ public partial class LocalWebAppHost
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
         var config = LoadBuildConfig(dir, out _);
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
-        var keyFile = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault();
-        if (keyFile == null) throw new FileNotFoundException("The private key does not exist.");
+        var keyFile = GetPrivateKeyFile(dir);
         return LoadOptions(config, keyFile);
     }
 
@@ -1373,7 +1372,7 @@ public partial class LocalWebAppHost
 
         if (configFile == null) throw new InvalidOperationException("Miss config file.");
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
-        var keyFile = (dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem"))?.FirstOrDefault()) ?? throw new FileNotFoundException("The private key does not exist.");
+        var keyFile = GetPrivateKeyFile(dir);
         var refConfig = config.TryGetObjectValue("ref") ?? new();
 
         // Create manifest.
@@ -1990,7 +1989,7 @@ public partial class LocalWebAppHost
         file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
         if (file == null || !file.Exists)
         {
-            dir = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
+            dir = dir.EnumerateDirectories("localwebapp")?.FirstOrDefault();
             if (dir != null && dir.Exists)
                 file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
         }
@@ -2003,6 +2002,35 @@ public partial class LocalWebAppHost
     {
         var json = TryLoadBuildConfig(dir, out file) ?? throw new FileNotFoundException("The config file does not exist.");
         return json;
+    }
+
+    private static FileInfo GetPrivateKeyFile(DirectoryInfo dir)
+    {
+        var name = GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "private", ".pem");
+        var file = dir.EnumerateFiles(name)?.FirstOrDefault();
+        if (file != null && file.Exists) return file;
+        dir = dir.EnumerateDirectories("localwebapp")?.FirstOrDefault();
+        if (dir != null && dir.Exists) file = dir.EnumerateFiles(name)?.FirstOrDefault();
+        if (file != null && file.Exists) return file;
+        try
+        {
+            var path = Path.Combine(dir.FullName, name);
+            throw new FileNotFoundException("The private key does not exist.", path);
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        throw new FileNotFoundException("The private key does not exist.");
     }
 
     /// <summary>

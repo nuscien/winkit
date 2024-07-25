@@ -39,13 +39,8 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         await RunAsync(null, cancellationToken);
-        var config = LocalWebAppHost.TryLoadBuildConfig(dir, out var configFile);
-        if (config == null)
-        {
-            var dir2 = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
-            if (dir2 != null) config = LocalWebAppHost.TryLoadBuildConfig(dir2, out configFile);
-        }
-
+        var dir2 = dir;
+        var config = LocalWebAppHost.TryLoadBuildConfig(ref dir2, out var configFile);
         var packageConfig = GetManifest(config);
         var nodePackageFile = FileSystemInfoUtility.TryGetFileInfo(dir, "package.json");
         var nodePackage = JsonObjectNode.TryParse(nodePackageFile);
@@ -131,10 +126,14 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         if (replaceVer == null) return;
+        var replaceCount = 0;
         foreach (var replaceVerSingle in replaceVer)
         {
-            ReplaceStrings(replaceVerSingle, dir, id, title, newVersion ?? version ?? "0.0.1", now);
+            replaceCount += ReplaceStrings(replaceVerSingle, dir2, id, title, newVersion ?? version ?? "0.0.1", now).Count;
         }
+
+        if (replaceCount == 1) console.WriteLine("Updated 1 text-based file by replacing version and others info.");
+        else if (replaceCount > 1) console.WriteLine(string.Concat("Updated ", replaceCount, " text-based files by replacing version and others info."));
     }
 
     private string SetVersion(string version, Func<int, int> update)
@@ -306,10 +305,10 @@ internal class VersionVerb : BaseCommandVerb
         WriteFile(config, configFile);
     }
 
-    private IEnumerable<FileInfo> ReplaceStrings(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
-        => ReplaceStringsInternal(json, root, id, title, version, now).ToList();
+    private IList<FileInfo> ReplaceStrings(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
+        => ReplaceStringsLazy(json, root, id, title, version, now).ToList();
 
-    private IEnumerable<FileInfo> ReplaceStringsInternal(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
+    private IEnumerable<FileInfo> ReplaceStringsLazy(JsonObjectNode json, DirectoryInfo root, string id, string title, string version, DateTime now)
     {
         var files = json?.TryGetStringListValue("files");
         if (files == null || files.Count < 1) yield break;

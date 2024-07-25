@@ -1283,7 +1283,7 @@ public partial class LocalWebAppHost
     public static LocalWebAppOptions LoadOptions(DirectoryInfo dir)
     {
         if (dir == null) throw new DirectoryNotFoundException("The root directory is not found.");
-        var config = LoadBuildConfig(dir, out _);
+        var config = TryLoadBuildConfig(dir, out _) ?? throw new FileNotFoundException("The config file does not exist.");
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = GetPrivateKeyFile(dir);
         return LoadOptions(config, keyFile);
@@ -1362,15 +1362,9 @@ public partial class LocalWebAppHost
     {
         // Load options.
         if (dir == null || !dir.Exists) throw new DirectoryNotFoundException("The root directory is not found.");
-        var config = TryLoadBuildConfig(dir, out var configFile);
         var rootDir = dir;
-        if (config == null)
-        {
-            dir = dir.EnumerateDirectories("localwebapp").FirstOrDefault();
-            if (dir != null) config = LoadBuildConfig(dir, out configFile);
-        }
-
-        if (configFile == null) throw new InvalidOperationException("Miss config file.");
+        var config = TryLoadBuildConfig(ref dir, out var configFile);
+        if (configFile == null) throw new InvalidOperationException("Miss config file.", new FileNotFoundException());
         if (config == null) throw new InvalidOperationException("Parse the config file failed.");
         var keyFile = GetPrivateKeyFile(dir);
         var refConfig = config.TryGetObjectValue("ref") ?? new();
@@ -1985,6 +1979,9 @@ public partial class LocalWebAppHost
     }
 
     internal static JsonObjectNode TryLoadBuildConfig(DirectoryInfo dir, out FileInfo file)
+        => TryLoadBuildConfig(ref dir, out file);
+
+    internal static JsonObjectNode TryLoadBuildConfig(ref DirectoryInfo dir, out FileInfo file)
     {
         file = dir.EnumerateFiles(GetSubFileName(LocalWebAppExtensions.DefaultManifestFileName, "project"))?.FirstOrDefault();
         if (file == null || !file.Exists)
@@ -1996,12 +1993,6 @@ public partial class LocalWebAppHost
 
         if (file == null || !file.Exists) return null;
         return JsonObjectNode.TryParse(file);
-    }
-
-    internal static JsonObjectNode LoadBuildConfig(DirectoryInfo dir, out FileInfo file)
-    {
-        var json = TryLoadBuildConfig(dir, out file) ?? throw new FileNotFoundException("The config file does not exist.");
-        return json;
     }
 
     private static FileInfo GetPrivateKeyFile(DirectoryInfo dir)

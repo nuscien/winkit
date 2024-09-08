@@ -24,13 +24,27 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// <param name="pendingTime">The job pending date time.</param>
     /// <param name="requestTime">The data request date time.</param>
     /// <param name="responseTime">The data response date time.</param>
-    public JsonPagingEventArgs(JsonObjectNode value, int page, WebApiResultSourceTypes kind, DateTime pendingTime, DateTime? requestTime = null, DateTime? responseTime = null) : base(value)
+    /// <param name="contextObject">The optional context object.</param>
+    public JsonPagingEventArgs(JsonObjectNode value, int page, WebApiResultSourceTypes kind, DateTime pendingTime, DateTime? requestTime = null, DateTime? responseTime = null, object contextObject = null) : this(value, page, kind, pendingTime, contextObject)
+    {
+        RequestTime = requestTime ?? pendingTime;
+        ResponseTime = responseTime ?? DateTime.Now;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the PagingDataEventArgs class.
+    /// </summary>
+    /// <param name="value">The data value.</param>
+    /// <param name="page">The page index.</param>
+    /// <param name="kind">The source kind.</param>
+    /// <param name="pendingTime">The job pending date time.</param>
+    /// <param name="contextObject">The optional context object.</param>
+    public JsonPagingEventArgs(JsonObjectNode value, int page, WebApiResultSourceTypes kind, DateTime? pendingTime, object contextObject) : base(value)
     {
         Page = page;
         Kind = kind;
-        PendingTime = pendingTime;
-        RequestTime = requestTime ?? pendingTime;
-        ResponseTime = responseTime ?? DateTime.Now;
+        PendingTime = pendingTime ?? DateTime.Now;
+        ContextObject = contextObject;
     }
 
     /// <summary>
@@ -57,6 +71,11 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// Gets the data response date time.
     /// </summary>
     public DateTime ResponseTime { get; private set; }
+
+    /// <summary>
+    /// Gets The optional context object.
+    /// </summary>
+    public object ContextObject { get; private set; }
 }
 
 /// <summary>
@@ -125,9 +144,10 @@ public abstract class BaseJsonPagingLoader
     /// Gets data.
     /// </summary>
     /// <param name="page">The page index.</param>
+    /// <param name="contextObject">The optional context object.</param>
     /// <param name="cancellationToken">An optional cancellation token.</param>
     /// <returns>The result.</returns>
-    protected abstract Task<JsonObjectNode> GetPageDataAsync(int page, CancellationToken cancellationToken = default);
+    protected abstract Task<JsonObjectNode> GetPageDataAsync(int page, object contextObject, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Raises the event.
@@ -136,8 +156,9 @@ public abstract class BaseJsonPagingLoader
     /// <param name="page">The page index.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="requestTime">The data request date time.</param>
-    protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, DateTime? requestTime = null)
-        => ReceiveResult(value, page, false, kind, requestTime);
+    /// <param name="contextObject">The optional context object.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, DateTime? requestTime = null, object contextObject = null)
+        => ReceiveResult(value, page, false, kind, requestTime, contextObject);
 
     /// <summary>
     /// Raises the event.
@@ -147,8 +168,9 @@ public abstract class BaseJsonPagingLoader
     /// <param name="requestTime">The data request date time.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
-    protected void ReceiveResult(JsonObjectNode value, int page, DateTime requestTime, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, bool skipToUpdateCache = false)
-        => ReceiveResult(value, page, skipToUpdateCache, kind, requestTime);
+    /// <param name="contextObject">The optional context object.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, DateTime requestTime, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, bool skipToUpdateCache = false, object contextObject = null)
+        => ReceiveResult(value, page, skipToUpdateCache, kind, requestTime, contextObject);
 
     /// <summary>
     /// Raises the event.
@@ -158,10 +180,11 @@ public abstract class BaseJsonPagingLoader
     /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="requestTime">The data request date time.</param>
-    protected void ReceiveResult(JsonObjectNode value, int page, bool skipToUpdateCache, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, DateTime? requestTime = null)
+    /// <param name="contextObject">The optional context object.</param>
+    protected void ReceiveResult(JsonObjectNode value, int page, bool skipToUpdateCache, WebApiResultSourceTypes kind = WebApiResultSourceTypes.Online, DateTime? requestTime = null, object contextObject = null)
     {
         if (!skipToUpdateCache) cache[page] = value;
-        DataLoaded?.Invoke(this, new(value, page, kind, requestTime ?? DateTime.Now));
+        DataLoaded?.Invoke(this, new(value, page, kind, requestTime, contextObject));
     }
 
     /// <summary>
@@ -171,6 +194,15 @@ public abstract class BaseJsonPagingLoader
     /// <returns>The result.</returns>
     public Task<JsonObjectNode> LoadNextPageAsync(CancellationToken cancellationToken = default)
         => LoadPageAsync(PageIndex + 1, cancellationToken);
+
+    /// <summary>
+    /// Loads data of next page.
+    /// </summary>
+    /// <param name="contextObject">The optional context object.</param>
+    /// <param name="cancellationToken">The optional cancellation token.</param>
+    /// <returns>The result.</returns>
+    public Task<JsonObjectNode> LoadNextPageAsync(object contextObject, CancellationToken cancellationToken = default)
+        => LoadPageAsync(PageIndex + 1, contextObject, cancellationToken);
 
     /// <summary>
     /// Resets page index.
@@ -199,7 +231,17 @@ public abstract class BaseJsonPagingLoader
     /// <param name="cancellationToken">The optional cancellation token.</param>
     /// <returns>The result; null if skip, or the result is null.</returns>
     public Task<JsonObjectNode> LoadPageAsync(int page, CancellationToken cancellationToken = default)
-        => LoadPageAsync(page, false, cancellationToken);
+        => LoadPageAsync(page, false, null, cancellationToken);
+
+    /// <summary>
+    /// Loads data of the specific page.
+    /// </summary>
+    /// <param name="page">The page index.</param>
+    /// <param name="contextObject">The optional context object.</param>
+    /// <param name="cancellationToken">The optional cancellation token.</param>
+    /// <returns>The result; null if skip, or the result is null.</returns>
+    public Task<JsonObjectNode> LoadPageAsync(int page, object contextObject, CancellationToken cancellationToken = default)
+        => LoadPageAsync(page, false, contextObject, cancellationToken);
 
     /// <summary>
     /// Loads data of the specific page.
@@ -208,7 +250,18 @@ public abstract class BaseJsonPagingLoader
     /// <param name="wait">true if wait to continue; otherwise, false, to skip on working.</param>
     /// <param name="cancellationToken">The optional cancellation token.</param>
     /// <returns>The result; null if skip, or the result is null.</returns>
-    public async Task<JsonObjectNode> LoadPageAsync(int page, bool wait, CancellationToken cancellationToken = default)
+    public Task<JsonObjectNode> LoadPageAsync(int page, bool wait, CancellationToken cancellationToken = default)
+        => LoadPageAsync(page, wait, null, cancellationToken);
+
+    /// <summary>
+    /// Loads data of the specific page.
+    /// </summary>
+    /// <param name="page">The page index.</param>
+    /// <param name="wait">true if wait to continue; otherwise, false, to skip on working.</param>
+    /// <param name="contextObject">The optional context object.</param>
+    /// <param name="cancellationToken">The optional cancellation token.</param>
+    /// <returns>The result; null if skip, or the result is null.</returns>
+    public async Task<JsonObjectNode> LoadPageAsync(int page, bool wait, object contextObject, CancellationToken cancellationToken = default)
     {
         if (page < 0) return null;
         if (!wait && slim.CurrentCount < 0) return null;
@@ -253,7 +306,7 @@ public abstract class BaseJsonPagingLoader
             if (!disableAutoRaise)
             {
                 cache[page] = result;
-                DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online, pendingTime, requestTime));
+                DataLoaded?.Invoke(this, new(result, page, WebApiResultSourceTypes.Online, pendingTime, requestTime, null, contextObject));
             }
 
             PageIndex = page;

@@ -1316,7 +1316,7 @@ public static class DefaultConsole
     /// It will flush immediately.
     /// </summary>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(IJsonDataNode json)
+    public static void WriteLine(IJsonValueNode json)
         => StyleConsole.Default.WriteLine(new JsonConsoleStyle().CreateTextCollection(json, 0));
 
     /// <summary>
@@ -1325,7 +1325,7 @@ public static class DefaultConsole
     /// </summary>
     /// <param name="style">The style.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(JsonConsoleStyle style, IJsonDataNode json)
+    public static void WriteLine(JsonConsoleStyle style, IJsonValueNode json)
         => StyleConsole.Default.WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json, 0));
 
     /// <summary>

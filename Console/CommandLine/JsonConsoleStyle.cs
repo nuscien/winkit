@@ -168,7 +168,7 @@ public class JsonConsoleStyle : ICloneable
     /// <param name="json">The JSON instance.</param>
     /// <param name="indentLevel">The current indent level.</param>
     /// <returns>A console text instance.</returns>
-    internal List<ConsoleText> CreateTextCollection(IJsonDataNode json, int indentLevel = 0)
+    internal List<ConsoleText> CreateTextCollection(IJsonValueNode json, int indentLevel = 0)
     {
         var cmd = new List<ConsoleText>();
         if (json == null)

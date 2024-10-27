@@ -2665,8 +2665,8 @@ public partial class LocalWebAppHost
         var q = new Dictionary<string, string>();
         foreach (var kvp in parameters)
         {
-            if (kvp.Value?.ValueKind != JsonValueKind.String || kvp.Value is not IJsonStringNode s) continue;
-            q[kvp.Key] = s.StringValue;
+            if (kvp.Value?.ValueKind != JsonValueKind.String || kvp.Value is not IJsonValueNode<string> s) continue;
+            q[kvp.Key] = s.Value;
         }
 
         return GetUrl(url, q);

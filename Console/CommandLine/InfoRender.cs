@@ -125,7 +125,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, IJsonDataNode json)
+    public static void WriteLine(this StyleConsole cli, IJsonValueNode json)
         => (cli ?? StyleConsole.Default).WriteLine(new JsonConsoleStyle().CreateTextCollection(json, 0));
 
     /// <summary>
@@ -135,7 +135,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="style">The style.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, JsonConsoleStyle style, IJsonDataNode json)
+    public static void WriteLine(this StyleConsole cli, JsonConsoleStyle style, IJsonValueNode json)
         => (cli ?? StyleConsole.Default).WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json, 0));
 
     /// <summary>

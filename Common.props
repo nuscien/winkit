@@ -3,9 +3,9 @@
     <Product>Trivial</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>8.0.0</Version>
-    <AssemblyVersion>8.0.0.0</AssemblyVersion>
-    <FileVersion>8.0.0.0</FileVersion>
+    <Version>9.0.0-preview1</Version>
+    <AssemblyVersion>9.0.0.0</AssemblyVersion>
+    <FileVersion>9.0.0.0</FileVersion>
     <Copyright>Copyright (c) 2018 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/nuscien/trivial</RepositoryUrl>
@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Trivial" Version="8.0.0" />
+    <PackageReference Include="Trivial" Version="9.0.0-preview3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net481' OR '$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'net461'">

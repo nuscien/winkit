@@ -79,7 +79,12 @@ public class ConsoleProgressStyle
         /// <summary>
         /// Character o.
         /// </summary>
-        O = 5
+        O = 5,
+
+        /// <summary>
+        /// A wide rectangle bar.
+        /// </summary>
+        Rectangle = 17,
     }
 
     /// <summary>

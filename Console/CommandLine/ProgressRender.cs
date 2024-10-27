@@ -131,6 +131,7 @@ public static partial class ConsoleRenderExtensions
             ConsoleProgressStyle.Kinds.Sharp => '#',
             ConsoleProgressStyle.Kinds.X => 'x',
             ConsoleProgressStyle.Kinds.O => 'o',
+            ConsoleProgressStyle.Kinds.Rectangle => '▬',
             _ => ' ',
         };
         var pendingChar = style.Kind switch
@@ -140,6 +141,7 @@ public static partial class ConsoleRenderExtensions
             ConsoleProgressStyle.Kinds.Sharp => '-',
             ConsoleProgressStyle.Kinds.X => '.',
             ConsoleProgressStyle.Kinds.O => '.',
+            ConsoleProgressStyle.Kinds.Rectangle => '▭',
             _ => ' ',
         };
         var col = new List<ConsoleText>();

@@ -1720,5 +1720,96 @@ public static class DefaultConsole
     /// </summary>
     /// <param name="area">The area to remove.</param>
     public static void Clear(StyleConsole.RelativeAreas area)
-        => StyleConsole.Default.Clear(area); 
+        => StyleConsole.Default.Clear(area);
+
+    // ToDo: Need remove following helper methods.
+
+    internal static void Write(this StyleConsole console, Color foreground, string s, params object[] args)
+    {
+        if (s == null) return;
+        console.Write(new ConsoleText(args == null || args.Length == 0 ? s : string.Format(s, args), foreground));
+    }
+
+    internal static void Write(this StyleConsole console, Color foreground, Color background, string s, params object[] args)
+    {
+        if (s == null) return;
+        console.Write(new ConsoleText(args == null || args.Length == 0 ? s : string.Format(s, args), foreground, background));
+    }
+
+    internal static void Write(this StyleConsole console, Color foreground, StringBuilder s)
+    {
+        if (s == null) return;
+        console.Write(new ConsoleText(s, foreground));
+    }
+
+    internal static void Write(this StyleConsole console, Color foreground, Color background, StringBuilder s)
+    {
+        if (s == null) return;
+        console.Write(new ConsoleText(s, foreground, background));
+    }
+
+    internal static void Write(this StyleConsole console, double number, string format)
+    {
+        console.Write(new ConsoleText(number.ToString(format)));
+    }
+
+    internal static void Write(this StyleConsole console, ConsoleTextStyle style, int number, string format)
+    {
+        console.Write(new ConsoleText(number.ToString(format), style));
+    }
+
+    internal static void Write(this StyleConsole console, ConsoleColor foreground, int number, string format)
+    {
+        console.Write(new ConsoleText(number.ToString(format), foreground));
+    }
+
+    internal static void Write(this StyleConsole console, ConsoleTextStyle style, double number, string format)
+    {
+        console.Write(new ConsoleText(number.ToString(format), style));
+    }
+
+    internal static void Write(this StyleConsole console, ConsoleColor foreground, double number, string format)
+    {
+        console.Write(new ConsoleText(number.ToString(format), foreground));
+    }
+
+    internal static void Write(this StyleConsole console, ConsoleColor? foreground, ConsoleColor? background, double number, string format)
+    {
+        console.Write(new ConsoleText(number.ToString(format), foreground, background));
+    }
+
+    internal static void Write(this StyleConsole console, IConsoleTextPrettier style, char[] value, int start = 0, int? count = null)
+    {
+        if (style == null)
+        {
+            console.Write(value, start, count);
+            return;
+        }
+
+        var list = style.CreateTextCollection(ToString(value, start, count));
+        if (list == null) return;
+        console.Write(list);
+    }
+
+    internal static void Write(this StyleConsole console, IConsoleTextPrettier style, char value, int repeatCount = 1)
+    {
+        if (style == null || repeatCount < 1)
+        {
+            console.Write(value, repeatCount);
+            return;
+        }
+
+        var list = style.CreateTextCollection(new string(value, repeatCount));
+        if (list == null) return;
+        console.Write(list);
+    }
+
+    private static string ToString(char[] value, int start = 0, int? count = null)
+    {
+        if (start == 0 && count == null)
+            return new string(value);
+        var list = value.Skip(start);
+        if (count.HasValue) list = list.Take(count.Value);
+        return new string(list.ToArray());
+    }
 }

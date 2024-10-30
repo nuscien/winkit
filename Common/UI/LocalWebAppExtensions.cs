@@ -1313,10 +1313,10 @@ internal static class LocalWebAppExtensions
 
     public static string GetPath(IJsonValueNode node, LocalWebAppHost host)
     {
-        if (node is IJsonStringNode s)
+        if (node is IJsonValueNode<string> s)
         {
-            if (host != null) return host.GetLocalPath(s.StringValue, true);
-            return s.StringValue.StartsWith("%") ? FileSystemInfoUtility.GetLocalPath(s.StringValue) : s.StringValue;
+            if (host != null) return host.GetLocalPath(s.Value, true);
+            return s.Value.StartsWith("%") ? FileSystemInfoUtility.GetLocalPath(s.Value) : s.Value;
         }
 
         if (node is not JsonObjectNode json) return null;

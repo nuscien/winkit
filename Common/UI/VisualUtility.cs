@@ -1467,7 +1467,7 @@ public static partial class VisualUtility
         arr.Add(CreateRun(']', style.PunctuationForeground));
     }
 
-    private static void CreateTextInlines(List<Inline> arr, IJsonDataNode json, JsonTextStyle style, int intend)
+    private static void CreateTextInlines(List<Inline> arr, IJsonValueNode json, JsonTextStyle style, int intend)
     {
         switch (json.ValueKind)
         {
@@ -1559,7 +1559,7 @@ public static partial class VisualUtility
         arr.AppendToBuffer(']', style.PunctuationForeground);
     }
 
-    private static void CreateTextViewModels(TextViewModelFactory arr, IJsonDataNode json, JsonTextStyle style, int intend)
+    private static void CreateTextViewModels(TextViewModelFactory arr, IJsonValueNode json, JsonTextStyle style, int intend)
     {
         switch (json.ValueKind)
         {

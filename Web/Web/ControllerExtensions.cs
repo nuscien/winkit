@@ -28,7 +28,6 @@ namespace Trivial.Web;
 /// </summary>
 public static class ControllerExtensions
 {
-    private const string NullString = "null";
     private static MethodInfo method;
 
     /// <summary>
@@ -490,7 +489,7 @@ public static class ControllerExtensions
         {
             ContentType = WebFormat.JsonMIME,
             StatusCode = 200,
-            Content = value?.ToString() ?? NullString
+            Content = value?.ToString() ?? JsonValues.NullString
         };
 
     /// <summary>
@@ -503,7 +502,7 @@ public static class ControllerExtensions
         {
             ContentType = WebFormat.JsonMIME,
             StatusCode = 200,
-            Content = value?.ToString() ?? NullString
+            Content = value?.ToString() ?? JsonValues.NullString
         };
 
     /// <summary>
@@ -516,7 +515,7 @@ public static class ControllerExtensions
         {
             ContentType = WebFormat.JsonMIME,
             StatusCode = 200,
-            Content = value?.ToJson()?.ToString() ?? NullString
+            Content = value?.ToJson()?.ToString() ?? JsonValues.NullString
         };
 
     /// <summary>
@@ -529,7 +528,7 @@ public static class ControllerExtensions
         {
             ContentType = WebFormat.JsonMIME,
             StatusCode = 200,
-            Content = value?.ToJsonString() ?? NullString
+            Content = value?.ToJsonString() ?? JsonValues.NullString
         };
 
     /// <summary>
@@ -542,7 +541,7 @@ public static class ControllerExtensions
         {
             ContentType = WebFormat.JsonMIME,
             StatusCode = 200,
-            Content = value?.ToJsonString() ?? NullString
+            Content = value?.ToJsonString() ?? JsonValues.NullString
         };
 
     /// <summary>

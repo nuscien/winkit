@@ -487,7 +487,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(this JsonObjectNode value)
         => new()
         {
-            ContentType = WebFormat.JsonMIME,
+            ContentType = JsonValues.JsonMIME,
             StatusCode = 200,
             Content = value?.ToString() ?? JsonValues.NullString
         };
@@ -500,7 +500,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(this JsonArrayNode value)
         => new()
         {
-            ContentType = WebFormat.JsonMIME,
+            ContentType = JsonValues.JsonMIME,
             StatusCode = 200,
             Content = value?.ToString() ?? JsonValues.NullString
         };
@@ -513,7 +513,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(this IJsonObjectHost value)
         => new()
         {
-            ContentType = WebFormat.JsonMIME,
+            ContentType = JsonValues.JsonMIME,
             StatusCode = 200,
             Content = value?.ToJson()?.ToString() ?? JsonValues.NullString
         };
@@ -526,7 +526,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonObject value)
         => new()
         {
-            ContentType = WebFormat.JsonMIME,
+            ContentType = JsonValues.JsonMIME,
             StatusCode = 200,
             Content = value?.ToJsonString() ?? JsonValues.NullString
         };
@@ -539,7 +539,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonArray value)
         => new()
         {
-            ContentType = WebFormat.JsonMIME,
+            ContentType = JsonValues.JsonMIME,
             StatusCode = 200,
             Content = value?.ToJsonString() ?? JsonValues.NullString
         };
@@ -717,7 +717,7 @@ public static class ControllerExtensions
         => new()
         {
             StatusCode = 200,
-            ContentType = WebFormat.JsonMIME,
+            ContentType = JsonValues.JsonMIME,
             Content = json
         };
 

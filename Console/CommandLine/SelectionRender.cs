@@ -267,13 +267,13 @@ public static partial class ConsoleRenderExtensions
                 case ConsoleKey.Backspace:
                 case ConsoleKey.Delete:
                 case ConsoleKey.Clear:
-                    cli.WriteImmediately(' ');
+                    cli.Write(' ');
                     cli.BackspaceToBeginning();
                     resetSelect();
                     return SelectByManualTyping(cli, collection, options);
                 case ConsoleKey.Escape:
                 case ConsoleKey.Pause:
-                    cli.WriteImmediately(' ');
+                    cli.Write(' ');
                     cli.BackspaceToBeginning();
                     resetSelect();
                     RenderSelectResult(cli, null, options);
@@ -392,7 +392,7 @@ public static partial class ConsoleRenderExtensions
                             continue;
                         }
 
-                        cli.WriteImmediately(' ');
+                        cli.Write(' ');
                         cli.BackspaceToBeginning();
                         resetSelect();
                         RenderSelectResult(cli, item.Title, options);
@@ -493,18 +493,18 @@ public static partial class ConsoleRenderExtensions
             RenderData(cli, item, options, isSel, itemLen);
             var indexInRow = i % columns;
             if (indexInRow == lastColIndex)
-                cli.Write(Environment.NewLine);
+                cli.Append(Environment.NewLine);
             else if (indexInRow == 0)
                 rows++;
             i++;
         }
 
-        if (list.Count % columns > 0) cli.Write(Environment.NewLine);
+        if (list.Count % columns > 0) cli.Append(Environment.NewLine);
         var hasPagingTips = false;
         var tipsP = options.PagingTips;
         if (needPaging && !string.IsNullOrEmpty(tipsP))
         {
-            cli.Write(
+            cli.Append(
                 new ConsoleTextStyle(
                     options.PagingForegroundRgbColor,
                     options.PagingForegroundConsoleColor ?? options.ForegroundColor,
@@ -516,14 +516,14 @@ public static partial class ConsoleRenderExtensions
                     .Replace("{count}", list.Count.ToString("g"))
                     .Replace("{size}", pageSize.ToString("g"))
                     .Replace("{total}", collection.Count.ToString("g")));
-            cli.Write(Environment.NewLine);
+            cli.Append(Environment.NewLine);
             hasPagingTips = true;
         }
 
         var hasTips = false;
         if (!string.IsNullOrEmpty(options.Tips))
         {
-            cli.Write(
+            cli.Append(
                 new ConsoleTextStyle(
                     options.TipsForegroundRgbColor,
                     options.TipsForegroundConsoleColor ?? options.ForegroundColor,
@@ -532,7 +532,7 @@ public static partial class ConsoleRenderExtensions
                 options.Tips.Length < maxWidth - 1
                     ? options.Tips
                     : (options.Tips.Substring(0, maxWidth - 5) + "..."));
-            cli.Write(Environment.NewLine);
+            cli.Append(Environment.NewLine);
             hasTips = true;
         }
 
@@ -542,7 +542,7 @@ public static partial class ConsoleRenderExtensions
 
     private static void RenderSelectResult(StyleConsole cli, string value, SelectionConsoleOptions options)
     {
-        cli.Write(
+        cli.Append(
             new ConsoleTextStyle(
                 options.QuestionForegroundRgbColor,
                 options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
@@ -550,7 +550,7 @@ public static partial class ConsoleRenderExtensions
                 options.QuestionBackgroundConsoleColor ?? options.BackgroundColor),
             options.Question);
         if (!string.IsNullOrWhiteSpace(value))
-            cli.WriteImmediately(options.ForegroundColor, options.BackgroundColor, value);
+            cli.Write(options.ForegroundColor, options.BackgroundColor, value);
         else
             cli.Flush();
     }
@@ -618,12 +618,12 @@ public static partial class ConsoleRenderExtensions
 
         if (curLeft >= 0)
         {
-            cli.WriteImmediately(style, sb);
+            cli.Write(style, sb);
             var rest = curLeft + len - cli.CursorLeft;
             if (rest > 0)
-                cli.WriteImmediately(style, ' ', rest);
+                cli.Write(style, ' ', rest);
             else if (rest < 0)
-                cli.WriteImmediately(
+                cli.Write(
                     new ConsoleTextStyle(
                         options.ItemForegroundRgbColor,
                         options.ItemForegroundConsoleColor ?? options.ForegroundColor,
@@ -634,7 +634,7 @@ public static partial class ConsoleRenderExtensions
         else
         {
             sb.Append(' ', len - j);
-            cli.WriteImmediately(style, sb);
+            cli.Write(style, sb);
         }
 
         try
@@ -646,7 +646,7 @@ public static partial class ConsoleRenderExtensions
                 if (rest < 0)
                 {
                     cli.MoveCursorBy(rest, 0);
-                    cli.WriteImmediately(
+                    cli.Write(
                         new ConsoleTextStyle(
                         options.ItemForegroundRgbColor,
                         options.ItemForegroundConsoleColor ?? options.ForegroundColor,
@@ -714,17 +714,17 @@ public static partial class ConsoleRenderExtensions
                 RenderData(cli, ele, options, false, itemLen);
                 var indexInRow = i % columns;
                 if (indexInRow == lastColIndex)
-                    cli.Write(Environment.NewLine);
+                    cli.Append(Environment.NewLine);
                 else if (indexInRow == 0)
                     rows++;
                 i++;
             }
 
-            if (list.Count % columns > 0) cli.Write(Environment.NewLine);
+            if (list.Count % columns > 0) cli.Append(Environment.NewLine);
             return SelectByManualTyping(cli, collection, options);
         }
 
-        cli.WriteImmediately(
+        cli.Write(
             new ConsoleTextStyle(
                 options.QuestionForegroundRgbColor,
                 options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
@@ -795,7 +795,7 @@ public static partial class ConsoleRenderExtensions
             options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
             options.QuestionBackgroundRgbColor,
             options.QuestionBackgroundConsoleColor ?? options.BackgroundColor);
-        cli.Write(style, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
+        cli.Append(style, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
         string text;
         try
         {
@@ -820,7 +820,7 @@ public static partial class ConsoleRenderExtensions
 
         if (string.IsNullOrEmpty(text))
         {
-            cli.Write(style, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
+            cli.Append(style, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
             text = cli.ReadLine();
             if (string.IsNullOrEmpty(text))
                 return new SelectionResult<T>(text, SelectionResultTypes.Canceled);

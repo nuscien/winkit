@@ -316,10 +316,31 @@ public static class DefaultConsole
     /// Writes the specified number to the standard output stream.
     /// Note it may not flush immediately.
     /// </summary>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(long number, string format)
+        => StyleConsole.Default.Write(number, format);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
     public static void Write(ConsoleTextStyle style, long number)
         => StyleConsole.Default.Write(style, number);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
+    /// <param name="style">The content style.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(ConsoleTextStyle style, long number, string format)
+        => StyleConsole.Default.Write(style, number, format);
 
     /// <summary>
     /// Writes the specified number to the standard output stream.
@@ -335,10 +356,33 @@ public static class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(ConsoleColor foreground, long number, string format)
+        => StyleConsole.Default.Write(foreground, number, format);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="number">A number to output.</param>
     public static void Write(ConsoleColor? foreground, ConsoleColor? background, long number)
         => StyleConsole.Default.Write(foreground, background, number);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="background">The background color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, long number, string format)
+        => StyleConsole.Default.Write(foreground, background, number, format);
 
     /// <summary>
     /// Writes the specified number to the standard output stream.
@@ -388,10 +432,31 @@ public static class DefaultConsole
     /// Writes the specified number to the standard output stream.
     /// Note it may not flush immediately.
     /// </summary>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(float number, string format)
+        => StyleConsole.Default.Write(number, format);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
     public static void Write(ConsoleTextStyle style, float number)
         => StyleConsole.Default.Write(style, number);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
+    /// <param name="style">The content style.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(ConsoleTextStyle style, float number, string format)
+        => StyleConsole.Default.Write(style, number, format);
 
     /// <summary>
     /// Writes the specified number to the standard output stream.
@@ -407,10 +472,33 @@ public static class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(ConsoleColor foreground, float number, string format)
+        => StyleConsole.Default.Write(foreground, number, format);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="number">A number to output.</param>
     public static void Write(ConsoleColor? foreground, ConsoleColor? background, float number)
         => StyleConsole.Default.Write(foreground, background, number);
+
+    /// <summary>
+    /// Writes the specified number to the standard output stream.
+    /// Note it may not flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="background">The background color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, float number, string format)
+        => StyleConsole.Default.Write(foreground, background, number, format);
 
     /// <summary>
     /// Writes the specified number to the standard output stream.
@@ -956,10 +1044,31 @@ public static class DefaultConsole
     /// Writes the specified number, followed by the current line terminator, to the standard output stream.
     /// It will flush immediately.
     /// </summary>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(long number, string format)
+        => StyleConsole.Default.WriteLine(number, format);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
     public static void WriteLine(ConsoleTextStyle style, long number)
         => StyleConsole.Default.WriteLine(style, number);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="style">The content style.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(ConsoleTextStyle style, long number, string format)
+        => StyleConsole.Default.WriteLine(style, number, format);
 
     /// <summary>
     /// Writes the specified number, followed by the current line terminator, to the standard output stream.
@@ -975,10 +1084,33 @@ public static class DefaultConsole
     /// It will flush immediately.
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(ConsoleColor foreground, long number, string format)
+        => StyleConsole.Default.WriteLine(foreground, number, format);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="number">A number to output.</param>
     public static void WriteLine(ConsoleColor? foreground, ConsoleColor? background, long number)
         => StyleConsole.Default.WriteLine(foreground, background, number);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="background">The background color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(ConsoleColor? foreground, ConsoleColor? background, long number, string format)
+        => StyleConsole.Default.WriteLine(foreground, background, number, format);
 
     /// <summary>
     /// Writes the specified number, followed by the current line terminator, to the standard output stream.
@@ -1028,10 +1160,31 @@ public static class DefaultConsole
     /// Writes the specified number, followed by the current line terminator, to the standard output stream.
     /// It will flush immediately.
     /// </summary>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(float number, string format)
+        => StyleConsole.Default.WriteLine(number, format);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
     public static void WriteLine(ConsoleTextStyle style, float number)
         => StyleConsole.Default.WriteLine(style, number);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="style">The content style.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(ConsoleTextStyle style, float number, string format)
+        => StyleConsole.Default.WriteLine(style, number, format);
 
     /// <summary>
     /// Writes the specified number, followed by the current line terminator, to the standard output stream.
@@ -1047,10 +1200,33 @@ public static class DefaultConsole
     /// It will flush immediately.
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(ConsoleColor foreground, float number, string format)
+        => StyleConsole.Default.WriteLine(foreground, number, format);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="number">A number to output.</param>
     public static void WriteLine(ConsoleColor? foreground, ConsoleColor? background, float number)
         => StyleConsole.Default.WriteLine(foreground, background, number);
+
+    /// <summary>
+    /// Writes the specified number, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="background">The background color.</param>
+    /// <param name="number">A number to output.</param>
+    /// <param name="format">A standard or custom numeric format string.</param>
+    /// <exception cref="FormatException">format is invalid or not supported.</exception>
+    public static void WriteLine(ConsoleColor? foreground, ConsoleColor? background, float number, string format)
+        => StyleConsole.Default.WriteLine(foreground, background, number, format);
 
     /// <summary>
     /// Writes the specified number, followed by the current line terminator, to the standard output stream.
@@ -1507,7 +1683,7 @@ public static class DefaultConsole
     public static void WriteLines<T>(IEnumerable<T> col, Func<T, int, string> selector)
     {
         if (col == null) return;
-        if (selector == null) selector = (ele, i) => ele?.ToString();
+        selector ??= (ele, i) => ele?.ToString();
         StyleConsole.Default.WriteLines(col.Select(selector));
     }
 
@@ -1520,7 +1696,7 @@ public static class DefaultConsole
     public static void WriteLines<T>(ConsoleColor foreground, IEnumerable<T> col, Func<T, int, string> selector)
     {
         if (col == null) return;
-        if (selector == null) selector = (ele, i) => ele?.ToString();
+        selector ??= (ele, i) => ele?.ToString();
         StyleConsole.Default.WriteLines(foreground, col.Select(selector));
     }
 
@@ -1532,7 +1708,7 @@ public static class DefaultConsole
     public static void WriteLines<T>(IEnumerable<T> col, Func<T, string> selector)
     {
         if (col == null) return;
-        if (selector == null) selector = ele => ele?.ToString();
+        selector ??= ele => ele?.ToString();
         StyleConsole.Default.WriteLines(col.Select(selector));
     }
 
@@ -1545,7 +1721,7 @@ public static class DefaultConsole
     public static void WriteLines<T>(ConsoleColor foreground, IEnumerable<T> col, Func<T, string> selector)
     {
         if (col == null) return;
-        if (selector == null) selector = ele => ele?.ToString();
+        selector ??= ele => ele?.ToString();
         StyleConsole.Default.WriteLines(foreground, col.Select(selector));
     }
 
@@ -1721,95 +1897,4 @@ public static class DefaultConsole
     /// <param name="area">The area to remove.</param>
     public static void Clear(StyleConsole.RelativeAreas area)
         => StyleConsole.Default.Clear(area);
-
-    // ToDo: Need remove following helper methods.
-
-    internal static void Write(this StyleConsole console, Color foreground, string s, params object[] args)
-    {
-        if (s == null) return;
-        console.Write(new ConsoleText(args == null || args.Length == 0 ? s : string.Format(s, args), foreground));
-    }
-
-    internal static void Write(this StyleConsole console, Color foreground, Color background, string s, params object[] args)
-    {
-        if (s == null) return;
-        console.Write(new ConsoleText(args == null || args.Length == 0 ? s : string.Format(s, args), foreground, background));
-    }
-
-    internal static void Write(this StyleConsole console, Color foreground, StringBuilder s)
-    {
-        if (s == null) return;
-        console.Write(new ConsoleText(s, foreground));
-    }
-
-    internal static void Write(this StyleConsole console, Color foreground, Color background, StringBuilder s)
-    {
-        if (s == null) return;
-        console.Write(new ConsoleText(s, foreground, background));
-    }
-
-    internal static void Write(this StyleConsole console, double number, string format)
-    {
-        console.Write(new ConsoleText(number.ToString(format)));
-    }
-
-    internal static void Write(this StyleConsole console, ConsoleTextStyle style, int number, string format)
-    {
-        console.Write(new ConsoleText(number.ToString(format), style));
-    }
-
-    internal static void Write(this StyleConsole console, ConsoleColor foreground, int number, string format)
-    {
-        console.Write(new ConsoleText(number.ToString(format), foreground));
-    }
-
-    internal static void Write(this StyleConsole console, ConsoleTextStyle style, double number, string format)
-    {
-        console.Write(new ConsoleText(number.ToString(format), style));
-    }
-
-    internal static void Write(this StyleConsole console, ConsoleColor foreground, double number, string format)
-    {
-        console.Write(new ConsoleText(number.ToString(format), foreground));
-    }
-
-    internal static void Write(this StyleConsole console, ConsoleColor? foreground, ConsoleColor? background, double number, string format)
-    {
-        console.Write(new ConsoleText(number.ToString(format), foreground, background));
-    }
-
-    internal static void Write(this StyleConsole console, IConsoleTextPrettier style, char[] value, int start = 0, int? count = null)
-    {
-        if (style == null)
-        {
-            console.Write(value, start, count);
-            return;
-        }
-
-        var list = style.CreateTextCollection(ToString(value, start, count));
-        if (list == null) return;
-        console.Write(list);
-    }
-
-    internal static void Write(this StyleConsole console, IConsoleTextPrettier style, char value, int repeatCount = 1)
-    {
-        if (style == null || repeatCount < 1)
-        {
-            console.Write(value, repeatCount);
-            return;
-        }
-
-        var list = style.CreateTextCollection(new string(value, repeatCount));
-        if (list == null) return;
-        console.Write(list);
-    }
-
-    private static string ToString(char[] value, int start = 0, int? count = null)
-    {
-        if (start == 0 && count == null)
-            return new string(value);
-        var list = value.Skip(start);
-        if (count.HasValue) list = list.Take(count.Value);
-        return new string(list.ToArray());
-    }
 }

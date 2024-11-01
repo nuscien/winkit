@@ -56,7 +56,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

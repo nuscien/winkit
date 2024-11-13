@@ -2,9 +2,9 @@
 
 ## [Trivial.WindowsKit](./Common)
 
-![.NET 6 - Windows 10](./docs/assets/badge_NET_6_Win10.svg)
-![.NET 8 - Windows 10](./docs/assets/badge_NET_8_Win10.svg)
 ![.NET 9 - Windows 10](./docs/assets/badge_NET_9_Win10.svg)
+![.NET 8 - Windows 10](./docs/assets/badge_NET_8_Win10.svg)
+![.NET 6 - Windows 10](./docs/assets/badge_NET_6_Win10.svg)
 
 [![NuGet package](https://img.shields.io/nuget/dt/Trivial.WindowsKit?label=nuget+downloads)](https://www.nuget.org/packages/Trivial.WindowsKit)
 

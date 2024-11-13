@@ -92,7 +92,8 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <param name="stillUpdateEvenIfSame">true if still raise the event handler even on same; otherwise, false.</param>
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterInt32Property(string name, Action<TControl, ChangeEventArgs<int>, DependencyProperty> callback, int defaultValue = 0, bool stillUpdateEvenIfSame = false)
-        => RegisterProperty(name, callback, defaultValue, v => {
+        => RegisterProperty(name, callback, defaultValue, v =>
+        {
             if (v is null) return defaultValue;
             if (v is int i) return i;
             if (v is long l) return (int)l;
@@ -112,7 +113,8 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <param name="stillUpdateEvenIfSame">true if still raise the event handler even on same; otherwise, false.</param>
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterInt64Property(string name, Action<TControl, ChangeEventArgs<long>, DependencyProperty> callback, long defaultValue = 0L, bool stillUpdateEvenIfSame = false)
-        => RegisterProperty(name, callback, defaultValue, v => {
+        => RegisterProperty(name, callback, defaultValue, v =>
+        {
             if (v is null) return defaultValue;
             if (v is long l) return l;
             if (v is int i) return i;
@@ -131,7 +133,16 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <param name="defaultValue">The default value of the property.</param>
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterSingleProperty(string name, Action<TControl, ChangeEventArgs<float>, DependencyProperty> callback = null, float defaultValue = float.NaN)
-        => RegisterProperty(name, callback, defaultValue);
+        => RegisterProperty(name, callback, defaultValue, v =>
+        {
+            if (v is null) return defaultValue;
+            if (v is float f) return f;
+            if (v is double d) return double.IsNaN(d) ? float.NaN : (float)d;
+            if (v is decimal d2) return (float)d2;
+            if (v is long l) return l;
+            if (v is int i) return i;
+            return (float)v;
+        });
 
     /// <summary>
     /// Registers a dependency property for a control.
@@ -141,7 +152,16 @@ public static class DependencyObjectProxy<TControl> where TControl : DependencyO
     /// <param name="defaultValue">The default value of the property.</param>
     /// <returns>A dependency property.</returns>
     public static DependencyProperty RegisterDoubleProperty(string name, Action<TControl, ChangeEventArgs<double>, DependencyProperty> callback = null, double defaultValue = double.NaN)
-        => RegisterProperty(name, callback, defaultValue);
+        => RegisterProperty(name, callback, defaultValue, v =>
+        {
+            if (v is null) return defaultValue;
+            if (v is double d) return d;
+            if (v is float f) return float.IsNaN(f) ? double.NaN : f;
+            if (v is decimal d2) return (double)d2;
+            if (v is long l) return l;
+            if (v is int i) return i;
+            return (double)v;
+        });
 
     /// <summary>
     /// Registers a dependency property for a control.

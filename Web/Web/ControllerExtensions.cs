@@ -29,6 +29,10 @@ namespace Trivial.Web;
 public static class ControllerExtensions
 {
     private static MethodInfo method;
+    private const string CharSet = "charset=utf-8";
+    private const string CharSetSep = "; ";
+    private readonly static string jsonMime = string.Concat(JsonValues.JsonMIME, CharSetSep, CharSet);
+    private readonly static string sseMime = string.Concat(WebFormat.ServerSentEventsMIME, CharSetSep, CharSet);
 
     /// <summary>
     /// Gets the first string value.
@@ -487,7 +491,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(this JsonObjectNode value)
         => new()
         {
-            ContentType = JsonValues.JsonMIME,
+            ContentType = jsonMime,
             StatusCode = 200,
             Content = value?.ToString() ?? JsonValues.NullString
         };
@@ -500,7 +504,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(this JsonArrayNode value)
         => new()
         {
-            ContentType = JsonValues.JsonMIME,
+            ContentType = jsonMime,
             StatusCode = 200,
             Content = value?.ToString() ?? JsonValues.NullString
         };
@@ -513,7 +517,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(this IJsonObjectHost value)
         => new()
         {
-            ContentType = JsonValues.JsonMIME,
+            ContentType = jsonMime,
             StatusCode = 200,
             Content = value?.ToJson()?.ToString() ?? JsonValues.NullString
         };
@@ -526,7 +530,7 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonObject value)
         => new()
         {
-            ContentType = JsonValues.JsonMIME,
+            ContentType = jsonMime,
             StatusCode = 200,
             Content = value?.ToJsonString() ?? JsonValues.NullString
         };
@@ -539,10 +543,46 @@ public static class ControllerExtensions
     public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonArray value)
         => new()
         {
-            ContentType = JsonValues.JsonMIME,
+            ContentType = jsonMime,
             StatusCode = 200,
             Content = value?.ToJsonString() ?? JsonValues.NullString
         };
+
+    /// <summary>
+    /// Writes the event information into a stream.
+    /// </summary>
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    public static async Task WriteToAsync(this IEnumerable<ServerSentEventInfo> data, HttpResponse response)
+    {
+        response.ContentType = sseMime;
+        foreach (var item in data)
+        {
+            var json = item.ToResponseString(true);
+            var buffer = Encoding.UTF8.GetBytes(json);
+            await response.Body.WriteAsync(buffer, 0, buffer.Length);
+            await response.Body.FlushAsync();
+        }
+    }
+
+    /// <summary>
+    /// Writes the event information into a stream.
+    /// </summary>
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    public static async Task WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> data, HttpResponse response)
+    {
+        response.ContentType = sseMime;
+        await foreach (var item in data)
+        {
+            var json = item.ToResponseString(true);
+            var buffer = Encoding.UTF8.GetBytes(json);
+            await response.Body.WriteAsync(buffer, 0, buffer.Length);
+            await response.Body.FlushAsync();
+        }
+    }
 
     /// <summary>
     /// Converts an exception to action result with exception message.
@@ -717,7 +757,7 @@ public static class ControllerExtensions
         => new()
         {
             StatusCode = 200,
-            ContentType = JsonValues.JsonMIME,
+            ContentType = jsonMime,
             Content = json
         };
 

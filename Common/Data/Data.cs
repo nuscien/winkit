@@ -14,292 +14,291 @@ using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Text;
 
-namespace Trivial.Data
+namespace Trivial.Data;
+
+/// <summary>
+/// The base item model.
+/// </summary>
+public class BaseItemModel : ObservableProperties
 {
     /// <summary>
-    /// The base item model.
+    /// Initializes a new instance of the BaseItemModel class.
     /// </summary>
-    public class BaseItemModel : ObservableProperties
+    public BaseItemModel()
     {
-        /// <summary>
-        /// Initializes a new instance of the BaseItemModel class.
-        /// </summary>
-        public BaseItemModel()
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the BaseItemModel class.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="image">The image URI.</param>
+    /// <param name="source">The source.</param>
+    public BaseItemModel(string name, Uri image, JsonObjectNode source = null)
+    {
+        Name = name;
+        ImageUri = image;
+        Source = source;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the BaseItemModel class.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="image">The image URI.</param>
+    /// <param name="description">The description.</param>
+    /// <param name="source">The source.</param>
+    public BaseItemModel(string id, string name, Uri image, string description, JsonObjectNode source = null)
+        : this(name, image, source)
+    {
+        Id = id;
+        Description = description;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the BaseItemModel class.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="image">The image URI.</param>
+    /// <param name="description">The description.</param>
+    /// <param name="publish">The publish time.</param>
+    /// <param name="source">The source.</param>
+    public BaseItemModel(string id, string name, Uri image, string description, DateTime publish, JsonObjectNode source = null)
+        : this(id, name, image, description, source)
+    {
+        PublishTime = publish;
+    }
+
+    /// <summary>
+    /// Gets or sets the identifier.
+    /// </summary>
+    public string Id
+    {
+        get => GetCurrentProperty<string>();
+        protected set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Tests if the name is not null, empty nor consists only of white-space characters.
+    /// </summary>
+    public bool HasId => !string.IsNullOrWhiteSpace(Id);
+
+    /// <summary>
+    /// Gets or sets the name.
+    /// </summary>
+    public string Name
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Tests if the name is not null, empty nor consists only of white-space characters.
+    /// </summary>
+    public bool HasName => !string.IsNullOrWhiteSpace(Name);
+
+    /// <summary>
+    /// Gets or sets the description.
+    /// </summary>
+    public string Description
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the image URI.
+    /// </summary>
+    public Uri ImageUri
+    {
+        get => GetCurrentProperty<Uri>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the publish time.
+    /// </summary>
+    public DateTime? PublishTime
+    {
+        get => GetCurrentProperty<DateTime>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets the JSON data source.
+    /// </summary>
+    public JsonObjectNode Source
+    {
+        get
         {
+            return GetCurrentProperty<JsonObjectNode>();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the BaseItemModel class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="image">The image URI.</param>
-        /// <param name="source">The source.</param>
-        public BaseItemModel(string name, Uri image, JsonObjectNode source = null)
+        protected set
         {
-            Name = name;
-            ImageUri = image;
-            Source = source;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the BaseItemModel class.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="image">The image URI.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="source">The source.</param>
-        public BaseItemModel(string id, string name, Uri image, string description, JsonObjectNode source = null)
-            : this(name, image, source)
-        {
-            Id = id;
-            Description = description;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the BaseItemModel class.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="image">The image URI.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="publish">The publish time.</param>
-        /// <param name="source">The source.</param>
-        public BaseItemModel(string id, string name, Uri image, string description, DateTime publish, JsonObjectNode source = null)
-            : this(id, name, image, description, source)
-        {
-            PublishTime = publish;
-        }
-
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        public string Id
-        {
-            get => GetCurrentProperty<string>();
-            protected set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Tests if the name is not null, empty nor consists only of white-space characters.
-        /// </summary>
-        public bool HasId => !string.IsNullOrWhiteSpace(Id);
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        public string Name
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Tests if the name is not null, empty nor consists only of white-space characters.
-        /// </summary>
-        public bool HasName => !string.IsNullOrWhiteSpace(Name);
-
-        /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        public string Description
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the image URI.
-        /// </summary>
-        public Uri ImageUri
-        {
-            get => GetCurrentProperty<Uri>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the publish time.
-        /// </summary>
-        public DateTime? PublishTime
-        {
-            get => GetCurrentProperty<DateTime>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets the JSON data source.
-        /// </summary>
-        public JsonObjectNode Source
-        {
-            get
-            {
-                return GetCurrentProperty<JsonObjectNode>();
-            }
-
-            protected set
-            {
-                SetCurrentProperty(value);
-                OnSourceChanged();
-            }
-        }
-
-        /// <summary>
-        /// Sets image.
-        /// </summary>
-        /// <param name="url">The URL of image.</param>
-        /// <returns>The image URI.</returns>
-        public Uri SetImage(string url)
-        {
-            var uri = UI.VisualUtility.TryCreateUri(url);
-            if (uri != null) ImageUri = uri;
-            return uri;
-        }
-
-        /// <summary>
-        /// Sets image.
-        /// </summary>
-        /// <param name="json">The source data.</param>
-        /// <param name="propertyKey">The property key of image.</param>
-        /// <returns>The image URI.</returns>
-        public Uri SetImage(JsonObjectNode json, string propertyKey)
-            => SetImage(json?.TryGetStringValue(propertyKey));
-
-        /// <summary>
-        /// Occurs on source has changed.
-        /// </summary>
-        protected virtual void OnSourceChanged()
-        {
+            SetCurrentProperty(value);
+            OnSourceChanged();
         }
     }
 
     /// <summary>
-    /// The base active item model.
+    /// Sets image.
     /// </summary>
-    public abstract class BaseActiveItemModel : BaseItemModel
+    /// <param name="url">The URL of image.</param>
+    /// <returns>The image URI.</returns>
+    public Uri SetImage(string url)
     {
-        /// <summary>
-        /// Occurs on action request.
-        /// </summary>
-        public abstract void Process();
-
-        /// <summary>
-        /// Occurs on action request.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The event arguments.</param>
-        internal void ProcessRouted(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-            => Process();
+        var uri = UI.VisualUtility.TryCreateUri(url);
+        if (uri != null) ImageUri = uri;
+        return uri;
     }
 
     /// <summary>
-    /// The menu item header information.
+    /// Sets image.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    public class BasicMenuItemInfo<T> : NameValueObservableModel<T>
+    /// <param name="json">The source data.</param>
+    /// <param name="propertyKey">The property key of image.</param>
+    /// <returns>The image URI.</returns>
+    public Uri SetImage(JsonObjectNode json, string propertyKey)
+        => SetImage(json?.TryGetStringValue(propertyKey));
+
+    /// <summary>
+    /// Occurs on source has changed.
+    /// </summary>
+    protected virtual void OnSourceChanged()
     {
-        /// <summary>
-        /// Initializes a new instance of the BasicMenuItemInfo class.
-        /// </summary>
-        public BasicMenuItemInfo()
-        {
-        }
+    }
+}
 
-        /// <summary>
-        /// Initializes a new instance of the BasicMenuItemInfo class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        public BasicMenuItemInfo(string name)
-        {
-            Name = name;
-        }
+/// <summary>
+/// The base active item model.
+/// </summary>
+public abstract class BaseActiveItemModel : BaseItemModel
+{
+    /// <summary>
+    /// Occurs on action request.
+    /// </summary>
+    public abstract void Process();
 
-        /// <summary>
-        /// Initializes a new instance of the BasicMenuItemInfo class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        public BasicMenuItemInfo(string name, T value) : this(name)
-        {
-            Value = value;
-        }
+    /// <summary>
+    /// Occurs on action request.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments.</param>
+    internal void ProcessRouted(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        => Process();
+}
 
-        /// <summary>
-        /// Initializes a new instance of the BasicMenuItemInfo class.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="icon">The icon URI.</param>
-        public BasicMenuItemInfo(string id, string name, T value, Uri icon = null) : this(name, value)
-        {
-            Id = id;
-            Icon = icon;
-        }
+/// <summary>
+/// The menu item header information.
+/// </summary>
+/// <typeparam name="T">The type of the value.</typeparam>
+public class BasicMenuItemInfo<T> : NameValueObservableModel<T>
+{
+    /// <summary>
+    /// Initializes a new instance of the BasicMenuItemInfo class.
+    /// </summary>
+    public BasicMenuItemInfo()
+    {
+    }
 
-        /// <summary>
-        /// Gets or sets the additional identifier.
-        /// </summary>
-        [DataMember(Name = "id")]
-        [JsonPropertyName("id")]
-        [Description("The optional identifier of the menu item.")]
-        public string Id
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
+    /// <summary>
+    /// Initializes a new instance of the BasicMenuItemInfo class.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    public BasicMenuItemInfo(string name)
+    {
+        Name = name;
+    }
 
-        /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        [DataMember(Name = "desc")]
-        [JsonPropertyName("desc")]
-        [Description("The optional description of the menu item.")]
-        public string Description
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
+    /// <summary>
+    /// Initializes a new instance of the BasicMenuItemInfo class.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="value">The value.</param>
+    public BasicMenuItemInfo(string name, T value) : this(name)
+    {
+        Value = value;
+    }
 
-        /// <summary>
-        /// Gets or sets the icon URI.
-        /// </summary>
-        [DataMember(Name = "icon")]
-        [JsonPropertyName("icon")]
-        [Description("The icon URL of the menu item.")]
-        public Uri Icon
-        {
-            get => GetCurrentProperty<Uri>();
-            set => SetCurrentProperty(value);
-        }
+    /// <summary>
+    /// Initializes a new instance of the BasicMenuItemInfo class.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="icon">The icon URI.</param>
+    public BasicMenuItemInfo(string id, string name, T value, Uri icon = null) : this(name, value)
+    {
+        Id = id;
+        Icon = icon;
+    }
 
-        /// <summary>
-        /// Gets or sets the header.
-        /// </summary>
-        [JsonIgnore]
-        public BasicMenuItemInfo<T> Group
-        {
-            get => GetCurrentProperty<BasicMenuItemInfo<T>>();
-            set => SetCurrentProperty(value);
-        }
+    /// <summary>
+    /// Gets or sets the additional identifier.
+    /// </summary>
+    [DataMember(Name = "id")]
+    [JsonPropertyName("id")]
+    [Description("The optional identifier of the menu item.")]
+    public string Id
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
 
-        /// <summary>
-        /// Gets or sets the group identifier.
-        /// </summary>
-        [JsonPropertyName("group")]
-        public string GroupId
+    /// <summary>
+    /// Gets or sets the description.
+    /// </summary>
+    [DataMember(Name = "desc")]
+    [JsonPropertyName("desc")]
+    [Description("The optional description of the menu item.")]
+    public string Description
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the icon URI.
+    /// </summary>
+    [DataMember(Name = "icon")]
+    [JsonPropertyName("icon")]
+    [Description("The icon URL of the menu item.")]
+    public Uri Icon
+    {
+        get => GetCurrentProperty<Uri>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the header.
+    /// </summary>
+    [JsonIgnore]
+    public BasicMenuItemInfo<T> Group
+    {
+        get => GetCurrentProperty<BasicMenuItemInfo<T>>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the group identifier.
+    /// </summary>
+    [JsonPropertyName("group")]
+    public string GroupId
+    {
+        get
         {
-            get
+            return Group?.Id;
+        }
+        set
+        {
+            if (Group?.Id == value) return;
+            Group = string.IsNullOrWhiteSpace(value) ? null : new()
             {
-                return Group?.Id;
-            }
-            set
-            {
-                if (Group?.Id == value) return;
-                Group = string.IsNullOrWhiteSpace(value) ? null : new()
-                {
-                    Id = value
-                };
-            }
+                Id = value
+            };
         }
     }
 }

@@ -351,6 +351,11 @@ public class JsonWebCacheClient
     }
 
     /// <summary>
+    /// Gets or sets the additional tag.
+    /// </summary>
+    public object Tag { get; set; }
+
+    /// <summary>
     /// Sets web API client.
     /// </summary>
     /// <param name="client">The web API client.</param>

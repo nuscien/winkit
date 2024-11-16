@@ -19,7 +19,7 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// Initializes a new instance of the PagingDataEventArgs class.
     /// </summary>
     /// <param name="value">The data value.</param>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="pendingTime">The job pending date time.</param>
     /// <param name="requestTime">The data request date time.</param>
@@ -35,7 +35,7 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// Initializes a new instance of the PagingDataEventArgs class.
     /// </summary>
     /// <param name="value">The data value.</param>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="pendingTime">The job pending date time.</param>
     /// <param name="contextObject">The optional context object.</param>
@@ -48,7 +48,7 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     }
 
     /// <summary>
-    /// Gets the page index.
+    /// Gets the zero-based page index.
     /// </summary>
     public int Page { get; private set; }
 
@@ -76,6 +76,67 @@ public class JsonPagingEventArgs : DataEventArgs<JsonObjectNode>
     /// Gets The optional context object.
     /// </summary>
     public object ContextObject { get; private set; }
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> Switch()
+        => Data.Switch(this);
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> FirstPageSwitch()
+        => Switch(Page == 0);
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <param name="sourceType">Source type filter.</param>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> FirstPageSwitch(WebApiResultSourceTypes sourceType)
+        => Switch(Page == 0 && Kind == sourceType);
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <param name="sourceTypes">Source type filter.</param>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> FirstPageSwitch(IEnumerable<WebApiResultSourceTypes> sourceTypes)
+        => Switch(Page == 0 && (sourceTypes is null || sourceTypes.Contains(Kind)));
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> RestPagesSwitch()
+        => Switch(Page > 0);
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <param name="sourceType">Source type filter.</param>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> RestPagesSwitch(WebApiResultSourceTypes sourceType)
+        => Switch(Page > 0 && Kind == sourceType);
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <param name="sourceTypes">Source type filter.</param>
+    /// <returns>The JSON switch context.</returns>
+    public JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> RestPagesSwitch(IEnumerable<WebApiResultSourceTypes> sourceTypes)
+        => Switch(Page > 0 && (sourceTypes is null || sourceTypes.Contains(Kind)));
+
+    /// <summary>
+    /// Gets the JSON switch context for first page.
+    /// </summary>
+    /// <param name="validate">true if returns the context in service; oterwise, false.</param>
+    /// <returns>The JSON switch context.</returns>
+    private JsonSwitchContext<JsonObjectNode, JsonPagingEventArgs> Switch(bool validate)
+        => validate ? Data.Switch(this) : Data.Switch(this).Default();
 }
 
 /// <summary>
@@ -136,14 +197,14 @@ public abstract class BaseJsonPagingLoader
     public event EventHandler<ChangeEventArgs<int>> PageIndexChanged;
 
     /// <summary>
-    /// Gets the page index.
+    /// Gets the zero-based page index.
     /// </summary>
     public int PageIndex { get; private set; } = -1;
 
     /// <summary>
     /// Gets data.
     /// </summary>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="contextObject">The optional context object.</param>
     /// <param name="cancellationToken">An optional cancellation token.</param>
     /// <returns>The result.</returns>
@@ -153,7 +214,7 @@ public abstract class BaseJsonPagingLoader
     /// Raises the event.
     /// </summary>
     /// <param name="value">The data result.</param>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="requestTime">The data request date time.</param>
     /// <param name="contextObject">The optional context object.</param>
@@ -164,7 +225,7 @@ public abstract class BaseJsonPagingLoader
     /// Raises the event.
     /// </summary>
     /// <param name="value">The data result.</param>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="requestTime">The data request date time.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
@@ -176,7 +237,7 @@ public abstract class BaseJsonPagingLoader
     /// Raises the event.
     /// </summary>
     /// <param name="value">The data result.</param>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="skipToUpdateCache">true if won't update cache; otherwise, false.</param>
     /// <param name="kind">The source kind.</param>
     /// <param name="requestTime">The data request date time.</param>
@@ -227,7 +288,7 @@ public abstract class BaseJsonPagingLoader
     /// <summary>
     /// Loads data of the specific page.
     /// </summary>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="cancellationToken">The optional cancellation token.</param>
     /// <returns>The result; null if skip, or the result is null.</returns>
     public Task<JsonObjectNode> LoadPageAsync(int page, CancellationToken cancellationToken = default)
@@ -236,7 +297,7 @@ public abstract class BaseJsonPagingLoader
     /// <summary>
     /// Loads data of the specific page.
     /// </summary>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="contextObject">The optional context object.</param>
     /// <param name="cancellationToken">The optional cancellation token.</param>
     /// <returns>The result; null if skip, or the result is null.</returns>
@@ -246,7 +307,7 @@ public abstract class BaseJsonPagingLoader
     /// <summary>
     /// Loads data of the specific page.
     /// </summary>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="wait">true if wait to continue; otherwise, false, to skip on working.</param>
     /// <param name="cancellationToken">The optional cancellation token.</param>
     /// <returns>The result; null if skip, or the result is null.</returns>
@@ -256,7 +317,7 @@ public abstract class BaseJsonPagingLoader
     /// <summary>
     /// Loads data of the specific page.
     /// </summary>
-    /// <param name="page">The page index.</param>
+    /// <param name="page">The zero-based page index.</param>
     /// <param name="wait">true if wait to continue; otherwise, false, to skip on working.</param>
     /// <param name="contextObject">The optional context object.</param>
     /// <param name="cancellationToken">The optional cancellation token.</param>

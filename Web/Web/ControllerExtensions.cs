@@ -441,6 +441,16 @@ public static class ControllerExtensions
     /// <summary>
     /// Convert to an action result.
     /// </summary>
+    /// <param name="data">The source data to output.</param>
+    /// <param name="handler">The handler to fill data into response body.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(T data, Func<T, HttpResponse, Task> handler, Action<HttpResponse> prepare = null)
+        => new DataHandlingActionResult<T>(data, handler, prepare);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
     public static ActionResult ToActionResult(this ChangingResultInfo value)
@@ -567,6 +577,15 @@ public static class ControllerExtensions
     }
 
     /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IEnumerable<ServerSentEventInfo> data, Action<HttpResponse> prepare = null)
+        => ToActionResult(data, WriteToAsync, null);
+
+    /// <summary>
     /// Writes the event information into a stream.
     /// </summary>
     /// <param name="data">The server-sent event info collection to write.</param>
@@ -583,6 +602,15 @@ public static class ControllerExtensions
             await response.Body.FlushAsync();
         }
     }
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IAsyncEnumerable<ServerSentEventInfo> data, Action<HttpResponse> prepare = null)
+        => ToActionResult(data, WriteToAsync, null);
 
     /// <summary>
     /// Converts an exception to action result with exception message.

@@ -379,6 +379,22 @@ public static partial class VisualUtility
         => new(Color.FromArgb(255, r, g, b));
 
     /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="color">The color.</param>
+    /// <returns>The solid brush.</returns>
+    public static Color ToColor(System.Drawing.Color color)
+        => Color.FromArgb(color.A, color.R, color.G, color.B);
+
+    /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="argb">The ARGB value.</param>
+    /// <returns>The solid brush.</returns>
+    public static Color ToColor(int argb)
+        => ToColor(System.Drawing.Color.FromArgb(argb));
+
+    /// <summary>
     /// Create text inlines.
     /// </summary>
     /// <param name="json">The data source.</param>

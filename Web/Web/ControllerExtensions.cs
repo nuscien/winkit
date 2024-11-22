@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Claims;
@@ -33,6 +34,7 @@ public static class ControllerExtensions
     private const string CharSetSep = "; ";
     private readonly static string jsonMime = string.Concat(JsonValues.JsonMIME, CharSetSep, CharSet);
     private readonly static string sseMime = string.Concat(WebFormat.ServerSentEventsMIME, CharSetSep, CharSet);
+    private readonly static byte[] utf8NewLine = Encoding.UTF8.GetBytes("\n");
 
     /// <summary>
     /// Gets the first string value.
@@ -388,7 +390,7 @@ public static class ControllerExtensions
     /// <returns>A JSON object instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonObjectNode> ReadBodyAsJsonAsync(this HttpRequest request, CancellationToken cancellationToken)
+    public static Task<JsonObjectNode> ReadBodyAsJsonAsync(this HttpRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonObjectNode.ParseAsync(request.Body, default, cancellationToken);
@@ -403,7 +405,7 @@ public static class ControllerExtensions
     /// <returns>A JSON object instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonObjectNode> ReadBodyAsJsonAsync(this HttpRequest request, JsonDocumentOptions options, CancellationToken cancellationToken)
+    public static Task<JsonObjectNode> ReadBodyAsJsonAsync(this HttpRequest request, JsonDocumentOptions options, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonObjectNode.ParseAsync(request.Body, options, cancellationToken);
@@ -417,7 +419,7 @@ public static class ControllerExtensions
     /// <returns>A JSON array instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonArrayNode> ReadBodyAsJsonArrayAsync(this HttpRequest request, CancellationToken cancellationToken)
+    public static Task<JsonArrayNode> ReadBodyAsJsonArrayAsync(this HttpRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonArrayNode.ParseAsync(request.Body, default, cancellationToken);
@@ -432,10 +434,64 @@ public static class ControllerExtensions
     /// <returns>A JSON array instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonArrayNode> ReadBodyAsJsonArrayAsync(this HttpRequest request, JsonDocumentOptions options, CancellationToken cancellationToken)
+    public static Task<JsonArrayNode> ReadBodyAsJsonArrayAsync(this HttpRequest request, JsonDocumentOptions options, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonArrayNode.ParseAsync(request.Body, options, cancellationToken);
+    }
+
+    /// <summary>
+    /// Parses a JWT string encoded.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="algorithmFactory">The signature algorithm factory.</param>
+    /// <param name="verify">true if verify the signature; otherwise, false.</param>
+    /// <returns>A JSON web token object.</returns>
+    /// <exception cref="InvalidOperationException">Verify failure.</exception>
+    /// <exception cref="JsonException">Deserialize failed.</exception>
+    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, Func<T, string, ISignatureProvider> algorithmFactory, bool verify = true)
+    {
+        var auth = request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(auth)) return null;
+        try
+        {
+            return JsonWebToken<T>.Parse(auth, algorithmFactory, true);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Parses a JWT string encoded.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="algorithm">The signature algorithm.</param>
+    /// <param name="verify">true if verify the signature; otherwise, false.</param>
+    /// <returns>A JSON web token object.</returns>
+    /// <exception cref="InvalidOperationException">Verify failure.</exception>
+    /// <exception cref="JsonException">Deserialize failed.</exception>
+    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, ISignatureProvider algorithm, bool verify = true)
+    {
+        var auth = request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(auth)) return null;
+        try
+        {
+            return JsonWebToken<T>.Parse(auth, algorithm, true);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -583,7 +639,7 @@ public static class ControllerExtensions
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
     public static IActionResult ToActionResult(this IEnumerable<ServerSentEventInfo> data, Action<HttpResponse> prepare = null)
-        => ToActionResult(data, WriteToAsync, null);
+        => ToActionResult(data, WriteToAsync, prepare);
 
     /// <summary>
     /// Writes the event information into a stream.
@@ -591,16 +647,28 @@ public static class ControllerExtensions
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
-    public static async Task WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> data, HttpResponse response)
+    public static Task WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> data, HttpResponse response)
     {
         response.ContentType = sseMime;
-        await foreach (var item in data)
+        return WriteToAsync(data, response.Body);
+    }
+
+    private static async Task<int> WriteToAsync(IAsyncEnumerable<ServerSentEventInfo> col, Stream stream, Encoding encoding = null)
+    {
+        if (col == null || stream == null) return 0;
+        var writer = new StreamWriter(stream, encoding ?? Encoding.UTF8);
+        var i = 0;
+        await foreach (var item in col)
         {
-            var json = item.ToResponseString(true);
-            var buffer = Encoding.UTF8.GetBytes(json);
-            await response.Body.WriteAsync(buffer, 0, buffer.Length);
-            await response.Body.FlushAsync();
+            if (item == null) continue;
+            if (i > 0) writer.Write('\n');
+            await writer.WriteAsync(item.ToResponseString(true));
+            writer.Write('\n');
+            await writer.FlushAsync();
+            i++;
         }
+
+        return i;
     }
 
     /// <summary>
@@ -988,5 +1056,17 @@ public static class ControllerExtensions
         }
 
         return defaultMime;
+    }
+
+    /// <summary>
+    /// Tries to get the string value.
+    /// </summary>
+    /// <param name="header">The header.</param>
+    /// <param name="key">The header key.</param>
+    /// <returns>The string value; or null, if non-exist.</returns>
+    private static string TryGetStringValue(IHeaderDictionary header, string key)
+    {
+        if (!header.TryGetValue(key, out var col)) return null;
+        return col.FirstOrDefault(ele => !string.IsNullOrWhiteSpace(ele));
     }
 }

@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web", "Web\Web.csproj", "{F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console", "Console\Console.csproj", "{99AC4C2E-6095-444F-AB5D-0E4E65C46B85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Site", "Site\Site.csproj", "{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,26 @@ Global
 		{99AC4C2E-6095-444F-AB5D-0E4E65C46B85}.Release|x64.Build.0 = Release|Any CPU
 		{99AC4C2E-6095-444F-AB5D-0E4E65C46B85}.Release|x86.ActiveCfg = Release|Any CPU
 		{99AC4C2E-6095-444F-AB5D-0E4E65C46B85}.Release|x86.Build.0 = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|arm64.Build.0 = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|x64.Build.0 = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Debug|x86.Build.0 = Debug|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|ARM.Build.0 = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|arm64.ActiveCfg = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|arm64.Build.0 = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|x64.ActiveCfg = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|x64.Build.0 = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|x86.ActiveCfg = Release|Any CPU
+		{B48E13E0-ACBE-47A0-9608-8D4582C46A6F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

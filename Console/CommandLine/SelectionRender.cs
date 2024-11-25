@@ -20,16 +20,6 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="collection">The collection data.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <returns>The result of selection.</returns>
-    public static SelectionResult<object> Select(this StyleConsole cli, SelectionData collection, SelectionConsoleOptions options = null)
-        => Select<object>(cli, collection, options);
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
     /// <param name="convert">The converter.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>

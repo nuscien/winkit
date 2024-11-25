@@ -24,15 +24,6 @@ public static partial class DefaultConsole
     /// Writes a collection of item for selecting.
     /// </summary>
     /// <param name="collection">The collection data.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <returns>The result of selection.</returns>
-    public static SelectionResult<object> Select(SelectionData collection, SelectionConsoleOptions options = null)
-        => StyleConsole.Default.Select(collection, options);
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="collection">The collection data.</param>
     /// <param name="convert">The converter.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>

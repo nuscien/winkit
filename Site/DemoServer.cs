@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Trivial.Net;
+using Trivial.Reflection;
 using Trivial.Security;
 using Trivial.Text;
 
@@ -9,12 +10,7 @@ public class DemoServer : TokenRequestRoute<UserModel>
 {
     public static DemoServer Instance { get; } = new();
 
-    private List<UserModel> users = new();
-
-    public DemoServer()
-    {
-        PasswordTokenRequestBody.Register(this, SignInAsync);
-    }
+    private readonly List<UserModel> users = new();
 
     public UserModel Register(string name, string password)
     {
@@ -43,12 +39,12 @@ public class DemoServer : TokenRequestRoute<UserModel>
     public bool SignOut(string token)
         => !string.IsNullOrWhiteSpace(token) && users.RemoveAll(ele => ele.Token == token) > 0;
 
-    public async Task<(UserModel, TokenInfo)> SignInAsync(TokenRequest<PasswordTokenRequestBody> req)
+    protected override async Task<SelectionRelationship<UserModel, TokenInfo>> SignInAsync(TokenRequest<PasswordTokenRequestBody> req)
     {
         await Task.CompletedTask;
         var user = users.FirstOrDefault(ele => ele.Name == req.Body.UserName && ele.Password == req.Body.Password.ToUnsecureString());
-        if (user is null) return (null, null);
-        return (user, new TokenInfo
+        if (user is null) return null;
+        return new(user, new TokenInfo
         {
             TokenType = TokenInfo.BearerTokenType,
             AccessToken = user.Token,

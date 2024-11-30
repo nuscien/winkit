@@ -10,6 +10,7 @@
     <Description>A library for web API.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ApplicationIcon>Logo.ico</ApplicationIcon>
     <PackageIcon>web.png</PackageIcon>
     <PackageIconUrl>https://github.com/nuscien/trivial/raw/master/Materials/logo.png</PackageIconUrl>
     <PackageTags>web mvc</PackageTags>

@@ -11,6 +11,7 @@
     <Description>CLI for local web app.</Description>
     <PackageProjectUrl>https://github.com/nuscien/winkit</PackageProjectUrl>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <ApplicationIcon>Logo.ico</ApplicationIcon>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>cli lwa</PackageTags>
   </PropertyGroup>
@@ -18,7 +19,6 @@
   <PropertyGroup>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
     <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\lwac.xml</DocumentationFile>
-    <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,10 +28,6 @@
     <Compile Include="..\Common\Web\Manifest.cs" Link="Manifest.cs" />
     <Compile Include="..\Common\Web\Options.cs" Link="Options.cs" />
     <Compile Include="..\Common\Web\SignatureException.cs" Link="SignatureException.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\Materials\WinKit.ico" Link="WinKit.cs" />
   </ItemGroup>
 
   <ItemGroup>

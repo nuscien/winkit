@@ -97,6 +97,15 @@ namespace Trivial.Diagnostics {
         }
         
         /// <summary>
+        ///   查找类似 Copy 的本地化字符串。
+        /// </summary>
+        internal static string Copy {
+            get {
+                return ResourceManager.GetString("Copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Count 的本地化字符串。
         /// </summary>
         internal static string Count {
@@ -246,6 +255,15 @@ namespace Trivial.Diagnostics {
         internal static string Undefined {
             get {
                 return ResourceManager.GetString("Undefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Unsafe 的本地化字符串。
+        /// </summary>
+        internal static string Unsafe {
+            get {
+                return ResourceManager.GetString("Unsafe", resourceCulture);
             }
         }
         

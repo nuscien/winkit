@@ -183,4 +183,10 @@
   <data name="False" xml:space="preserve">
     <value>假</value>
   </data>
+  <data name="Unsafe" xml:space="preserve">
+    <value>不安全</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
 </root>

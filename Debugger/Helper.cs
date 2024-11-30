@@ -272,7 +272,7 @@ public static class DiagnosticsUtility
                     kindElement.Value = InternalResource.Number;
                     if (json is IJsonValueNode<long> l)
                     {
-                        kindElement.Value = l.Value <= JsonIntegerNode.MaxSafeInteger && l.Value >= JsonIntegerNode.MinSafeInteger ? "Integer" : "Integer (unsafe)";
+                        kindElement.Value = l.Value <= JsonIntegerNode.MaxSafeInteger && l.Value >= JsonIntegerNode.MinSafeInteger ? InternalResource.Integer : $"{InternalResource.Integer} ({InternalResource.Unsafe})";
                         AddKeyValuePair(panel, InternalResource.Value, l.Value.ToString());
                         AddLocaleString(panel, l.Value);
                     }

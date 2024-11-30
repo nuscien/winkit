@@ -10,6 +10,8 @@
     <Description>The console utilities and rich user interface console.</Description>
     <PackageProjectUrl>https://github.com/nuscien/trivial/wiki/console</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ApplicationIcon>Logo.ico</ApplicationIcon>
     <PackageIcon>cmd.png</PackageIcon>
     <PackageIconUrl>https://github.com/nuscien/trivial/raw/master/Materials/logo.png</PackageIconUrl>
     <PackageTags>console</PackageTags>

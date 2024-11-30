@@ -12,7 +12,7 @@
             <ColumnDefinition x:Name="DetailsColumn" Width="3*" />
         </Grid.ColumnDefinitions>
         <TreeView x:Name="DocumentTree" Background="Transparent" Margin="1,32,6,1" SelectedItemChanged="DocumentTree_SelectedItemChanged" />
-        <Button Content="$self" Height="30" Margin="1,1,6,1" VerticalAlignment="Top" HorizontalContentAlignment="Left" Click="Button_Click"/>
+        <Button Content="$  (root)" Height="30" Margin="1,1,6,1" VerticalAlignment="Top" HorizontalContentAlignment="Left" Click="Button_Click" Padding="8,1,8,1"/>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" Padding="1" Grid.Column="1" >
             <StackPanel x:Name="DetailsPanel" Orientation="Vertical" />
         </ScrollViewer>

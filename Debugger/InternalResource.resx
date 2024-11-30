@@ -183,4 +183,10 @@
   <data name="False" xml:space="preserve">
     <value>False</value>
   </data>
+  <data name="Unsafe" xml:space="preserve">
+    <value>Unsafe</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
 </root>

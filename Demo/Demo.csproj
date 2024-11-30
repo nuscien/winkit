@@ -11,7 +11,7 @@
     <PackageId>Trivial.WindowsKit.Demo</PackageId>
     <RootNamespace>Trivial.Demo</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>..\Materials\WinKit.ico</ApplicationIcon>
+    <ApplicationIcon>..\Common\Logo.ico</ApplicationIcon>
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>

@@ -39,7 +39,7 @@ public class DemoServer : TokenRequestRoute<UserModel>
     public bool SignOut(string token)
         => !string.IsNullOrWhiteSpace(token) && users.RemoveAll(ele => ele.Token == token) > 0;
 
-    protected override async Task<SelectionRelationship<UserModel, TokenInfo>> SignInAsync(TokenRequest<PasswordTokenRequestBody> req)
+    protected override async Task<SelectionRelationship<UserModel, TokenInfo>> SignInAsync(TokenRequest<PasswordTokenRequestBody> req, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         var user = users.FirstOrDefault(ele => ele.Name == req.Body.UserName && ele.Password == req.Body.Password.ToUnsecureString());

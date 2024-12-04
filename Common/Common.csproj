@@ -16,7 +16,6 @@
     <ApplicationIcon>Logo.ico</ApplicationIcon>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>ui tiles lwa</PackageTags>
-    <WebView2NeverCopyLoaderDllToOutputDirectory>true</WebView2NeverCopyLoaderDllToOutputDirectory>
   </PropertyGroup>
 
   <PropertyGroup>

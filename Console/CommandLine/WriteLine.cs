@@ -50,6 +50,14 @@ public static partial class DefaultConsole
     /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
     /// It will flush immediately.
     /// </summary>
+    /// <param name="content">The text content collection.</param>
+    public static void WriteLine(ReadOnlySpan<ConsoleText> content)
+        => StyleConsole.Default.WriteLine(content);
+
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
@@ -122,6 +130,85 @@ public static partial class DefaultConsole
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
     public static void WriteLine(IConsoleTextPrettier style, string s, params object[] args)
         => StyleConsole.Default.WriteLine(style, s, args);
+
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(s, args);
+
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// </summary>
+    /// <param name="style">The content style.</param>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(ConsoleTextStyle style, string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(style, s, args);
+
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(ConsoleColor foreground, string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(foreground, s, args);
+
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="background">The background color.</param>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(ConsoleColor? foreground, ConsoleColor? background, string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(foreground, background, s, args);
+
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(Color foreground, string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(foreground, s, args);
+
+    /// <summary>
+    /// Writes the specified string value, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="foreground">The foreground color.</param>
+    /// <param name="background">The background color.</param>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(Color foreground, Color background, string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(foreground, background, s, args);
+
+    /// <summary>
+    /// Writes a JSON object, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="style">The style.</param>
+    /// <param name="s">A composite format string to output.</param>
+    /// <param name="args">An object array that contains zero or more objects to format.</param>
+    /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
+    public static void WriteLine(IConsoleTextPrettier style, string s, params ReadOnlySpan<object> args)
+        => StyleConsole.Default.WriteLine(style, s, args);
+#endif
 
     /// <summary>
     /// Writes the specified string value, followed by the current line terminator, to the standard output stream.

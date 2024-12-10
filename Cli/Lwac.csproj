@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\Common.props" />
+  <Import Project="..\Tools\Common.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,10 +16,7 @@
     <PackageTags>cli lwa</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
-    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\lwac.xml</DocumentationFile>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
   <ItemGroup>
     <Compile Include="..\Common\Web\FileInfo.cs" Link="FileInfo.cs" />

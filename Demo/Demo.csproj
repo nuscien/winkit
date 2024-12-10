@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\Common.props" />
+  <Import Project="..\Tools\Common.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -19,10 +19,7 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
-    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.WindowsKit.Demo.xml</DocumentationFile>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
   <ItemGroup>
     <None Remove="Bilibili\bilibili_logo.png" />

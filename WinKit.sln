@@ -7,11 +7,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{03B291A4-6F6F-4A26-9772-A1DE02B5EF48}"
 	ProjectSection(SolutionItems) = preProject
-		Common.props = Common.props
+		Tools\Build.props = Tools\Build.props
+		Tools\Common.props = Tools\Common.props
+		CONTRIBUTING.md = CONTRIBUTING.md
 		Directory.Packages.props = Directory.Packages.props
 		LICENSE = LICENSE
 		Materials\logo.png = Materials\logo.png
+		Tools\Packages.props = Tools\Packages.props
 		README.md = README.md
+		SECURITY.md = SECURITY.md
 		Trivial.snk = Trivial.snk
 	EndProjectSection
 EndProject

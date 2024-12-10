@@ -2,13 +2,23 @@
     x:Class="Trivial.UI.TabbedWebView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:local="using:Trivial.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:TabbedWebView">
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Border x:DefaultBindMode="OneWay" HorizontalAlignment="{x:Bind HorizontalAlignment}" VerticalAlignment="{x:Bind VerticalAlignment}" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}" Width="{x:Bind Width}" Height="{x:Bind Height}" Padding="{x:Bind Padding}" >
-        <TabView x:Name="HostElement" TabWidthMode="{x:Bind TabWidthMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabCloseRequested="OnTabCloseRequested" AddTabButtonClick="HostElement_AddTabButtonClick" SelectionChanged="HostElement_SelectionChanged" TabDragStarting="HostElement_TabDragStarting" TabDragCompleted="HostElement_TabDragCompleted" TabDroppedOutside="HostElement_TabDroppedOutside" >
+        <TabView x:Name="HostElement" Style="{x:Bind TabViewStyle}" TabWidthMode="{x:Bind TabWidthMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabCloseRequested="OnTabCloseRequested" AddTabButtonClick="HostElement_AddTabButtonClick" SelectionChanged="HostElement_SelectionChanged" TabDragStarting="HostElement_TabDragStarting" TabDragCompleted="HostElement_TabDragCompleted" TabDroppedOutside="HostElement_TabDroppedOutside" >
         </TabView>
     </Border>
 </UserControl>

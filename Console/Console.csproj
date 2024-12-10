@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\Common.props" />
+  <Import Project="..\Tools\Packages.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net9.0;net8.0;net6.0;net48;net462;net461</TargetFrameworks>
@@ -9,18 +9,13 @@
     <PackageId>Trivial.Console</PackageId>
     <Description>The console utilities and rich user interface console.</Description>
     <PackageProjectUrl>https://github.com/nuscien/trivial/wiki/console</PackageProjectUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ApplicationIcon>Logo.ico</ApplicationIcon>
     <PackageIcon>cmd.png</PackageIcon>
     <PackageIconUrl>https://github.com/nuscien/trivial/raw/master/Materials/logo.png</PackageIconUrl>
     <PackageTags>console</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
-    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.Console.xml</DocumentationFile>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
   <ItemGroup>
     <None Include="..\Materials\cmd.png" Pack="true" PackagePath="cmd.png" />

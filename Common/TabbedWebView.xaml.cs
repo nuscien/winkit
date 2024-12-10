@@ -85,6 +85,10 @@ public sealed partial class TabbedWebView : UserControl
         /// </summary>
         public LocalWebAppPage Page { get; }
     }
+    /// <summary>
+    /// The dependency property of item style.
+    /// </summary>
+    public static readonly DependencyProperty TabViewStyleProperty = DependencyObjectProxy.RegisterProperty<Style>(nameof(TabViewStyle));
 
     /// <summary>
     /// The dependency property of source
@@ -158,6 +162,15 @@ public sealed partial class TabbedWebView : UserControl
     /// Occurs on the selection has changed.
     /// </summary>
     public event SelectionChangedEventHandler SelectionChanged;
+
+    /// <summary>
+    /// Gets or sets the style of tab view.
+    /// </summary>
+    public Style TabViewStyle
+    {
+        get => (Style)GetValue(TabViewStyleProperty);
+        set => SetValue(TabViewStyleProperty, value);
+    }
 
     /// <summary>
     /// Gets the download list.
@@ -813,6 +826,7 @@ public sealed partial class TabbedWebView : UserControl
             }
         }
 
+        VisualStateManager.GoToState(HostElement, e.Data ? "FullscreenState" : "WindowState", true);
         ContainsFullScreenElementChanged?.Invoke(this, new DataEventArgs<int>(i));
     }
 

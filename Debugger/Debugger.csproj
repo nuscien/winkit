@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\Common.props" />
+  <Import Project="..\Tools\Common.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net9.0-windows;net8.0-windows;net48</TargetFrameworks>
@@ -11,10 +11,7 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
-    <DocumentationFile>..\bin\$(Configuration)\$(TargetFramework)\Trivial.Debugger.xml</DocumentationFile>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.DebuggerVisualizers" />

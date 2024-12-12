@@ -1,4 +1,4 @@
-# Trivial Toolkit for Windows App
+# Trivial Toolkit for Apps
 
 ## [Trivial.WindowsKit](./Common)
 
@@ -22,6 +22,7 @@ The rich UX CLI controls.
 ![.NET 8](./docs/assets/badge_NET_8.svg)
 ![.NET 6](./docs/assets/badge_NET_6.svg)
 ![.NET Framework 4.8](./docs/assets/badge_NET_Fx_4_8.svg)
+![.NET Framework 4.6.2](./docs/assets/badge_NET_Fx_4_6_2.svg)
 ![.NET Framework 4.6.1](./docs/assets/badge_NET_Fx_4_6_1.svg)
 
 - [Console utilities and components](./docs/console)

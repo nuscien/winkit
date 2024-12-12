@@ -135,6 +135,7 @@
   <ItemGroup>
     <None Remove="LocalWebAppHubPage.xaml" />
     <None Remove="LocalWebAppInfoView.xaml" />
+    <None Remove="TextDescriptionBlock.xaml" />
     <None Remove="TextLineBlock.xaml" />
   </ItemGroup>
 
@@ -149,6 +150,12 @@
     <EmbeddedResource Include="Assets\FolderLwa_128.png" />
     <EmbeddedResource Include="Assets\SearchLwa.png" />
     <EmbeddedResource Include="Assets\SearchLwa_128.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="TextDescriptionBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

@@ -112,4 +112,14 @@
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="VerticalAlignment" Value="Top" />
     </Style>
+    <Style TargetType="local:TextDescriptionBlock" x:Key="WinKit.TextDescriptionBlockStyle" >
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="IconWidth" Value="24" />
+        <Setter Property="IconHeight" Value="24" />
+        <Setter Property="IconSpacing" Value="8" />
+        <Setter Property="DescriptionSpacing" Value="8" />
+        <Setter Property="DescriptionForeground" Value="{ThemeResource WinKit.DescriptionForeground}" />
+    </Style>
 </ResourceDictionary>

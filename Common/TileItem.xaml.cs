@@ -953,6 +953,10 @@ public sealed partial class TileItem : UserControl
     public void SetImageToolTip(object value)
         => ToolTipService.SetToolTip(ImageControl, value);
 
+    /// <inheritdoc />
+    public override string ToString()
+        => Title ?? string.Empty;
+
     private void TitleText_IsTextTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)
     => IsTitleTrimmedChanged?.Invoke(this, args);
 

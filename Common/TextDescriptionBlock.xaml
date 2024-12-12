@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Trivial.UI.TextDescriptionBlock"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Trivial.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="local:TextDescriptionBlock" BasedOn="{StaticResource WinKit.TextDescriptionBlockStyle}" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid x:DefaultBindMode="OneWay" CornerRadius="{x:Bind CornerRadius}" Background="{x:Bind Background}" BackgroundSizing="{x:Bind BackgroundSizing}" Width="{x:Bind Width}" Height="{x:Bind Height}" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Border x:Name="BackgroundElement" Grid.ColumnSpan="3" />
+        <Border x:Name="LeftElement" HorizontalAlignment="Right" VerticalAlignment="{x:Bind VerticalContentAlignment}" Grid.Column="0" />
+        <Border x:Name="RightElement" HorizontalAlignment="Right" VerticalAlignment="{x:Bind VerticalContentAlignment}" Grid.Column="2" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="{x:Bind HorizontalContentAlignment}" VerticalAlignment="Stretch" Margin="{x:Bind Padding}" Grid.Column="1" >
+            <IconSourceElement x:Name="IconElement" Width="{x:Bind IconWidth}" Height="{x:Bind IconHeight}" VerticalAlignment="{x:Bind VerticalContentAlignment}" />
+            <TextBlock Text="{x:Bind Text}" MaxWidth="{x:Bind TextMaxWidth}" MinWidth="{x:Bind TextMinWidth}" TextTrimming="{x:Bind TextTrimming}" VerticalAlignment="{x:Bind VerticalContentAlignment}" />
+            <TextBlock x:Name="DescriptionElement" Text="{x:Bind Description}" Foreground="{x:Bind DescriptionForeground}" MaxWidth="{x:Bind DescriptionMaxWidth}" MinWidth="{x:Bind DescriptionMinWidth}" TextTrimming="{x:Bind TextTrimming}" VerticalAlignment="{x:Bind VerticalContentAlignment}" />
+            <Border x:Name="RestElement" VerticalAlignment="{x:Bind VerticalContentAlignment}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

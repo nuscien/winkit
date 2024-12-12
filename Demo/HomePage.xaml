@@ -13,7 +13,14 @@
         </ResourceDictionary>
     </Page.Resources>
     <StackPanel Orientation="Vertical" Spacing="8" Padding="20" >
-        <TextBlock Text="Welcome! This is a demo for Trivial.WindowsKit library. It can be used for pages of news, video and product." TextWrapping="WrapWholeWords" Foreground="{StaticResource CommonForeground}" />
+        <controls:TextDescriptionBlock Text="Welcome!" Description="This is a demo for Trivial.WindowsKit library. It can be used for pages of news, video and product." Foreground="{StaticResource CommonForeground}" HorizontalAlignment="Stretch" >
+            <controls:TextDescriptionBlock.Icon>
+                <SymbolIconSource Symbol="Favorite" />
+            </controls:TextDescriptionBlock.Icon>
+            <controls:TextDescriptionBlock.Footer>
+                <TextBlock Text="√" />
+            </controls:TextDescriptionBlock.Footer>
+        </controls:TextDescriptionBlock>
         <TextBlock Text="This demo shows basic visual samples based on some 3rd-party data sources. Copyrights of these data sources are reserved by their owner." TextWrapping="WrapWholeWords" Foreground="{StaticResource CommonForeground}" />
         <HyperlinkButton Content="Read more…" NavigateUri="https://github.com/nuscien/winkit/tree/main/Demo" />
         <controls:TextView x:Name="TextViewElement" Height="200" />

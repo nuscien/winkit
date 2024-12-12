@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Trivial.Data;
+using Trivial.Maths;
 using Trivial.Tasks;
 using Trivial.Text;
 using Windows.Foundation;
@@ -295,6 +296,48 @@ public static partial class VisualUtility
     /// <returns>The app window.</returns>
     public static AppWindow TryGetAppWindow(Window window)
     {
+        try
+        {
+            var w = window.AppWindow;
+            if (w is not null) return w;
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (NotImplementedException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (AggregateException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (ApplicationException)
+        {
+        }
+        catch (InvalidCastException)
+        {
+        }
+
         try
         {
             var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window ?? Window.Current);
@@ -1435,6 +1478,31 @@ public static partial class VisualUtility
         }
 
         return null;
+    }
+
+    internal static bool? ConvertToBoolean(object value)
+    {
+        if (value is null) return null;
+        if (value is bool b) return b;
+        if (value is Visibility v) return v == Visibility.Visible;
+        if (value is int i) return i > 0;
+        if (value is JsonBooleanNode j) return j.Value;
+        if (value is string s) return JsonBooleanNode.TryParse(s)?.Value ?? false;
+        if (value is UnaryBooleanOperator o) return o == UnaryBooleanOperator.Default;
+        return null;
+    }
+
+    internal static object ConvertFromBoolean(bool? value, Type targetType, bool useUnsetValue)
+    {
+        if (!value.HasValue || targetType == null) return useUnsetValue ? DependencyProperty.UnsetValue : null;
+        var b = value.Value;
+        if (targetType == typeof(Visibility)) return b ? Visibility.Visible : Visibility.Collapsed;
+        if (targetType == typeof(bool)) return b;
+        if (targetType == typeof(int)) return b ? 1 : 0;
+        if (targetType == typeof(JsonBooleanNode)) return (JsonBooleanNode)b;
+        if (targetType == typeof(string)) return b ? JsonBooleanNode.TrueString : JsonBooleanNode.FalseString;
+        if (targetType == typeof(UnaryBooleanOperator)) return b ? UnaryBooleanOperator.Default : UnaryBooleanOperator.Not;
+        return useUnsetValue ? DependencyProperty.UnsetValue : null;
     }
 
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)

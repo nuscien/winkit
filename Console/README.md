@@ -118,5 +118,5 @@ DefaultConsole.WriteLine(new LinearGradientConsoleStyle(
     Color.FromArgb(85, 168, 255))   // To color
     {
         Bold = true     // Additional font style
-    },"Trivial Sample");
+    }, "Trivial Sample");
 ```

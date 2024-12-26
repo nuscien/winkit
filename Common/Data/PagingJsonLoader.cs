@@ -202,6 +202,11 @@ public abstract class BaseJsonPagingLoader
     public int PageIndex { get; private set; } = -1;
 
     /// <summary>
+    /// Gets or sets the additional data.
+    /// </summary>
+    public object Tag { get; set; }
+
+    /// <summary>
     /// Gets data.
     /// </summary>
     /// <param name="page">The zero-based page index.</param>

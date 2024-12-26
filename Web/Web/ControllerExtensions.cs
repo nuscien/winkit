@@ -32,9 +32,10 @@ public static class ControllerExtensions
     private static MethodInfo method;
     private const string CharSet = "charset=utf-8";
     private const string CharSetSep = "; ";
-    private readonly static string jsonMime = string.Concat(JsonValues.JsonMIME, CharSetSep, CharSet);
-    private readonly static string sseMime = string.Concat(WebFormat.ServerSentEventsMIME, CharSetSep, CharSet);
-    private readonly static byte[] utf8NewLine = Encoding.UTF8.GetBytes("\n");
+    internal readonly static string jsonMime = string.Concat(JsonValues.JsonMIME, CharSetSep, CharSet);
+    internal readonly static string jsonlMime = string.Concat(JsonValues.JsonlMIME, CharSetSep, CharSet);
+    internal readonly static string sseMime = string.Concat(WebFormat.ServerSentEventsMIME, CharSetSep, CharSet);
+    internal readonly static byte[] utf8NewLine = Encoding.UTF8.GetBytes("\n");
 
     /// <summary>
     /// Gets the first string value.
@@ -620,17 +621,8 @@ public static class ControllerExtensions
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
-    public static async Task WriteToAsync(this IEnumerable<ServerSentEventInfo> data, HttpResponse response)
-    {
-        response.ContentType = sseMime;
-        foreach (var item in data)
-        {
-            var json = item.ToResponseString(true);
-            var buffer = Encoding.UTF8.GetBytes(json);
-            await response.Body.WriteAsync(buffer, 0, buffer.Length);
-            await response.Body.FlushAsync();
-        }
-    }
+    public static Task<int> WriteToAsync(this IEnumerable<ServerSentEventInfo> data, HttpResponse response)
+        => WriteDataToAsync(data, sseMime, ListExtensions.WriteToAsync, response);
 
     /// <summary>
     /// Convert to an action result.
@@ -647,29 +639,8 @@ public static class ControllerExtensions
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
-    public static Task WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> data, HttpResponse response)
-    {
-        response.ContentType = sseMime;
-        return WriteToAsync(data, response.Body);
-    }
-
-    private static async Task<int> WriteToAsync(IAsyncEnumerable<ServerSentEventInfo> col, Stream stream, Encoding encoding = null)
-    {
-        if (col == null || stream == null) return 0;
-        var writer = new StreamWriter(stream, encoding ?? Encoding.UTF8);
-        var i = 0;
-        await foreach (var item in col)
-        {
-            if (item == null) continue;
-            if (i > 0) writer.Write('\n');
-            await writer.WriteAsync(item.ToResponseString(true));
-            writer.Write('\n');
-            await writer.FlushAsync();
-            i++;
-        }
-
-        return i;
-    }
+    public static Task<int> WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> data, HttpResponse response)
+        => WriteDataToAsync(data, sseMime, WriteToAsync, response);
 
     /// <summary>
     /// Convert to an action result.
@@ -678,7 +649,118 @@ public static class ControllerExtensions
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
     public static IActionResult ToActionResult(this IAsyncEnumerable<ServerSentEventInfo> data, Action<HttpResponse> prepare = null)
-        => ToActionResult(data, WriteToAsync, null);
+        => ToActionResult(data, WriteToAsync, prepare);
+
+    /// <summary>
+    /// Writes the event information into a stream.
+    /// </summary>
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    public static Task<int> WriteToAsync(this IAsyncEnumerable<JsonObjectNode> data, HttpResponse response)
+        => WriteJsonlToAsync(data, response);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IAsyncEnumerable<JsonObjectNode> data, Action<HttpResponse> prepare = null)
+        => ToActionResult(data, WriteToAsync, prepare);
+
+    /// <summary>
+    /// Writes the event information into a stream.
+    /// </summary>
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    public static Task<int> WriteToAsync(this IAsyncEnumerable<BaseJsonValueNode> data, HttpResponse response)
+        => WriteJsonlToAsync(data, response);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IAsyncEnumerable<BaseJsonValueNode> data, Action<HttpResponse> prepare = null)
+        => ToActionResult(data, WriteToAsync, prepare);
+
+    /// <summary>
+    /// Writes the event information into a stream.
+    /// </summary>
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    public static Task<int> WriteToAsync(this IAsyncEnumerable<IJsonValueNode> data, HttpResponse response)
+        => WriteJsonlToAsync(data, response);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IAsyncEnumerable<IJsonValueNode> data, Action<HttpResponse> prepare = null)
+        => ToActionResult(data, WriteToAsync, prepare);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="append">The callback for collection result builder.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(Action<CollectionResultBuilder<T>> append, Action<HttpResponse> prepare = null)
+        => new PushingCollectionActionResult<T>(append, prepare);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="builder">The optional builder initialized.</param>
+    /// <param name="append">The callback for collection result builder.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Action<CollectionResultBuilder<T>> append, Action<HttpResponse> prepare = null)
+        => new PushingCollectionActionResult<T>(append, prepare, builder);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="append">The callback for collection result builder.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse> prepare = null)
+        => new PushingCollectionActionResult<T>(append, prepare);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="builder">The optional builder initialized.</param>
+    /// <param name="append">The callback for collection result builder.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse> prepare = null)
+        => new PushingCollectionActionResult<T>(append, prepare, builder);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="append">The callback for collection result builder.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse> prepare = null)
+        => new PushingCollectionActionResult<T>(append, prepare);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="builder">The optional builder initialized.</param>
+    /// <param name="append">The callback for collection result builder.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse> prepare = null)
+        => new PushingCollectionActionResult<T>(append, prepare, builder);
 
     /// <summary>
     /// Converts an exception to action result with exception message.
@@ -1059,14 +1141,65 @@ public static class ControllerExtensions
     }
 
     /// <summary>
-    /// Tries to get the string value.
+    /// Writes the event information into a stream.
     /// </summary>
-    /// <param name="header">The header.</param>
-    /// <param name="key">The header key.</param>
-    /// <returns>The string value; or null, if non-exist.</returns>
-    private static string TryGetStringValue(IHeaderDictionary header, string key)
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="mime">The content type to return.</param>
+    /// <param name="h">The handler to write stream.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    private static Task<int> WriteDataToAsync<T>(this T data, string mime, Func<T, Stream, Encoding, Task<int>> h, HttpResponse response)
     {
-        if (!header.TryGetValue(key, out var col)) return null;
-        return col.FirstOrDefault(ele => !string.IsNullOrWhiteSpace(ele));
+        response.ContentType = mime;
+        return h(data, response.Body, Encoding.UTF8);
+    }
+
+    /// <summary>
+    /// Writes the event information into a stream.
+    /// </summary>
+    /// <param name="data">The server-sent event info collection to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    private static async Task<int> WriteJsonlToAsync<T>(IAsyncEnumerable<T> data, HttpResponse response) where T : IJsonValueNode
+    {
+        response.ContentType = jsonlMime;
+        if (data == null) return 0;
+        var writer = new StreamWriter(response.Body, Encoding.UTF8);
+        var i = 0;
+        await foreach (var json in data)
+        {
+            if (i > 0) writer.Write('\n');
+            await writer.WriteAsync(json.ToString());
+            i++;
+            await writer.FlushAsync();
+        }
+
+        return i;
+    }
+
+    /// <summary>
+    /// Gets the server-sent event format string.
+    /// </summary>
+    /// <param name="col">The input collection.</param>
+    /// <param name="stream">The stream.</param>
+    /// <param name="encoding">The encoding; or null, by default, uses UTF-8.</param>
+    /// <returns>The count of server-sent event information writen.</returns>
+    /// <exception cref="InvalidOperationException">The stream is disposed.</exception>
+    /// <exception cref="ArgumentException">stream is not writable.</exception>
+    private static async Task<int> WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> col, Stream stream, Encoding encoding = null)
+    {
+        if (col == null || stream == null) return 0;
+        var writer = new StreamWriter(stream, encoding ?? Encoding.UTF8);
+        var i = 0;
+        await foreach (var item in col)
+        {
+            if (item == null) continue;
+            if (i > 0) writer.Write('\n');
+            await writer.WriteAsync(item.ToResponseString(true));
+            await writer.FlushAsync();
+            i++;
+        }
+
+        return i;
     }
 }

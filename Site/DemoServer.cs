@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.AspNetCore.CookiePolicy;
+using System.Text.Json.Serialization;
+using Trivial.Data;
 using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
@@ -52,18 +54,62 @@ public class DemoServer : TokenRequestRoute<UserModel>
         });
     }
 
-    public async IAsyncEnumerable<ServerSentEventInfo> StreamData(int count)
+    public async IAsyncEnumerable<JsonObjectNode> ListDataAsync(int count)
     {
         for (var i = 0; i < count; i++)
         {
             await Task.Delay(1000);
-            yield return new ServerSentEventInfo("test-data", "message", new JsonObjectNode()
+            yield return new JsonObjectNode()
             {
                 { "action", "add" },
                 { "value", Guid.NewGuid() },
                 { "index", i }
+            };
+        }
+    }
+
+    public async IAsyncEnumerable<ServerSentEventInfo> StreamDataAsync(int count)
+    {
+        var col = ListDataAsync(count);
+        await foreach (var item in col)
+        {
+            yield return new ServerSentEventInfo("test-data", "message", item);
+        }
+    }
+
+    public async Task AppendToAsync(CollectionResultBuilder<JsonObjectNode> builder)
+    {
+        if (builder == null) return;
+        var col = ListDataAsync(10);
+        builder.SetTrackingId(Guid.NewGuid().ToString());
+        builder.PatchAdditionalInfo(new()
+        {
+            { "name", "test data" },
+            { "status", "streaming" },
+            { "push", 0 },
+        });
+        builder.SetOffset(0, 10, "The item is streaming one by one.");
+        await foreach (var item in col)
+        {
+            builder.Add(item);
+            builder.PatchAdditionalInfo(new()
+            {
+                { "push", builder.Result.CurrentCount }
             });
         }
+        builder.SetMessage("Stream all items successfully.");
+        builder.PatchAdditionalInfo(new()
+        {
+            { "status", "done" }
+        });
+        builder.End();
+
+        // Following - nothing happened.
+        builder.PatchAdditionalInfo(new()
+        {
+            { "status", "no more" }
+        });
+        builder.End();
     }
 
     public ISignatureProvider GetSignatureProvider<T>(T payload, string id)

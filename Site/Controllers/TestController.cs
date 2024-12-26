@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Nodes;
 using Trivial.Collection;
+using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
 using Trivial.Text;
@@ -50,7 +51,18 @@ public class TestController : ControllerBase
     [HttpGet("Stream")]
     public IActionResult Stream()
     {
-        var sse = DemoServer.Instance.StreamData(10);
+        var sse = DemoServer.Instance.StreamDataAsync(10);
         return sse.ToActionResult();
     }
+
+    [HttpGet("Jsonl")]
+    public IActionResult ListData()
+    {
+        var sse = DemoServer.Instance.ListDataAsync(10);
+        return sse.ToActionResult();
+    }
+
+    [HttpGet("Items")]
+    public IActionResult PushData()
+        => ControllerExtensions.ToActionResult<JsonObjectNode>(DemoServer.Instance.AppendToAsync);
 }

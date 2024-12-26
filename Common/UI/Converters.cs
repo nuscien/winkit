@@ -166,6 +166,80 @@ public class NullToVisibleConverter : IValueConverter
 }
 
 /// <summary>
+/// The visibility converter about the value is not null or empty.
+/// </summary>
+public class EmptyToCollapseConverter : IValueConverter
+{
+    /// <summary>
+    /// Converts a source to target.
+    /// </summary>
+    /// <param name="value">The input value to convert.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted.</returns>
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => VisualUtility.ConvertFromBoolean(value is string s ? !string.IsNullOrEmpty(s) : value is not null, targetType, true);
+
+    /// <summary>
+    /// Converts the source back.
+    /// </summary>
+    /// <param name="value">The input value to convert back.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted back.</returns>
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => VisualUtility.ConvertToBoolean(value) != true ? null : CreateValue(parameter, language);
+
+    /// <summary>
+    /// Creates the value.
+    /// </summary>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result created to convert back.</returns>
+    protected virtual object CreateValue(object parameter, string language)
+        => DependencyProperty.UnsetValue;
+}
+
+/// <summary>
+/// The visibility converter about the value is null or empty.
+/// </summary>
+public class EmptyToVisibleConverter : IValueConverter
+{
+    /// <summary>
+    /// Converts a source to target.
+    /// </summary>
+    /// <param name="value">The input value to convert.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted.</returns>
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => VisualUtility.ConvertFromBoolean(value is string s ? string.IsNullOrEmpty(s) : value is null, targetType, true);
+
+    /// <summary>
+    /// Converts the source back.
+    /// </summary>
+    /// <param name="value">The input value to convert back.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted back.</returns>
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => VisualUtility.ConvertToBoolean(value) != false ? null : CreateValue(parameter, language);
+
+    /// <summary>
+    /// Creates the value.
+    /// </summary>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result created to convert back.</returns>
+    protected virtual object CreateValue(object parameter, string language)
+        => DependencyProperty.UnsetValue;
+}
+
+/// <summary>
 /// The two-way converter of visibility and boolean.
 /// </summary>
 public sealed class StrokeSideConverter : IValueConverter

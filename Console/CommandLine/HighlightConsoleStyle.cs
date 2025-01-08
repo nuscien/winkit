@@ -19,6 +19,27 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// <summary>
     /// Initialzies a new instance of the HighlightConsoleStyle class.
     /// </summary>
+    /// <param name="highlight">The highlight style.</param>
+    /// <param name="q">The query string.</param>
+    public HighlightConsoleStyle(ConsoleTextStyle highlight, IEnumerable<string> q)
+        : this(null, highlight, q)
+    {
+    }
+
+    /// <summary>
+    /// Initialzies a new instance of the HighlightConsoleStyle class.
+    /// </summary>
+    /// <param name="highlight">The highlight style.</param>
+    /// <param name="q">The query string.</param>
+    /// <param name="comparisonType">One of the enumeration values that specifies the rules for the search.</param>
+    public HighlightConsoleStyle(ConsoleTextStyle highlight, string q, StringComparison? comparisonType = null)
+        : this(null, highlight, q, comparisonType)
+    {
+    }
+
+    /// <summary>
+    /// Initialzies a new instance of the HighlightConsoleStyle class.
+    /// </summary>
     /// <param name="normal">The normal style.</param>
     /// <param name="highlight">The highlight style.</param>
     /// <param name="q">The query string.</param>

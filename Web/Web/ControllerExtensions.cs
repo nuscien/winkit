@@ -555,39 +555,131 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static ContentResult ToActionResult(this JsonObjectNode value)
-        => new()
-        {
-            ContentType = jsonMime,
-            StatusCode = 200,
-            Content = value?.ToString() ?? JsonValues.NullString
-        };
+    public static IActionResult ToActionResult(this JsonObjectNode value)
+        => new JsonValueNodeActionResult(value, null, null);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this JsonObjectNode value, Action<HttpResponse> prepare)
+        => new JsonValueNodeActionResult(value, prepare, null);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="entityTag">The entity tag associated with the file.</param>
+    /// <param name="lastModified">The optional last modification date time of the resource.</param>
+    /// <param name="expires">The optional expiration date time of the resource.</param>
+    /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this JsonObjectNode value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+        => new JsonValueNodeActionResult(value, null, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <param name="entityTag">The entity tag associated with the file.</param>
+    /// <param name="lastModified">The optional last modification date time of the resource.</param>
+    /// <param name="expires">The optional expiration date time of the resource.</param>
+    /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this JsonObjectNode value, Action<HttpResponse> prepare, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+        => new JsonValueNodeActionResult(value, prepare, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <param name="statusCode">The HTTP status code.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this JsonObjectNode value, int statusCode, Action<HttpResponse> prepare = null)
+        => new JsonValueNodeActionResult(value, prepare, null, new HttpResponseStatusFilling(statusCode));
 
     /// <summary>
     /// Convert to an action result.
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static ContentResult ToActionResult(this JsonArrayNode value)
-        => new()
-        {
-            ContentType = jsonMime,
-            StatusCode = 200,
-            Content = value?.ToString() ?? JsonValues.NullString
-        };
+    public static IActionResult ToActionResult(this JsonArrayNode value)
+        => new JsonValueNodeActionResult(value, null, null);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this JsonArrayNode value, Action<HttpResponse> prepare)
+        => new JsonValueNodeActionResult(value, prepare, null);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <param name="statusCode">The HTTP status code.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this JsonArrayNode value, int statusCode, Action<HttpResponse> prepare = null)
+        => new JsonValueNodeActionResult(value, prepare, null, new HttpResponseStatusFilling(statusCode));
 
     /// <summary>
     /// Convert to an action result.
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static ContentResult ToActionResult(this IJsonObjectHost value)
-        => new()
-        {
-            ContentType = jsonMime,
-            StatusCode = 200,
-            Content = value?.ToJson()?.ToString() ?? JsonValues.NullString
-        };
+    public static IActionResult ToActionResult(this IJsonObjectHost value)
+        => new JsonValueNodeActionResult(value?.ToJson(), null, null);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IJsonObjectHost value, Action<HttpResponse> prepare)
+        => new JsonValueNodeActionResult(value?.ToJson(), prepare, null);
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="entityTag">The entity tag associated with the file.</param>
+    /// <param name="lastModified">The optional last modification date time of the resource.</param>
+    /// <param name="expires">The optional expiration date time of the resource.</param>
+    /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IJsonObjectHost value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+        => new JsonValueNodeActionResult(value?.ToJson(), null, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <param name="entityTag">The entity tag associated with the file.</param>
+    /// <param name="lastModified">The optional last modification date time of the resource.</param>
+    /// <param name="expires">The optional expiration date time of the resource.</param>
+    /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IJsonObjectHost value, Action<HttpResponse> prepare, EntityTagHeaderValue entityTag = null, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+        => new JsonValueNodeActionResult(value?.ToJson(), prepare, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="prepare">The preparing callback.</param>
+    /// <param name="statusCode">The HTTP status code.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this IJsonObjectHost value, int statusCode, Action<HttpResponse> prepare = null)
+        => new JsonValueNodeActionResult(value?.ToJson(), prepare, null, new HttpResponseStatusFilling(statusCode));
 
     /// <summary>
     /// Convert to an action result.
@@ -887,6 +979,7 @@ public static class ControllerExtensions
         {
             if (controller is null) return default;
             var stream = controller.Request.Body;
+            tokenMaker ??= () => Activator.CreateInstance<TToken>();
             if (stream is null)
             {
                 result = tokenMaker();
@@ -895,7 +988,6 @@ public static class ControllerExtensions
                 return default;
             }
 
-            tokenMaker ??= () => Activator.CreateInstance<TToken>();
             string input;
             using (var reader = new StreamReader(controller.Request.Body, Encoding.UTF8))
             {
@@ -1062,6 +1154,55 @@ public static class ControllerExtensions
     /// <returns>A file result; or null, if non-exists.</returns>
     public static FileStreamResult FileResult(Assembly assembly, string subPath, EntityTagHeaderValue entityTag, string mime = null)
         => FileResult(assembly, subPath, null, entityTag, mime);
+
+    /// <summary>
+    /// Converts a date time to a string in HTTP-date format (defined by Date and Time Specification in Internet Message Format).
+    /// </summary>
+    /// <param name="time">The date time to convert.</param>
+    /// <returns>A string in HTTP-date format of a specific date and time.</returns>
+    public static string ToString(DateTime time)
+    {
+        // https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3
+        var sb = new StringBuilder();
+        time = time.ToUniversalTime();
+        sb.Append(time.DayOfWeek switch
+        {
+            DayOfWeek.Sunday => "Sun, ",
+            DayOfWeek.Monday => "Mon, ",
+            DayOfWeek.Tuesday => "Tue, ",
+            DayOfWeek.Wednesday => "Wed, ",
+            DayOfWeek.Thursday => "Thu, ",
+            DayOfWeek.Friday => "Fri, ",
+            DayOfWeek.Saturday => "Sat, ",
+            _ => string.Empty
+        });
+        sb.Append(time.Day.ToString("00"));
+        sb.Append(time.Month switch
+        {
+            1 => " Jan ",
+            2 => " Feb ",
+            3 => " Mar ",
+            4 => " Apr ",
+            5 => " May ",
+            6 => " Jun ",
+            7 => " Jul ",
+            8 => " Aug ",
+            9 => " Sep ",
+            10 => " Oct ",
+            11 => " Nov ",
+            12 => " Dec ",
+            _ => string.Concat(' ', time.Month, ' ')
+        });
+        sb.Append(time.Year.ToString("0000"));
+        sb.Append(' ');
+        sb.Append(time.Hour.ToString("00"));
+        sb.Append(':');
+        sb.Append(time.Minute.ToString("00"));
+        sb.Append(':');
+        sb.Append(time.Second.ToString("00"));
+        sb.Append(" GMT");
+        return sb.ToString();
+    }
 
     /// <summary>
     /// Gets the status code.

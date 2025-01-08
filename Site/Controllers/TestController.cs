@@ -36,7 +36,7 @@ public class TestController : ControllerBase
     }
 
     [HttpGet("Data")]
-    public ActionResult GetData()
+    public IActionResult GetData()
     {
         var jwt = Request.GetJsonWebToken<JsonWebTokenPayload>(DemoServer.Instance.GetSignatureProvider<JsonWebTokenPayload>);
         var json = new JsonObjectNode

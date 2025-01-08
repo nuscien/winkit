@@ -1,14 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Trivial.Data;
 using Trivial.Net;
+using Trivial.Text;
 
 namespace Trivial.Web;
 
@@ -21,9 +25,6 @@ namespace Trivial.Web;
 /// <param name="prepare">The preparing callback.</param>
 internal class DataHandlingActionResult<T>(T data, Func<T, HttpResponse, Task> handler, Action<HttpResponse> prepare) : IActionResult
 {
-    private readonly Func<T, HttpResponse, Task> handler = handler;
-    private readonly Action<HttpResponse> prepare = prepare;
-
     /// <inheritdoc />
     public async Task ExecuteResultAsync(ActionContext context)
     {
@@ -41,8 +42,8 @@ internal class PushingCollectionActionResult<T> : IActionResult
     private readonly SemaphoreSlim slim1;
     private readonly SemaphoreSlim slim2;
     private readonly Action<HttpResponse> prepare;
+    private readonly Action<CollectionResultBuilder<T>> fill;
     private CollectionResultBuilder<T> data;
-    private Action<CollectionResultBuilder<T>> fill;
     private HttpResponse response;
 
     /// <summary>
@@ -250,5 +251,28 @@ internal class PushingCollectionActionResult<T> : IActionResult
         catch (NullReferenceException)
         {
         }
+    }
+}
+
+/// <summary>
+/// The JSON action result for server-sent event.
+/// </summary>
+/// <param name="data">The source data to output.</param>
+/// <param name="prepare">The preparing callback.</param>
+/// <param name="mime">The content type.</param>
+/// <param name="filling">The response filling.</param>
+internal class JsonValueNodeActionResult(BaseJsonValueNode data, Action<HttpResponse> prepare, string mime, IHttpResponseFilling filling = null) : IActionResult
+{
+    /// <inheritdoc />
+    public async Task ExecuteResultAsync(ActionContext context)
+    {
+        var resp = context.HttpContext.Response;
+        prepare?.Invoke(resp);
+        resp.ContentType = mime ?? ControllerExtensions.jsonMime;
+        filling?.ExecuteResult(resp);
+        var writer = new Utf8JsonWriter(resp.Body);
+        if (data == null) JsonValues.Null.WriteTo(writer);
+        else data.WriteTo(writer);
+        await writer.FlushAsync();
     }
 }

@@ -712,7 +712,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
-    /// <returns>A task that represents the asynchronous write operation.</returns>
+    /// <returns>The count of server-sent event writen.</returns>
     public static Task<int> WriteToAsync(this IEnumerable<ServerSentEventInfo> data, HttpResponse response)
         => WriteDataToAsync(data, sseMime, ListExtensions.WriteToAsync, response);
 
@@ -730,7 +730,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
-    /// <returns>A task that represents the asynchronous write operation.</returns>
+    /// <returns>The count of server-sent event writen.</returns>
     public static Task<int> WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> data, HttpResponse response)
         => WriteDataToAsync(data, sseMime, WriteToAsync, response);
 
@@ -748,7 +748,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
-    /// <returns>A task that represents the asynchronous write operation.</returns>
+    /// <returns>The count of the JSON writen.</returns>
     public static Task<int> WriteToAsync(this IAsyncEnumerable<JsonObjectNode> data, HttpResponse response)
         => WriteJsonlToAsync(data, response);
 
@@ -766,7 +766,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
-    /// <returns>A task that represents the asynchronous write operation.</returns>
+    /// <returns>The count of the JSON writen.</returns>
     public static Task<int> WriteToAsync(this IAsyncEnumerable<BaseJsonValueNode> data, HttpResponse response)
         => WriteJsonlToAsync(data, response);
 
@@ -784,7 +784,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
-    /// <returns>A task that represents the asynchronous write operation.</returns>
+    /// <returns>The count of the JSON writen.</returns>
     public static Task<int> WriteToAsync(this IAsyncEnumerable<IJsonValueNode> data, HttpResponse response)
         => WriteJsonlToAsync(data, response);
 
@@ -853,6 +853,48 @@ public static class ControllerExtensions
     /// <returns>The action result.</returns>
     public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse> prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare, builder);
+
+    /// <summary>
+    /// Writes the strings into a stream.
+    /// </summary>
+    /// <param name="lines">The lines to write.</param>
+    /// <param name="mime">The content type.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>The count of line.</returns>
+    public static async Task<int> WriteToAsync(BaseLinesStringTableParser lines, string mime, HttpResponse response)
+    {
+        var data = lines?.ToLinesString();
+        if (data == null) return 0;
+        var writer = new StreamWriter(response.Body, Encoding.UTF8);
+        var i = 0;
+        foreach (var line in data)
+        {
+            if (i > 0) writer.Write('\n');
+            await writer.WriteLineAsync(line);
+            i++;
+            await writer.FlushAsync();
+        }
+
+        return i;
+    }
+
+    /// <summary>
+    /// Writes the CSV content into a stream.
+    /// </summary>
+    /// <param name="lines">The lines to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>The count of CSV record.</returns>
+    public static Task<int> WriteToAsync(this CsvParser lines, HttpResponse response)
+        => WriteToAsync(lines, CsvParser.MIME, response);
+
+    /// <summary>
+    /// Writes the CSV content into a stream.
+    /// </summary>
+    /// <param name="lines">The lines to write.</param>
+    /// <param name="response">The HTTP response to flush.</param>
+    /// <returns>The count of CSV record.</returns>
+    public static Task<int> WriteToAsync(this TsvParser lines, HttpResponse response)
+        => WriteToAsync(lines, TsvParser.MIME, response);
 
     /// <summary>
     /// Converts an exception to action result with exception message.

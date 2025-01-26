@@ -138,15 +138,26 @@ public class JsonConsoleStyle : ICloneable
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>A console text instance.</returns>
+    public ConsoleText CreateText(long value)
+        => new(
+            value.ToString("g"),
+            NumberForegroundRgbColor,
+            NumberForegroundConsoleColor,
+            BackgroundRgbColor,
+            BackgroundConsoleColor);
+
+    /// <summary>
+    /// Creates a console text by this style.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>A console text instance.</returns>
     public ConsoleText CreateText(string value)
-    {
-        return value == null ? CreateByKeyword(JsonValues.Null.ToString()) : new(
+        => value == null ? CreateByKeyword(JsonValues.Null.ToString()) : new(
             JsonStringNode.ToJson(value),
             StringForegroundRgbColor,
             StringForegroundConsoleColor,
             BackgroundRgbColor,
             BackgroundConsoleColor);
-    }
 
     /// <summary>
     /// Clones an object.

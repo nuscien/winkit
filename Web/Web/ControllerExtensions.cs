@@ -35,7 +35,16 @@ public static class ControllerExtensions
     internal readonly static string jsonMime = string.Concat(JsonValues.JsonMIME, CharSetSep, CharSet);
     internal readonly static string jsonlMime = string.Concat(JsonValues.JsonlMIME, CharSetSep, CharSet);
     internal readonly static string sseMime = string.Concat(WebFormat.ServerSentEventsMIME, CharSetSep, CharSet);
+    internal readonly static string textMime = string.Concat(StringExtensions.PlainTextMIME, CharSetSep, CharSet);
     internal readonly static byte[] utf8NewLine = Encoding.UTF8.GetBytes("\n");
+
+    /// <summary>
+    /// Gets the content type with UTF-8 character set.
+    /// </summary>
+    /// <param name="contentType">The content type (MIME).</param>
+    /// <returns>A string with the specific content type and character set UTF-8.</returns>
+    public static string GetUtf8ContentType(string contentType)
+        => string.Concat(contentType, CharSetSep, CharSet);
 
     /// <summary>
     /// Gets the first string value.

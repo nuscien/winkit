@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
@@ -16,6 +18,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Trivial.Data;
 using Trivial.Maths;
 using Trivial.Tasks;
@@ -24,6 +27,7 @@ using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Text;
+using Windows.UI.ViewManagement;
 
 namespace Trivial.UI;
 
@@ -54,7 +58,18 @@ public static partial class VisualUtility
     /// <param name="defaultValue">The default value.</param>
     /// <returns>The resource.</returns>
     public static T TryGetResource<T>(string key, T defaultValue = default)
-        => TryGetResource<T>(key, out var r) ? r : defaultValue;
+        => TryGetResource<T>(Application.Current.Resources, key, out var r) ? r : defaultValue;
+
+    /// <summary>
+    /// Tries to get the resource.
+    /// </summary>
+    /// <typeparam name="T">The type of the resource.</typeparam>
+    /// <param name="resources">The resources.</param>
+    /// <param name="key">The resource key.</param>
+    /// <param name="defaultValue">The default value.</param>
+    /// <returns>The resource.</returns>
+    public static T TryGetResource<T>(ResourceDictionary resources, string key, T defaultValue = default)
+        => TryGetResource<T>(resources, key, out var r) ? r : defaultValue;
 
     /// <summary>
     /// Tries to get the resource.
@@ -67,6 +82,20 @@ public static partial class VisualUtility
     /// <exception cref="ArgumentException">key is invalid.</exception>
     /// <exception cref="COMException">COM exception.</exception>
     public static bool TryGetResource<T>(string key, out T result)
+        => TryGetResource(Application.Current.Resources, key, out result);
+
+    /// <summary>
+    /// Tries to get the resource.
+    /// </summary>
+    /// <typeparam name="T">The type of the resource.</typeparam>
+    /// <param name="resources">The resources.</param>
+    /// <param name="key">The resource key.</param>
+    /// <param name="result">The result output.</param>
+    /// <returns>true if get succeeded; otherwise, false.</returns>
+    /// <exception cref="InvalidCastException">The type is not the expected one.</exception>
+    /// <exception cref="ArgumentException">key is invalid.</exception>
+    /// <exception cref="COMException">COM exception.</exception>
+    public static bool TryGetResource<T>(ResourceDictionary resources, string key, out T result)
     {
         if (string.IsNullOrEmpty(key))
         {
@@ -76,7 +105,7 @@ public static partial class VisualUtility
 
         try
         {
-            var v = Application.Current.Resources[key];
+            var v = (resources ?? Application.Current.Resources)[key];
             if (v is T r)
             {
                 result = r;
@@ -122,9 +151,18 @@ public static partial class VisualUtility
     /// Tries to get the style.
     /// </summary>
     /// <param name="key">The resource key.</param>
-    /// <returns>The resource.</returns>
+    /// <returns>The style; or null, if does not exist.</returns>
     public static Style TryGetStyle(string key)
-        => TryGetResource<Style>(key, out var r) ? r : null;
+        => TryGetResource<Style>(Application.Current.Resources, key, out var r) ? r : null;
+
+    /// <summary>
+    /// Tries to get the style.
+    /// </summary>
+    /// <param name="resources">The resources.</param>
+    /// <param name="key">The resource key.</param>
+    /// <returns>The style; or null, if does not exist.</returns>
+    public static Style TryGetStyle(ResourceDictionary resources, string key)
+        => TryGetResource<Style>(resources, key, out var r) ? r : null;
 
     /// <summary>
     /// Registers a click event handler.
@@ -424,8 +462,16 @@ public static partial class VisualUtility
     /// <summary>
     /// Converts to brush.
     /// </summary>
-    /// <param name="color">The color.</param>
+    /// <param name="colorType">The UI color type. e.g. accent color.</param>
     /// <returns>The solid brush.</returns>
+    public static SolidColorBrush ToBrush(UIColorType colorType)
+        => new(ToColor(colorType));
+
+    /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="color">The color.</param>
+    /// <returns>The color.</returns>
     public static Color ToColor(System.Drawing.Color color)
         => Color.FromArgb(color.A, color.R, color.G, color.B);
 
@@ -433,9 +479,17 @@ public static partial class VisualUtility
     /// Converts to brush.
     /// </summary>
     /// <param name="argb">The ARGB value.</param>
-    /// <returns>The solid brush.</returns>
+    /// <returns>The color.</returns>
     public static Color ToColor(int argb)
         => ToColor(System.Drawing.Color.FromArgb(argb));
+
+    /// <summary>
+    /// Converts to brush.
+    /// </summary>
+    /// <param name="colorType">The UI color type. e.g. accent color.</param>
+    /// <returns>The color.</returns>
+    public static Color ToColor(UIColorType colorType)
+        => new UISettings().GetColorValue(colorType);
 
     /// <summary>
     /// Create text inlines.
@@ -611,7 +665,7 @@ public static partial class VisualUtility
     public static Paragraph CreateTextParagraph(BlockCollection blocks, string text)
     {
         var c = CreateTextParagraph(text);
-        if (blocks != null) blocks.Add(c);
+        blocks?.Add(c);
         return c;
     }
 
@@ -625,7 +679,7 @@ public static partial class VisualUtility
     public static Paragraph CreateTextParagraph(BlockCollection blocks, Inline text, params Inline[] inlines)
     {
         var c = CreateTextParagraph(text, inlines);
-        if (blocks != null) blocks.Add(c);
+        blocks?.Add(c);
         return c;
     }
 
@@ -638,7 +692,7 @@ public static partial class VisualUtility
     public static Paragraph CreateTextParagraph(BlockCollection blocks, IEnumerable<Inline> inlines)
     {
         var c = CreateTextParagraph(inlines);
-        if (blocks != null) blocks.Add(c);
+        blocks?.Add(c);
         return c;
     }
 
@@ -668,7 +722,7 @@ public static partial class VisualUtility
     {
         var block = new Paragraph();
         CreateTextInlines(block.Inlines, json, style, watcher);
-        if (blocks != null) blocks.Add(block);
+        blocks?.Add(block);
         return block;
     }
 
@@ -698,7 +752,7 @@ public static partial class VisualUtility
     {
         var block = new Paragraph();
         CreateTextInlines(block.Inlines, json, style, watcher);
-        if (blocks != null) blocks.Add(block);
+        blocks?.Add(block);
         return block;
     }
 
@@ -815,7 +869,7 @@ public static partial class VisualUtility
     public static MenuFlyoutItem CreateMenuFlyoutItem(MenuFlyout menu, string text, IconElement icon, RoutedEventHandler click, Style style = null)
     {
         var c = CreateMenuFlyoutItem(text, icon, click, style);
-        if (menu != null) menu.Items.Add(c);
+        menu?.Items.Add(c);
         return c;
     }
 
@@ -1040,6 +1094,73 @@ public static partial class VisualUtility
     }
 
     /// <summary>
+    /// Creates an SVG image.
+    /// </summary>
+    /// <param name="uri">The URI of the SVG.</param>
+    /// <returns>The image element.</returns>
+    public static SvgImageSource CreateSvgImageSourceByUri(Uri uri)
+        => uri == null ? null : new()
+        {
+            UriSource = uri
+        };
+
+    /// <summary>
+    /// Creates an SVG image.
+    /// </summary>
+    /// <param name="url">The URL of the SVG.</param>
+    /// <returns>The image element.</returns>
+    public static SvgImageSource CreateSvgImageSourceByUri(string url)
+        => string.IsNullOrWhiteSpace(url) ? null : new()
+        {
+            UriSource = TryCreateUri(url)
+        };
+
+    /// <summary>
+    /// Creates an SVG image.
+    /// </summary>
+    /// <param name="svgString">The SVG content string.</param>
+    /// <returns>The image element.</returns>
+    public static async Task<SvgImageSource> CreateSvgImageByCodeAsync(string svgString)
+    {
+        if (string.IsNullOrWhiteSpace(svgString)) return null;
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream);
+        await writer.WriteAsync(svgString);
+        await writer.FlushAsync();
+        stream.Position = 0;
+        var svg = new SvgImageSource();
+        await svg.SetSourceAsync(stream.AsRandomAccessStream());
+        return svg;
+    }
+
+    /// <summary>
+    /// Gets the SVG size from the source.
+    /// </summary>
+    /// <param name="svgString">The SVG content string.</param>
+    /// <returns>The size of the SVG element; or null, if no such information.</returns>
+    public static Size? GetSvgSize(string svgString)
+        => GetSvgSize(svgString, out var width, out var height) ? new (width, height) : null;
+
+    /// <summary>
+    /// Gets the SVG size from the source.
+    /// </summary>
+    /// <param name="svgString">The SVG content string.</param>
+    /// <param name="width">The width of the SVG element; or double.NaN if parses failed.</param>
+    /// <param name="height">The height of the SVG element; or double.NaN if parses failed.</param>
+    /// <returns>true if parses succeeded; otherwise, false.</returns>
+    public static bool GetSvgSize(string svgString, out double width, out double height)
+    {
+        var svg = XDocument.Parse(svgString).Root;
+        var heightAttribute = svg.Attribute("height");
+        var widthAttribute = svg.Attribute("width");
+        if (heightAttribute.Value == null || !double.TryParse(heightAttribute.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out height))
+            height = double.NaN;
+        if (widthAttribute.Value == null || !double.TryParse(widthAttribute.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out width))
+            width = double.NaN;
+        return !double.IsNaN(width) && !double.IsNaN(height) && !double.IsInfinity(width) && !double.IsInfinity(height);
+    }
+
+    /// <summary>
     /// Tries to get tag of the element.
     /// </summary>
     /// <typeparam name="T">The type of tag.</typeparam>
@@ -1123,7 +1244,7 @@ public static partial class VisualUtility
     /// <param name="s">The input string to parse.</param>
     /// <param name="result">The result.</param>
     /// <returns>true if parse succeeded; otherwise, false.</returns>
-    public static bool TryParseColor(string s, out Windows.UI.Color result)
+    public static bool TryParseColor(string s, out Color result)
     {
         if (!Drawing.ColorCalculator.TryParse(s, out var color))
         {

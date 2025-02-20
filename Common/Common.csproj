@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="System.Management" />
   </ItemGroup>
 
   <ItemGroup>

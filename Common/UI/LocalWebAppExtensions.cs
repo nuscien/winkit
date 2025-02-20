@@ -114,9 +114,9 @@ internal static class LocalWebAppExtensions
         {
             Uri = uri,
             IsFullTrusted = !string.IsNullOrWhiteSpace(host?.VirtualHost) && uri?.Host == host.VirtualHost,
-            TraceId = json.TryGetStringValue("trace")?.Trim(),
-            Command = json.TryGetStringValue("cmd")?.Trim(),
-            MessageHandlerId = json.TryGetStringValue("handler")?.Trim(),
+            TraceId = json.TryGetStringTrimmedValue("trace"),
+            Command = json.TryGetStringTrimmedValue("cmd"),
+            MessageHandlerId = json.TryGetStringTrimmedValue("handler"),
             Data = json.TryGetObjectValue("data"),
             AdditionalInfo = json.TryGetObjectValue("info"),
             Context = json.TryGetObjectValue("context")

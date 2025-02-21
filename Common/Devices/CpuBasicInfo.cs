@@ -5,7 +5,6 @@ using System.Linq;
 using System.Management;
 using System.Text;
 using System.Threading.Tasks;
-using Trivial.Text;
 
 namespace Trivial.Devices;
 
@@ -14,23 +13,23 @@ namespace Trivial.Devices;
 /// </summary>
 public sealed class CpuBasicInfo : BaseDeviceComponentBasicInfo
 {
+    /// <summary>
+    /// The columns mapping.
+    /// </summary>
     private readonly static Dictionary<string, string> mapping = new()
     {
-        { "ProcessorId", "Id" },
-        { "Name", null },
-        { "Caption", null },
-        { "Description", null },
-        { "Family", null },
-        { "Manufacturer", null },
-        { "AddressWidth", null },
-        { "DataWidth", null },
-        { "NumberOfCores", "CoreCount" },
-        { "NumberOfEnabledCore", "EnabledCoreCount" },
-        { "NumberOfLogicalProcessors", "LogicalProcessorCount" },
-        { "ThreadCount", null },
-        { "VirtualizationFirmwareEnabled", null },
-        { "MaxClockSpeed", null },
-        { "SerialNumber", null },
+        { "ProcessorId", nameof(Id) },
+        { nameof(Family), null },
+        { nameof(Manufacturer), null },
+        { nameof(AddressWidth), null },
+        { nameof(DataWidth), null },
+        { "NumberOfCores", nameof(CoreCount) },
+        { "NumberOfEnabledCore", nameof(EnabledCoreCount) },
+        { "NumberOfLogicalProcessors", nameof(LogicalProcessorCount) },
+        { nameof(ThreadCount), null },
+        { nameof(VirtualizationFirmwareEnabled), null },
+        { nameof(MaxClockSpeed), null },
+        { nameof(SerialNumber), null },
     };
 
     /// <summary>
@@ -46,21 +45,6 @@ public sealed class CpuBasicInfo : BaseDeviceComponentBasicInfo
     /// Gets the processor identifier.
     /// </summary>
     public string Id { get; internal set; }
-
-    /// <summary>
-    /// Gets the name of the CPU.
-    /// </summary>
-    public string Name { get; internal set; }
-
-    /// <summary>
-    /// Gets the caption of the CPU.
-    /// </summary>
-    public string Caption { get; internal set; }
-
-    /// <summary>
-    /// Gets the description of the CPU.
-    /// </summary>
-    public string Description { get; internal set; }
 
     /// <summary>
     /// Gets the family name of the CPU.

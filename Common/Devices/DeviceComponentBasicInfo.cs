@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Trivial.Text;
@@ -23,6 +24,9 @@ public abstract class BaseDeviceComponentBasicInfo
     {
         if (obj == null || mapping == null) return;
         var type = GetType();
+        Name = obj[nameof(Name)] as string;
+        Caption = obj[nameof(Caption)] as string;
+        Description = obj[nameof(Description)] as string;
         foreach (var prop in mapping)
         {
             if (string.IsNullOrWhiteSpace(prop.Key)) continue;
@@ -121,6 +125,21 @@ public abstract class BaseDeviceComponentBasicInfo
     }
 
     /// <summary>
+    /// Gets the name of the GPU.
+    /// </summary>
+    public string Name { get; internal set; }
+
+    /// <summary>
+    /// Gets the caption of the GPU.
+    /// </summary>
+    public string Caption { get; internal set; }
+
+    /// <summary>
+    /// Gets the description of the CPU.
+    /// </summary>
+    public string Description { get; internal set; }
+
+    /// <summary>
     /// Gets all the device component information.
     /// </summary>
     /// <typeparam name="T">The type of the device component.</typeparam>
@@ -130,7 +149,26 @@ public abstract class BaseDeviceComponentBasicInfo
     internal static IEnumerable<T> Get<T>(string query, Func<ManagementBaseObject, T> factory) where T : BaseDeviceComponentBasicInfo
     {
         var search = new ManagementObjectSearcher(query);
-        foreach (var obj in search.Get())
+        ManagementObjectCollection col = null;
+        try
+        {
+            col = search.Get();
+        }
+        catch (ManagementException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        if (col == null) yield break;
+        foreach (var obj in col)
         {
             if (obj == null) continue;
             yield return factory(obj);

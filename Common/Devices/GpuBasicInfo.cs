@@ -5,26 +5,25 @@ using System.Linq;
 using System.Management;
 using System.Text;
 using System.Threading.Tasks;
-using Trivial.Text;
 
 namespace Trivial.Devices;
 
 /// <summary>
-/// The CPU information.
+/// The GPU information.
 /// </summary>
 public sealed class GpuBasicInfo : BaseDeviceComponentBasicInfo
 {
+    /// <summary>
+    /// The columns mapping.
+    /// </summary>
     private readonly static Dictionary<string, string> mapping = new()
     {
-        { "Name", null },
-        { "Caption", null },
-        { "Description", null },
-        { "AdapterCompatibility", null },
-        { "AdapterDACType", "DacType" },
-        { "AdapterRAM", "MemorySize" },
-        { "DriverVersion", null },
-        { "VideoArchitecture", null },
-        { "VideoModeDescription", null }
+        { nameof(AdapterCompatibility), null },
+        { "AdapterDACType", nameof(DacType) },
+        { "AdapterRAM", nameof(MemorySize) },
+        { nameof(DriverVersion), null },
+        { nameof(VideoArchitecture), null },
+        { nameof(VideoModeDescription), null }
     };
 
     /// <summary>
@@ -35,21 +34,6 @@ public sealed class GpuBasicInfo : BaseDeviceComponentBasicInfo
         : base(obj, mapping)
     {
     }
-
-    /// <summary>
-    /// Gets the name of the GPU.
-    /// </summary>
-    public string Name { get; internal set; }
-
-    /// <summary>
-    /// Gets the caption of the GPU.
-    /// </summary>
-    public string Caption { get; internal set; }
-
-    /// <summary>
-    /// Gets the description of the GPU.
-    /// </summary>
-    public string Description { get; internal set; }
 
     /// <summary>
     /// Gets the adapter compatibility.

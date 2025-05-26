@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +14,79 @@ namespace Trivial.Devices;
 /// </summary>
 public sealed class MemoryBasicInfo : BaseDeviceComponentBasicInfo
 {
+    [StructLayout(LayoutKind.Sequential)]
+    private struct UnmanagedInfo
+    {
+        /// <summary>
+        /// Current structure size.
+        /// </summary>
+        public uint dwLength;
+
+        /// <summary>
+        /// Current memory utilization.
+        /// </summary>
+        public uint dwMemoryLoad;
+
+        /// <summary>
+        /// Total physical memory size.
+        /// </summary>
+        public ulong ullTotalPhys;
+
+        /// <summary>
+        /// Available physical memory size
+        /// </summary>
+        public ulong ullAvailPhys;
+
+        /// <summary>
+        /// Total exchange file size.
+        /// </summary>
+        public ulong ullTotalPageFile;
+
+        /// <summary>
+        /// Available exchange file size.
+        /// </summary>
+        public ulong ullAvailPageFile;
+
+        /// <summary>
+        /// Total virtual memory size.
+        /// </summary>
+        public ulong ullTotalVirtual;
+
+        /// <summary>
+        /// Available virtual memory size.
+        /// </summary>
+        public ulong ullAvailVirtual;
+
+        /// <summary>
+        /// Keep this value always zero.
+        /// </summary>
+        public ulong ullAvailExtendedVirtual;
+    }
+
+    private static class UnmanagedServices
+    {
+        /// <summary>
+        /// Gets the current memory information and status.
+        /// </summary>
+        /// <param name="mi">The struct to transfer data.</param>
+        /// <returns>true if get succeeded; otherwise, false.</returns>
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GlobalMemoryStatusEx(ref UnmanagedInfo mi);
+
+        /// <summary>
+        /// Gets the current memory information and status.
+        /// </summary>
+        /// <returns>The information and status of memory.</returns>
+        internal static UnmanagedInfo GetMemoryStatus()
+        {
+            var memoryInfo = new UnmanagedInfo();
+            memoryInfo.dwLength = (uint)Marshal.SizeOf(memoryInfo);
+            GlobalMemoryStatusEx(ref memoryInfo);
+            return memoryInfo;
+        }
+    }
+
     /// <summary>
     /// The columns mapping.
     /// </summary>

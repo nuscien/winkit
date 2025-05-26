@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace Trivial.UI;
 public sealed partial class TabbedWebViewWindow : Window
 {
     private readonly SystemBackdropClient backdrop;
+    private string titleTemplate = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the TabbedWebViewWindow class.
@@ -143,6 +145,39 @@ public sealed partial class TabbedWebViewWindow : Window
     {
         get => HostElement.TabWidthMode;
         set => HostElement.TabWidthMode = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the window title.
+    /// </summary>
+    public new string Title
+    {
+        get
+        {
+            return base.Title;
+        }
+
+        set
+        {
+            titleTemplate = null;
+            base.Title = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the title template of the window.
+    /// </summary>
+    public string TitleTemplate
+    {
+        get
+        {
+            return titleTemplate;
+        }
+
+        set
+        {
+            titleTemplate = value ?? string.Empty;
+        }
     }
 
     /// <summary>
@@ -418,6 +453,50 @@ public sealed partial class TabbedWebViewWindow : Window
         await AddAsync(Web.LocalWebAppHost.LoadAsync(id));
     }
 
+    private void UpdateTitleByTemplate()
+    {
+        var t = titleTemplate;
+        if (t == null) return;
+        try
+        {
+            var tab = HostElement.TabItems[HostElement.SelectedIndex] as TabViewItem;
+            var title = tab?.Header?.ToString();
+            if (title == null) return;
+            if (string.IsNullOrWhiteSpace(t))
+            {
+                base.Title = title;
+            }
+            else if (t.Contains("{tab}"))
+            {
+                base.Title = t.Replace("{tab}", title);
+            }
+            else if (t.StartsWith(" - "))
+            {
+                base.Title = string.Concat(title, t);
+            }
+            else if (t.StartsWith("- "))
+            {
+                base.Title = string.Concat(title, ' ', t);
+            }
+            else
+            {
+                base.Title = string.Concat(title, " - ", t);
+            }
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NullReferenceException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+    }
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         if (backdrop != null) backdrop.Dispose();
@@ -472,7 +551,10 @@ public sealed partial class TabbedWebViewWindow : Window
         => LocalWebAppTabCreated?.Invoke(this, e);
 
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        => SelectionChanged?.Invoke(this, e);
+    {
+        UpdateTitleByTemplate();
+        SelectionChanged?.Invoke(this, e);
+    }
 
     private void HostElement_TabDragStarting(TabbedWebView sender, TabViewTabDragStartingEventArgs args)
         => TabDragStarting?.Invoke(this, args);

@@ -51,7 +51,8 @@ namespace Trivial.Demo
             LocalWebAppSettings.DefaultIconPath = "ms-appx:///Assets/DefaultLwa_128.png";
             LocalWebAppSettings.SelectDevAppIconPath = "ms-appx:///Assets/SearchLwa_128.png";
             await LocalWebAppHost.LoadAsync(null as System.Reflection.Assembly);
-            var win = UI.LocalWebAppHubPage.CreateWindow(null, out var page);
+            var win = UI.LocalWebAppHubPage.CreateWindow("Demo apps", out var page);
+            win.TitleTemplate = "Trivial WindowsKit";
             page.AddAdditionalDevApp(new()
             {
                 ResourcePackageId = "@",

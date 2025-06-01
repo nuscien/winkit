@@ -120,6 +120,23 @@ internal class InitVerb : BaseCommandVerb
         console.WriteLine(ConsoleColor.Green, "Done!");
     }
 
+    /// <inheritdoc />
+    protected override void OnGetHelp()
+    {
+        var console = GetConsole();
+        console.WriteLine("Initializes a new local web app project.");
+        console.WriteLine();
+        console.WriteLine("Usage:");
+        console.Write("  lwac ");
+        console.Write(ConsoleColor.Yellow, "init");
+        console.Write(' ');
+        console.WriteLine("<directory>", ConsoleColor.Green);
+        console.WriteLine();
+        console.WriteLine("Arguments:");
+        WriteArgumentDescription("<directory>", "The directory path of the local web app project to initialize.");
+        console.WriteLine();
+    }
+
     private bool UpdateManifest(JsonObjectNode json, string key, bool skipTyping = false)
     {
         var s = Arguments.GetMergedValue(key)?.Trim();
@@ -139,5 +156,14 @@ internal class InitVerb : BaseCommandVerb
         if (string.IsNullOrEmpty(s)) return false;
         json.SetValue(key, s);
         return true;
+    }
+
+    private void WriteArgumentDescription(string key, string description)
+    {
+        var console = GetConsole();
+        console.Write("  ");
+        console.Write(ConsoleColor.Green, key);
+        console.Write('\t');
+        console.WriteLine(description);
     }
 }

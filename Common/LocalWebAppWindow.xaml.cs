@@ -462,7 +462,7 @@ public sealed partial class LocalWebAppWindow : Window
 
     private void OnClosed(object sender, WindowEventArgs args)
     {
-        if (backdrop != null) backdrop.Dispose();
+        backdrop?.Dispose();
         MainElement.Close();
         MainElement.WindowController = null;
     }

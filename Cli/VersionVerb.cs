@@ -136,6 +136,24 @@ internal class VersionVerb : BaseCommandVerb
         else if (replaceCount > 1) console.WriteLine(string.Concat("Updated ", replaceCount, " text-based files by replacing version and others info."));
     }
 
+    /// <inheritdoc />
+    protected override void OnGetHelp()
+    {
+        var console = GetConsole();
+        console.WriteLine("Update the version of the local web app.");
+        console.WriteLine();
+        console.WriteLine("Usage:");
+        console.Write("  lwac ");
+        console.Write(ConsoleColor.Yellow, "version");
+        console.Write(' ');
+        console.WriteLine(ConsoleColor.Green, "<directory> --set <version>");
+        console.WriteLine();
+        console.WriteLine("Arguments:");
+        WriteArgumentDescription("<directory>", "The directory path of the local web app project to update version.");
+        WriteArgumentDescription("--set <version>", "The new version to set; or increase, to add revision automatically.");
+        console.WriteLine();
+    }
+
     private string SetVersion(string version, Func<int, int> update)
     {
         var console = GetConsole();
@@ -388,5 +406,14 @@ internal class VersionVerb : BaseCommandVerb
         }
 
         return false;
+    }
+
+    private void WriteArgumentDescription(string key, string description)
+    {
+        var console = GetConsole();
+        console.Write("  ");
+        console.Write(ConsoleColor.Green, key);
+        console.Write('\t');
+        console.WriteLine(description);
     }
 }

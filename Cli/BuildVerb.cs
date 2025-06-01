@@ -68,6 +68,24 @@ internal class BuildVerb : BaseCommandVerb
         console.WriteLine($"SHA512 \t{hash}");
     }
 
+    /// <inheritdoc />
+    protected override void OnGetHelp()
+    {
+        var console = GetConsole();
+        console.WriteLine("Build and package a local web app project.");
+        console.WriteLine();
+        console.WriteLine("Usage:");
+        console.Write("  lwac ");
+        console.Write(ConsoleColor.Yellow, "build");
+        console.Write(' ');
+        console.WriteLine(ConsoleColor.Green, "<directory> [--compress <level>]");
+        console.WriteLine();
+        console.WriteLine("Arguments:");
+        WriteArgumentDescription("<directory>", "The directory path of the local web app project to build.");
+        WriteArgumentDescription("--compress <level>", "The compression level to use for the package. Options: auto, fast, no, smallest.");
+        console.WriteLine();
+    }
+
     private CompressionLevel? TryGetCompressionLevel()
     {
         var compress = Arguments.GetFirst("compress")?.FirstOrDefault();
@@ -81,5 +99,14 @@ internal class BuildVerb : BaseCommandVerb
             "smallest" or "small" => CompressionLevel.SmallestSize,
             _ => null
         };
+    }
+
+    private void WriteArgumentDescription(string key, string description)
+    {
+        var console = GetConsole();
+        console.Write("  ");
+        console.Write(ConsoleColor.Green, key);
+        console.Write('\t');
+        console.WriteLine(description);
     }
 }

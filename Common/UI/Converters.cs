@@ -1,5 +1,8 @@
-﻿using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -348,4 +351,84 @@ public sealed class StrokeSideConverter : IValueConverter
 
     private Thickness GetThickness(double value)
         => double.IsNaN(value) ? new(DefaultLength) : new(GetLength(Left, value), GetLength(Top, value), GetLength(Right, value), GetLength(Bottom, value));
+}
+
+/// <summary>
+/// The two-way converter of URI to image source.
+/// </summary>
+public sealed class UriToBitmapImageSourceConverter : IValueConverter
+{
+    /// <summary>
+    /// Converts a source to target.
+    /// </summary>
+    /// <param name="value">The input value to convert.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted.</returns>
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is ImageSource source)
+        {
+            Uri uri2 = null;
+            if (source is BitmapImage bitmap)
+                uri2 = bitmap.UriSource;
+            else if (source is SvgImageSource svg)
+                uri2 = svg.UriSource;
+            else
+                return DependencyProperty.UnsetValue;
+
+            if (targetType == typeof(Uri)) return uri2;
+            else if (targetType == typeof(string)) return uri2?.OriginalString;
+            else if (targetType == typeof(ImageSource)) return source;
+            return DependencyProperty.UnsetValue;
+        }
+
+        if (value is not Uri uri)
+        {
+            if (value is string s) uri = StringExtensions.TryCreateUri(s);
+            else return DependencyProperty.UnsetValue;
+        }
+
+        if (string.IsNullOrWhiteSpace(uri?.OriginalString)) return null;
+        if (targetType == typeof(ImageSource))
+        {
+            try
+            {
+                source = (ImageSource)XamlBindingHelper.ConvertValue(typeof(ImageSource), uri.OriginalString);
+                if (source != null) return source;
+            }
+            catch (Exception)
+            {
+            }
+
+            return new BitmapImage
+            {
+                UriSource = uri
+            };
+        }
+
+        if (targetType == typeof(BitmapImage) || targetType == typeof(BitmapSource)) return new BitmapImage
+        {
+            UriSource = uri
+        };
+        if (targetType == typeof(SvgImageSource)) return new SvgImageSource
+        {
+            UriSource = uri
+        };
+        if (targetType == typeof(Uri)) return uri;
+        if (targetType == typeof(string)) return uri.OriginalString;
+        return DependencyProperty.UnsetValue;
+    }
+
+    /// <summary>
+    /// Converts the source back.
+    /// </summary>
+    /// <param name="value">The input value to convert back.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted back.</returns>
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => Convert(value, targetType, parameter, language);
 }

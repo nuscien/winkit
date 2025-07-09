@@ -255,7 +255,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
 }
 
 /// <summary>
-/// The JSON action result for server-sent event.
+/// The JSON action result.
 /// </summary>
 /// <param name="data">The source data to output.</param>
 /// <param name="prepare">The preparing callback.</param>
@@ -273,6 +273,29 @@ internal class JsonValueNodeActionResult(BaseJsonValueNode data, Action<HttpResp
         var writer = new Utf8JsonWriter(resp.Body);
         if (data == null) JsonValues.Null.WriteTo(writer);
         else data.WriteTo(writer);
+        await writer.FlushAsync();
+    }
+}
+
+/// <summary>
+/// The JSON action result.
+/// </summary>
+/// <param name="write">The write handler.</param>
+/// <param name="prepare">The preparing callback.</param>
+/// <param name="mime">The content type.</param>
+/// <param name="filling">The response filling.</param>
+internal class JsonWriterActionResult(Action<Utf8JsonWriter, JsonSerializerOptions> write, Action<HttpResponse> prepare, string mime, IHttpResponseFilling filling = null) : IActionResult
+{
+    /// <inheritdoc />
+    public async Task ExecuteResultAsync(ActionContext context)
+    {
+        var resp = context.HttpContext.Response;
+        prepare?.Invoke(resp);
+        resp.ContentType = mime ?? ControllerExtensions.jsonMime;
+        filling?.ExecuteResult(resp);
+        var writer = new Utf8JsonWriter(resp.Body);
+        if (write == null) JsonValues.Null.WriteTo(writer);
+        else write(writer, default);
         await writer.FlushAsync();
     }
 }

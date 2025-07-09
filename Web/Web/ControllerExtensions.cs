@@ -1,9 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Claims;
@@ -11,15 +16,11 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using Trivial.Collection;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
+using Trivial.Tasks;
 using Trivial.Text;
 
 namespace Trivial.Web;
@@ -694,6 +695,18 @@ public static class ControllerExtensions
     /// Convert to an action result.
     /// </summary>
     /// <param name="value">The value.</param>
+    /// <param name="entityTag">The entity tag associated with the file.</param>
+    /// <param name="lastModified">The optional last modification date time of the resource.</param>
+    /// <param name="expires">The optional expiration date time of the resource.</param>
+    /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
+    /// <returns>The action result.</returns>
+    public static IActionResult ToActionResult(this BaseJsonRpcResponseObject value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+        => new JsonWriterActionResult(value.Write, null, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
+
+    /// <summary>
+    /// Convert to an action result.
+    /// </summary>
+    /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
     public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonObject value)
         => new()
@@ -1253,6 +1266,41 @@ public static class ControllerExtensions
         sb.Append(time.Second.ToString("00"));
         sb.Append(" GMT");
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="request">The JSON-RPC request object.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
+    /// <returns>The JSON-RPC response object.</returns>
+    public static async Task<BaseJsonRpcResponseObject> ProcessAsync(this JsonRpcRequestRoute route, HttpRequest request, CancellationToken cancellationToken = default)
+    {
+        if (route == null || request == null) return null;
+        var stream = request.Body;
+        if (stream == null) return null;
+        if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+        return await route.ProcessAsync(stream, default);
+    }
+
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="request">The JSON-RPC request object collection.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
+    /// <returns>The JSON-RPC response object collection.</returns>
+    public static async IAsyncEnumerable<BaseJsonRpcResponseObject> ProcessBatchAsync(this JsonRpcRequestRoute route, HttpRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (route == null || request == null) yield break;
+        var stream = request.Body;
+        if (stream == null) yield break;
+        if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+        var req = JsonSerializer.Deserialize<IEnumerable<JsonRpcRequestObject>>(stream);
+        var resp = route.ProcessAsync(req, cancellationToken);
+        await foreach (var item in resp)
+        {
+            yield return item;
+        }
     }
 
     /// <summary>

@@ -5,11 +5,14 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Trivial.Maths;
 using Trivial.Text;
+using Trivial.Web;
 using Windows.Devices.Input;
 using Windows.UI.Notifications;
 
@@ -431,4 +434,168 @@ public sealed class UriToBitmapImageSourceConverter : IValueConverter
     /// <returns>The result converted back.</returns>
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => Convert(value, targetType, parameter, language);
+}
+
+/// <summary>
+/// The one-way converter of message time string.
+/// </summary>
+public sealed class MessageTimeOneWayConverter : IValueConverter
+{
+    /// <summary>
+    /// Converts a source to target.
+    /// </summary>
+    /// <param name="value">The input value to convert.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted.</returns>
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is not DateTime time)
+        {
+            if (value is DateTimeOffset dto)
+            {
+                time = dto.DateTime;
+            }
+            else if (value is string s)
+            {
+                var dt = WebFormat.ParseDate(s);
+                if (dt.HasValue) time = dt.Value;
+                else return DependencyProperty.UnsetValue;
+            }
+            else
+            {
+                return DependencyProperty.UnsetValue;
+            }
+        }
+
+        var culture = CultureInfo.CurrentUICulture ?? CultureInfo.CurrentCulture;
+        if (!string.IsNullOrWhiteSpace(language)) culture = CultureInfo.GetCultureInfo(language);
+        var now = DateTime.Now;
+        if (now.Year != time.Year)
+        {
+            var key = GetCultureFamilyName(culture);
+            if (key == "zh")
+            {
+                var year = now.Year - time.Year;
+                switch (year)
+                {
+                    case 1:
+                        return time.ToString("'去年'M'月'd'日'HH:mm");
+                    case -1:
+                        return time.ToString("'明年'M'月'd'日'HH:mm");
+                }
+            }
+            else if (key == "ja")
+            {
+                var year = now.Year - time.Year;
+                switch (year)
+                {
+                    case 1:
+                        return time.ToString("'昨年'M'月'd'日'HH:mm");
+                    case -1:
+                        return time.ToString("'明年'M'月'd'日'HH:mm");
+                }
+            }
+
+            return time.ToString("g");
+        }
+
+        var days = (int)(now.Date - time.Date).TotalDays;
+        switch (days)
+        {
+            case 0:
+                {
+                    return time.ToString("T");
+                }
+            case 1:
+                {
+                    var abbr = GetYesterdayAbbreviation(culture);
+                    if (abbr != null) return string.Concat(abbr, ' ', time.ToString("t"));
+                    break;
+                }
+            case -1:
+                {
+                    var abbr = GetTomorrowAbbreviation(culture);
+                    if (abbr != null) return string.Concat(abbr, ' ', time.ToString("t"));
+                    break;
+                }
+            case 2:
+                {
+                    var key = GetCultureFamilyName(culture);
+                    if (key == "zh") return string.Concat("前天 ", time.ToString("t"));
+                    break;
+                }
+            case -2:
+                {
+                    var key = GetCultureFamilyName(culture);
+                    if (key == "zh") return string.Concat("后天 ", time.ToString("t"));
+                    break;
+                }
+        }
+
+        var pattern = culture?.DateTimeFormat?.MonthDayPattern ?? "MMM dd";
+        var cultureKey = GetCultureFamilyName(culture);
+        if (cultureKey == "zh") return time.ToString("M'月'd'日'HH:mm");
+        pattern = pattern.Replace("MMMM", "MMM");
+        return string.Concat(time.ToString(pattern), ' ', time.ToString("t"));
+    }
+
+    /// <summary>
+    /// Converts the source back.
+    /// </summary>
+    /// <param name="value">The input value to convert back.</param>
+    /// <param name="targetType">The type of target.</param>
+    /// <param name="parameter">The converter parameter.</param>
+    /// <param name="language">The language code.</param>
+    /// <returns>The result converted back.</returns>
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => DependencyProperty.UnsetValue;
+
+    private static string GetCultureFamilyName(CultureInfo culture)
+    {
+        var key = culture?.Name;
+        if (string.IsNullOrWhiteSpace(key)) return null;
+        var i = key.IndexOf('-');
+        if (i > 0) key = key.Substring(0, i);
+        return key;
+    }
+
+    private static string GetYesterdayAbbreviation(CultureInfo culture)
+    {
+        var key = GetCultureFamilyName(culture);
+        return key switch
+        {
+            "en" => "YTD",
+            "fr" => "hier",
+            "zh" => "昨天",
+            "ja" => "昨日",
+            "ko" => "어제",
+            //"la" => "hesterno",
+            "es" => "ayer",
+            "pt" => "ontem",
+            "de" => "gestern",
+            "el" => "εχθές",
+            _ => null
+        };
+    }
+
+    private static string GetTomorrowAbbreviation(CultureInfo culture)
+    {
+        var key = GetCultureFamilyName(culture);
+        return key switch
+        {
+            "en" => "TMR",
+            "fr" => "demain",
+            "zh" => "明天",
+            "ja" => "明日",
+            "ko" => "내일",
+            "la" => "cras",
+            "es" => "mañana",
+            "pt" => "amanhã",
+            "de" => "morgen",
+            "el" => "αύριο",
+            _ => null
+        };
+    }
 }

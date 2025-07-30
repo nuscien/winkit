@@ -1578,7 +1578,7 @@ public static partial class VisualUtility
     /// <param name="name">The service name.</param>
     /// <returns>The process; or null, if fails.</returns>
     public static Process PauseWindowsService(string name)
-        => ChangeWindowsServiceStatus(name, "start");
+        => ChangeWindowsServiceStatus(name, "pause");
 
     /// <summary>
     /// Stops a specific Windows service.

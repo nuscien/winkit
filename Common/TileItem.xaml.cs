@@ -55,6 +55,16 @@ public sealed partial class TileItem : UserControl
     public static readonly DependencyProperty PressedBackgroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(PressedBackground));
 
     /// <summary>
+    /// The dependency property of hover border brush.
+    /// </summary>
+    public static readonly DependencyProperty HoverBorderBrushProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(HoverBorderBrush));
+
+    /// <summary>
+    /// The dependency property of hover border thickness.
+    /// </summary>
+    public static readonly DependencyProperty HoverBorderThicknessProperty = DependencyObjectProxy.RegisterProperty<Thickness>(nameof(HoverBorderThickness));
+
+    /// <summary>
     /// The dependency property of orientation.
     /// </summary>
     public static readonly DependencyProperty OrientationProperty = DependencyObjectProxy.RegisterProperty(nameof(Orientation), Orientation.Vertical);
@@ -376,6 +386,24 @@ public sealed partial class TileItem : UserControl
     {
         get => (Brush)GetValue(PressedBackgroundProperty);
         set => SetValue(PressedBackgroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the hover border brush.
+    /// </summary>
+    public Brush HoverBorderBrush
+    {
+        get => (Brush)GetValue(HoverBorderBrushProperty);
+        set => SetValue(HoverBorderBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the hover border thickness.
+    /// </summary>
+    public Thickness HoverBorderThickness
+    {
+        get => (Thickness)GetValue(HoverBorderThicknessProperty);
+        set => SetValue(HoverBorderThicknessProperty, value);
     }
 
     /// <summary>

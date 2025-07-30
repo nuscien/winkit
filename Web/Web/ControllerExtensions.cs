@@ -1271,6 +1271,7 @@ public static class ControllerExtensions
     /// <summary>
     /// Processes.
     /// </summary>
+    /// <param name="route">The JSON-PRC request route.</param>
     /// <param name="request">The JSON-RPC request object.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>The JSON-RPC response object.</returns>
@@ -1286,6 +1287,7 @@ public static class ControllerExtensions
     /// <summary>
     /// Processes.
     /// </summary>
+    /// <param name="route">The JSON-PRC request route.</param>
     /// <param name="request">The JSON-RPC request object collection.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>The JSON-RPC response object collection.</returns>

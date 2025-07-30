@@ -97,6 +97,50 @@ public sealed partial class TextDescriptionBlock : UserControl
     }
 
     /// <summary>
+    /// Initializes a new instance of the TextDescriptionBlock class.
+    /// </summary>
+    /// <param name="icon">The icon.</param>
+    /// <param name="title">The title.</param>
+    /// <param name="descripton">The description.</param>
+    public TextDescriptionBlock(IconSource icon, string title, string descripton = null)
+    {
+        InitializeComponent();
+        Text = title;
+        Description = descripton;
+        Icon = icon;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the TextDescriptionBlock class.
+    /// </summary>
+    /// <param name="symbol">The symbol used to show in icon.</param>
+    /// <param name="title">The title.</param>
+    /// <param name="descripton">The description.</param>
+    public TextDescriptionBlock(Symbol symbol, string title, string descripton = null)
+        : this(new SymbolIconSource
+        {
+            Symbol = symbol,
+        }, title, descripton)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the TextDescriptionBlock class.
+    /// </summary>
+    /// <param name="symbol">The symbol used to show in icon.</param>
+    /// <param name="foregroud">The forground brush of icon.</param>
+    /// <param name="title">The title.</param>
+    /// <param name="descripton">The description.</param>
+    public TextDescriptionBlock(Symbol symbol, Brush foregroud, string title, string descripton = null)
+        : this(new SymbolIconSource
+        {
+            Symbol = symbol,
+            Foreground = foregroud,
+        }, title, descripton)
+    {
+    }
+
+    /// <summary>
     /// Gets or sets the image source of the icon.
     /// </summary>
     public IconSource Icon

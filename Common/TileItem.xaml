@@ -91,7 +91,7 @@
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
                                 <Border x:Name="BackgroundRect" Background="{Binding ElementName=HostElement, Path=Background}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" Opacity="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RenderTransformOrigin="0.5,0.5" >
+                                <Border x:Name="HoverBackgroundRect" Background="{Binding ElementName=HostElement, Path=HoverBackground}" BackgroundSizing="{Binding ElementName=HostElement, Path=BackgroundSizing}" BorderBrush="{Binding ElementName=HostElement, Path=HoverBorderBrush}" BorderThickness="{Binding ElementName=HostElement, Path=HoverBorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RenderTransformOrigin="0.5,0.5" >
                                     <Border.RenderTransform>
                                         <TransformGroup>
                                             <ScaleTransform ScaleY="0.94" ScaleX="0.94"/>

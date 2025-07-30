@@ -1,5 +1,15 @@
-﻿using System;
+﻿using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Text;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,20 +20,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.UI.Composition.SystemBackdrops;
-using Microsoft.UI.Text;
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Documents;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Trivial.Data;
 using Trivial.Maths;
 using Trivial.Tasks;
 using Trivial.Text;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Text;
@@ -1454,6 +1456,170 @@ public static partial class VisualUtility
     /// <param name="cancellationToken">The cancellation token.</param>
     public static void ApplyMicaSystemBackdrop(Window window, ElementTheme? theme, CancellationToken cancellationToken)
         => ApplyMicaSystemBackdrop(window, theme, null, cancellationToken);
+
+    /// <summary>
+    /// Opens a file.
+    /// </summary>
+    /// <param name="file">The file info.</param>
+    /// <returns>true if opens succeeded; otherwise, false.</returns>
+    public static async Task<bool> OpenFileAsync(FileInfo file)
+    {
+        if (file == null || !file.Exists) return false;
+        string path = null;
+        try
+        {
+            path = file.FullName;
+        }
+        catch (IOException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        if (string.IsNullOrEmpty(path)) return false;
+        return await OpenFileAsync(path);
+    }
+
+    /// <summary>
+    /// Opens a file.
+    /// </summary>
+    /// <param name="file">The file path.</param>
+    /// <returns>true if opens succeeded; otherwise, false.</returns>
+    public static async Task<bool> OpenFileAsync(string file)
+    {
+        try
+        {
+            var fileStorage = await StorageFile.GetFileFromPathAsync(file);
+            if (fileStorage == null) return false;
+            return await Launcher.LaunchFileAsync(fileStorage);
+        }
+        catch (IOException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Opens a directory.
+    /// </summary>
+    /// <param name="dir">The directory info.</param>
+    /// <returns>true if opens succeeded; otherwise, false.</returns>
+    public static async Task<bool> OpenFolderAsync(DirectoryInfo dir)
+    {
+        if (dir == null || !dir.Exists) return false;
+        string path = null;
+        try
+        {
+            path = dir.FullName;
+        }
+        catch (IOException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        if (string.IsNullOrEmpty(path)) return false;
+        return await Launcher.LaunchFolderPathAsync(path);
+    }
+
+    /// <summary>
+    /// Starts a specific Windows service.
+    /// </summary>
+    /// <param name="name">The service name.</param>
+    /// <returns>The process; or null, if fails.</returns>
+    public static Process StartWindowsService(string name)
+        => ChangeWindowsServiceStatus(name, "start");
+
+    /// <summary>
+    /// Pauses a specific Windows service.
+    /// </summary>
+    /// <param name="name">The service name.</param>
+    /// <returns>The process; or null, if fails.</returns>
+    public static Process PauseWindowsService(string name)
+        => ChangeWindowsServiceStatus(name, "start");
+
+    /// <summary>
+    /// Stops a specific Windows service.
+    /// </summary>
+    /// <param name="name">The service name.</param>
+    /// <returns>The process; or null, if fails.</returns>
+    public static Process StopWindowsService(string name)
+        => ChangeWindowsServiceStatus(name, "stop");
+
+    internal static Process ChangeWindowsServiceStatus(string name, string action)
+    {
+        try
+        {
+            var info = new ProcessStartInfo("net.exe", string.Concat(action, ' ', name))
+            {
+                UseShellExecute = true,
+                Verb = "runas"
+            };
+            return Process.Start(info);
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
+    }
 
     internal static DesktopAcrylicController TryCreateAcrylicBackdrop()
     {

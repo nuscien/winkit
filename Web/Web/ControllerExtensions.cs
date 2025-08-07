@@ -695,18 +695,6 @@ public static class ControllerExtensions
     /// Convert to an action result.
     /// </summary>
     /// <param name="value">The value.</param>
-    /// <param name="entityTag">The entity tag associated with the file.</param>
-    /// <param name="lastModified">The optional last modification date time of the resource.</param>
-    /// <param name="expires">The optional expiration date time of the resource.</param>
-    /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
-    /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this BaseJsonRpcResponseObject value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
-        => new JsonWriterActionResult(value.Write, null, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
-
-    /// <summary>
-    /// Convert to an action result.
-    /// </summary>
-    /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
     public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonObject value)
         => new()
@@ -1297,8 +1285,7 @@ public static class ControllerExtensions
         var stream = request.Body;
         if (stream == null) yield break;
         if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
-        var req = JsonSerializer.Deserialize<IEnumerable<JsonRpcRequestObject>>(stream);
-        var resp = route.ProcessAsync(req, cancellationToken);
+        var resp = route.ProcessBatchAsync(stream, cancellationToken);
         await foreach (var item in resp)
         {
             yield return item;

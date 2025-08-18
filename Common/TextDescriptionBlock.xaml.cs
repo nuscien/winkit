@@ -36,7 +36,7 @@ public sealed partial class TextDescriptionBlock : UserControl
     /// </summary>
     public static readonly DependencyProperty IconSpacingProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(IconSpacing), (c, e, p)=>
     {
-        c.IconElement.Margin = new(0d, 0d, double.IsNaN(e.NewValue) ? 0d : e.NewValue, 0d);
+        c.IconElement.Margin = new(0d, 0d, double.IsNaN(e.NewValue) || e.NewValue < 0d ? 0d : e.NewValue, 0d);
     }, 0d);
 
     /// <summary>

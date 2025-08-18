@@ -15,22 +15,24 @@
             <Style TargetType="local:CommentView" >
                 <Setter Property="Foreground" Value="{ThemeResource WinKit.Foreground}" />
                 <Setter Property="FontSize" Value="14" />
-                <Setter Property="AvatarWidth" Value="40" />
-                <Setter Property="AvatarHeight" Value="40" />
+                <Setter Property="AvatarWidth" Value="36" />
+                <Setter Property="AvatarHeight" Value="36" />
                 <Setter Property="AvatarCornerRadius" Value="20" />
                 <Setter Property="AvatarBackground" Value="{ThemeResource WinKit.ImageBackground}" />
                 <Setter Property="AvatarMargin" Value="0" />
-                <Setter Property="SenderMargin" Value="50,0,0,0" />
+                <Setter Property="SenderMargin" Value="46,0,0,0" />
                 <Setter Property="SenderOrientation" Value="Vertical" />
                 <Setter Property="NicknameForeground" Value="{ThemeResource WinKit.TitleForeground}" />
                 <Setter Property="NicknameFontSize" Value="14" />
+                <Setter Property="SubtitleForeground" Value="{ThemeResource WinKit.DescriptionForeground}" />
+                <Setter Property="SubtitleFontSize" Value="12" />
                 <Setter Property="DescriptionForeground" Value="{ThemeResource WinKit.DescriptionForeground}" />
                 <Setter Property="DescriptionFontSize" Value="12" />
-                <Setter Property="ContentMargin" Value="0,45,0,0" />
-                <Setter Property="ReplyPanelStyle">
+                <Setter Property="ContentMargin" Value="0,42,0,0" />
+                <Setter Property="ReplyPanelStyle" >
                     <Setter.Value>
                         <Style TargetType="StackPanel">
-                            <Setter Property="Background" Value="#20808080" />
+                            <Setter Property="Background" Value="#10808080" />
                             <Setter Property="Padding" Value="15" />
                             <Setter Property="Margin" Value="0,8,0,0" />
                             <Setter Property="BorderBrush" Value="#30808080" />
@@ -53,14 +55,18 @@
             </Image>
         </Border>
         <Border x:Name="SenderCornerPanel" Margin="0" HorizontalAlignment="Right" VerticalAlignment="Top" />
-        <StackPanel Orientation="{x:Bind SenderOrientation}" Spacing="{x:Bind SenderSpacing}" Margin="{x:Bind SenderMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
-            <TextBlock x:Name="NicknameText" Text="{x:Bind Nickname}" Width="{x:Bind NicknameWidth}" Height="{x:Bind NicknameHeight}" Foreground="{x:Bind NicknameForeground}" FontSize="{x:Bind NicknameFontSize}" FontWeight="{x:Bind NicknameFontWeight}" FontStyle="{x:Bind NicknameFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
-            <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Width="{x:Bind DescriptionWidth}" Height="{x:Bind DescriptionHeight}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
-            <Border x:Name="SenderAdditionalInfo" ></Border>
+        <StackPanel Orientation="Vertical" Spacing="{x:Bind SenderSpacing}" Margin="{x:Bind SenderMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
+            <StackPanel x:Name="SenderPanel" Orientation="Horizontal" Spacing="{x:Bind NicknameSpacing}" HorizontalAlignment="Center" >
+                <TextBlock x:Name="NicknameText" Text="{x:Bind Nickname}" Foreground="{x:Bind NicknameForeground}" FontSize="{x:Bind NicknameFontSize}" FontWeight="{x:Bind NicknameFontWeight}" FontStyle="{x:Bind NicknameFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" VerticalAlignment="Center" IsTextSelectionEnabled="{x:Bind IsNicknameSelectionEnabled}" />
+                <TextBlock x:Name="SubtitleText" Text="{x:Bind Subtitle}" Foreground="{x:Bind SubtitleForeground}" FontSize="{x:Bind SubtitleFontSize}" FontWeight="{x:Bind SubtitleFontWeight}" FontStyle="{x:Bind SubtitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" VerticalAlignment="Center" IsTextSelectionEnabled="{x:Bind IsNicknameSelectionEnabled}" />
+                <Border x:Name="NicknameAdditionalInfo" VerticalAlignment="Center" ></Border>
+            </StackPanel>
+            <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalAlignment="Center" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextSelectionEnabled="{x:Bind IsDescriptionSelectionEnabled}" />
+            <Border x:Name="SenderAdditionalInfo" HorizontalAlignment="Center" ></Border>
         </StackPanel>
-        <StackPanel Margin="{x:Bind ContentMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
+        <StackPanel Orientation="Vertical" Margin="{x:Bind ContentMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
             <Border x:Name="BeforeContentPanel" ></Border>
-            <TextBlock x:Name="ContentText" Text="{x:Bind Text}" Height="{x:Bind ContentHeight}" Foreground="{x:Bind Foreground}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="WrapWholeWords" TextTrimming="WordEllipsis" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" />
+            <TextBlock x:Name="ContentText" Text="{x:Bind Text}" Height="{x:Bind ContentHeight}" Foreground="{x:Bind Foreground}" FontSize="{x:Bind FontSize}" FontWeight="{x:Bind FontWeight}" FontStyle="{x:Bind FontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="WrapWholeWords" TextTrimming="WordEllipsis" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextSelectionEnabled="{x:Bind IsTextSelectionEnabled}" />
             <Border x:Name="ContentPanel" ></Border>
             <Border x:Name="AfterContentPanel" ></Border>
             <StackPanel x:Name="ReplayPanel" Style="{x:Bind ReplyPanelStyle}" Visibility="{x:Bind ReplyVisibility}" />

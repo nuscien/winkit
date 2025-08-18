@@ -40,6 +40,11 @@ public sealed partial class CommentView : UserControl
     public static readonly DependencyProperty NicknameProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Nickname), OnTextChanged);
 
     /// <summary>
+    /// The dependency property of user status.
+    /// </summary>
+    public static readonly DependencyProperty SubtitleProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Subtitle), OnTextChanged);
+
+    /// <summary>
     /// The dependency property of publish description.
     /// </summary>
     public static readonly DependencyProperty DescriptionProperty = DependencyObjectProxy.RegisterProperty<string>(nameof(Description), OnTextChanged);
@@ -85,9 +90,14 @@ public sealed partial class CommentView : UserControl
     public static readonly DependencyProperty HorizontalTextAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(HorizontalTextAlignment), TextAlignment.Left);
 
     /// <summary>
+    /// The dependency property of nickname spacing.
+    /// </summary>
+    public static readonly DependencyProperty NicknameSpacingProperty = DependencyObjectProxy.RegisterProperty(nameof(NicknameSpacing), 0d);
+
+    /// <summary>
     /// The dependency property of nickname font size.
     /// </summary>
-    public static readonly DependencyProperty NicknameFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(NicknameFontSize), 12d);
+    public static readonly DependencyProperty NicknameFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(NicknameFontSize), 14d);
 
     /// <summary>
     /// The dependency property of nickname font weight.
@@ -110,19 +120,34 @@ public sealed partial class CommentView : UserControl
     public static readonly DependencyProperty NicknameForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(NicknameForeground));
 
     /// <summary>
-    /// The dependency property of nickname width.
+    /// The dependency property of user subtitle font size.
     /// </summary>
-    public static readonly DependencyProperty NicknameWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(NicknameWidth));
+    public static readonly DependencyProperty SubtitleFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(SubtitleFontSize), 12d);
 
     /// <summary>
-    /// The dependency property of nickname height.
+    /// The dependency property of user subtitle font weight.
     /// </summary>
-    public static readonly DependencyProperty NicknameHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(NicknameHeight));
+    public static readonly DependencyProperty SubtitleFontWeightProperty = DependencyObjectProxy.RegisterFontWeightProperty(nameof(SubtitleFontWeight));
+
+    /// <summary>
+    /// The dependency property of user subtitle font style.
+    /// </summary>
+    public static readonly DependencyProperty SubtitleFontStyleProperty = DependencyObjectProxy.RegisterProperty<FontStyle>(nameof(SubtitleFontStyle));
+
+    /// <summary>
+    /// The dependency property of user subtitle line height.
+    /// </summary>
+    public static readonly DependencyProperty SubtitleLineHeightProperty = DependencyObjectProxy.RegisterProperty(nameof(SubtitleLineHeight), 0d);
+
+    /// <summary>
+    /// The dependency property of user subtitle foreground.
+    /// </summary>
+    public static readonly DependencyProperty SubtitleForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(SubtitleForeground));
 
     /// <summary>
     /// The dependency property of description font size.
     /// </summary>
-    public static readonly DependencyProperty DescriptionFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(DescriptionFontSize), 11d);
+    public static readonly DependencyProperty DescriptionFontSizeProperty = DependencyObjectProxy.RegisterProperty(nameof(DescriptionFontSize), 12d);
 
     /// <summary>
     /// The dependency property of description font weight.
@@ -145,14 +170,19 @@ public sealed partial class CommentView : UserControl
     public static readonly DependencyProperty DescriptionForegroundProperty = DependencyObjectProxy.RegisterProperty<Brush>(nameof(DescriptionForeground));
 
     /// <summary>
-    /// The dependency property of description width.
+    /// The dependency property of flag of nickname text selection.
     /// </summary>
-    public static readonly DependencyProperty DescriptionWidthProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(DescriptionWidth));
+    public static readonly DependencyProperty IsNicknameSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty(nameof(IsNicknameSelectionEnabled), false);
 
     /// <summary>
-    /// The dependency property of description height.
+    /// The dependency property of flag of description text selection.
     /// </summary>
-    public static readonly DependencyProperty DescriptionHeightProperty = DependencyObjectProxy.RegisterDoubleProperty(nameof(DescriptionHeight));
+    public static readonly DependencyProperty IsDescriptionSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty(nameof(IsDescriptionSelectionEnabled), false);
+
+    /// <summary>
+    /// The dependency property of flag of nickname text selection.
+    /// </summary>
+    public static readonly DependencyProperty IsTextSelectionEnabledProperty = DependencyObjectProxy.RegisterProperty(nameof(IsTextSelectionEnabled), false);
 
     /// <summary>
     /// The dependency property of avatar image width.
@@ -187,7 +217,7 @@ public sealed partial class CommentView : UserControl
     /// <summary>
     /// The dependency property of reply visibility.
     /// </summary>
-    public static readonly DependencyProperty ReplyVisibilityProperty = DependencyObjectProxy.RegisterProperty<Visibility>(nameof(ReplyVisibility), Visibility.Collapsed);
+    public static readonly DependencyProperty ReplyVisibilityProperty = DependencyObjectProxy.RegisterProperty(nameof(ReplyVisibility), Visibility.Collapsed);
 
     /// <summary>
     /// Initializes a new instance of the CommentView class.
@@ -213,6 +243,15 @@ public sealed partial class CommentView : UserControl
     {
         get => (string)GetValue(NicknameProperty);
         set => SetValue(NicknameProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the sender status or subtext.
+    /// </summary>
+    public string Subtitle
+    {
+        get => (string)GetValue(SubtitleProperty);
+        set => SetValue(SubtitleProperty, value);
     }
 
     /// <summary>
@@ -297,6 +336,15 @@ public sealed partial class CommentView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the spacing between each nickname.
+    /// </summary>
+    public double NicknameSpacing
+    {
+        get => (double)GetValue(NicknameSpacingProperty);
+        set => SetValue(NicknameSpacingProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the font size of nickname.
     /// </summary>
     public double NicknameFontSize
@@ -342,21 +390,48 @@ public sealed partial class CommentView : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the width of nickname.
+    /// Gets or sets the font size of user status or subtitle.
     /// </summary>
-    public double NicknameWidth
+    public double SubtitleFontSize
     {
-        get => (double)GetValue(NicknameWidthProperty);
-        set => SetValue(NicknameWidthProperty, value);
+        get => (double)GetValue(SubtitleFontSizeProperty);
+        set => SetValue(SubtitleFontSizeProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the height of nickname.
+    /// Gets or sets the font weight of user status or subtitle.
     /// </summary>
-    public double NicknameHeight
+    public FontWeight SubtitleFontWeight
     {
-        get => (double)GetValue(NicknameHeightProperty);
-        set => SetValue(NicknameHeightProperty, value);
+        get => (FontWeight)GetValue(SubtitleFontWeightProperty);
+        set => SetValue(SubtitleFontWeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the font style of user status or subtitle.
+    /// </summary>
+    public FontStyle SubtitleFontStyle
+    {
+        get => (FontStyle)GetValue(SubtitleFontStyleProperty);
+        set => SetValue(SubtitleFontStyleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the line height of user status or subtitle.
+    /// </summary>
+    public double SubtitleLineHeight
+    {
+        get => (double)GetValue(SubtitleLineHeightProperty);
+        set => SetValue(SubtitleLineHeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the foreground of user status or subtitle.
+    /// </summary>
+    public Brush SubtitleForeground
+    {
+        get => (Brush)GetValue(SubtitleForegroundProperty);
+        set => SetValue(SubtitleForegroundProperty, value);
     }
 
     /// <summary>
@@ -405,21 +480,30 @@ public sealed partial class CommentView : UserControl
     }
 
     /// <summary>
-    /// Gets or sets the width of description.
+    /// Gets or sets a value indicating whether enable text selection of nickname and subtitle.
     /// </summary>
-    public double DescriptionWidth
+    public bool IsNicknameSelectionEnabled
     {
-        get => (double)GetValue(DescriptionWidthProperty);
-        set => SetValue(DescriptionWidthProperty, value);
+        get => (bool)GetValue(IsNicknameSelectionEnabledProperty);
+        set => SetValue(IsNicknameSelectionEnabledProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the height of description.
+    /// Gets or sets a value indicating whether enable text selection of description.
     /// </summary>
-    public double DescriptionHeight
+    public bool IsDescriptionSelectionEnabled
     {
-        get => (double)GetValue(DescriptionHeightProperty);
-        set => SetValue(DescriptionHeightProperty, value);
+        get => (bool)GetValue(IsDescriptionSelectionEnabledProperty);
+        set => SetValue(IsDescriptionSelectionEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether enable text selection of context text.
+    /// </summary>
+    public bool IsTextSelectionEnabled
+    {
+        get => (bool)GetValue(IsTextSelectionEnabledProperty);
+        set => SetValue(IsTextSelectionEnabledProperty, value);
     }
 
     /// <summary>
@@ -477,6 +561,24 @@ public sealed partial class CommentView : UserControl
     }
 
     /// <summary>
+    /// Gets or sets the margin of nickname additional content.
+    /// </summary>
+    public Thickness NicknameAdditionalMargin
+    {
+        get => NicknameAdditionalInfo.Margin;
+        set => NicknameAdditionalInfo.Margin = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the vertical alignment of nickname additional content.
+    /// </summary>
+    public VerticalAlignment NicknameAdditionalVerticalAlignment
+    {
+        get => NicknameAdditionalInfo.VerticalAlignment;
+        set => NicknameAdditionalInfo.VerticalAlignment = value;
+    }
+
+    /// <summary>
     /// Gets or sets the visibility of reply panel.
     /// </summary>
     public Visibility ReplyVisibility
@@ -506,6 +608,15 @@ public sealed partial class CommentView : UserControl
     {
         get => ContentPanel.Child;
         set => ContentPanel.Child = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the content of additional nickname and subtitle.
+    /// </summary>
+    public UIElement NicknameAdditionalContent
+    {
+        get => NicknameAdditionalInfo.Child;
+        set => NicknameAdditionalInfo.Child = value;
     }
 
     /// <summary>
@@ -564,7 +675,9 @@ public sealed partial class CommentView : UserControl
     private static void OnTextChanged(CommentView c, ChangeEventArgs<string> e, DependencyProperty p)
     {
         c.NicknameText.Visibility = string.IsNullOrWhiteSpace(c.Nickname) ? Visibility.Collapsed : Visibility.Visible;
+        c.SubtitleText.Visibility = string.IsNullOrWhiteSpace(c.Subtitle) ? Visibility.Collapsed : Visibility.Visible;
         c.DescriptionText.Visibility = string.IsNullOrWhiteSpace(c.Description) ? Visibility.Collapsed : Visibility.Visible;
         c.ContentText.Visibility = string.IsNullOrWhiteSpace(c.Text) ? Visibility.Collapsed : Visibility.Visible;
+        c.SenderPanel.Visibility = string.IsNullOrWhiteSpace(c.Nickname) && string.IsNullOrWhiteSpace(c.Subtitle) && c.NicknameAdditionalInfo.Child == null ? Visibility.Collapsed : Visibility.Visible;
     }
 }

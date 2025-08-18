@@ -56,13 +56,13 @@
         </Border>
         <Border x:Name="SenderCornerPanel" Margin="0" HorizontalAlignment="Right" VerticalAlignment="Top" />
         <StackPanel Orientation="Vertical" Spacing="{x:Bind SenderSpacing}" Margin="{x:Bind SenderMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
-            <StackPanel x:Name="SenderPanel" Orientation="Horizontal" Spacing="{x:Bind NicknameSpacing}" HorizontalAlignment="Center" >
+            <StackPanel x:Name="SenderPanel" Orientation="Horizontal" Spacing="{x:Bind NicknameSpacing}" HorizontalAlignment="{x:Bind SenderHorizontalAlignment}" >
                 <TextBlock x:Name="NicknameText" Text="{x:Bind Nickname}" Foreground="{x:Bind NicknameForeground}" FontSize="{x:Bind NicknameFontSize}" FontWeight="{x:Bind NicknameFontWeight}" FontStyle="{x:Bind NicknameFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" VerticalAlignment="Center" IsTextSelectionEnabled="{x:Bind IsNicknameSelectionEnabled}" />
                 <TextBlock x:Name="SubtitleText" Text="{x:Bind Subtitle}" Foreground="{x:Bind SubtitleForeground}" FontSize="{x:Bind SubtitleFontSize}" FontWeight="{x:Bind SubtitleFontWeight}" FontStyle="{x:Bind SubtitleFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" VerticalAlignment="Center" IsTextSelectionEnabled="{x:Bind IsNicknameSelectionEnabled}" />
                 <Border x:Name="NicknameAdditionalInfo" VerticalAlignment="Center" ></Border>
             </StackPanel>
-            <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalAlignment="Center" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextSelectionEnabled="{x:Bind IsDescriptionSelectionEnabled}" />
-            <Border x:Name="SenderAdditionalInfo" HorizontalAlignment="Center" ></Border>
+            <TextBlock x:Name="DescriptionText" Text="{x:Bind Description}" Foreground="{x:Bind DescriptionForeground}" FontSize="{x:Bind DescriptionFontSize}" FontWeight="{x:Bind DescriptionFontWeight}" FontStyle="{x:Bind DescriptionFontStyle}" FontFamily="{x:Bind FontFamily}" TextWrapping="NoWrap" TextTrimming="{x:Bind SenderTrimming}" HorizontalAlignment="{x:Bind SenderHorizontalAlignment}" HorizontalTextAlignment="{x:Bind HorizontalTextAlignment}" IsTextSelectionEnabled="{x:Bind IsDescriptionSelectionEnabled}" />
+            <Border x:Name="SenderAdditionalInfo" HorizontalAlignment="{x:Bind SenderHorizontalAlignment}" ></Border>
         </StackPanel>
         <StackPanel Orientation="Vertical" Margin="{x:Bind ContentMargin}" HorizontalAlignment="Stretch" VerticalAlignment="Top" >
             <Border x:Name="BeforeContentPanel" ></Border>

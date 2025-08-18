@@ -75,6 +75,11 @@ public sealed partial class CommentView : UserControl
     public static readonly DependencyProperty SenderOrientationProperty = DependencyObjectProxy.RegisterProperty(nameof(SenderOrientation), Orientation.Vertical);
 
     /// <summary>
+    /// The dependency property of sender information horizontal alignment.
+    /// </summary>
+    public static readonly DependencyProperty SenderHorizontalAlignmentProperty = DependencyObjectProxy.RegisterProperty(nameof(SenderHorizontalAlignment), HorizontalAlignment.Left);
+
+    /// <summary>
     /// The dependency property of sender information trimming.
     /// </summary>
     public static readonly DependencyProperty SenderTrimmingProperty = DependencyObjectProxy.RegisterProperty<TextTrimming>(nameof(SenderTrimming));
@@ -324,6 +329,15 @@ public sealed partial class CommentView : UserControl
     {
         get => (Orientation)GetValue(SenderOrientationProperty);
         set => SetValue(SenderOrientationProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the horizontal alignment of the image and text.
+    /// </summary>
+    public HorizontalAlignment SenderHorizontalAlignment
+    {
+        get => (HorizontalAlignment)GetValue(SenderHorizontalAlignmentProperty);
+        set => SetValue(SenderHorizontalAlignmentProperty, value);
     }
 
     /// <summary>

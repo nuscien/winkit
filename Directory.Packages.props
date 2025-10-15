@@ -8,9 +8,9 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageVersion Include="Microsoft.VisualStudio.DebuggerVisualizers" Version="17.6.1032901" />
     <PackageVersion Include="Microsoft.VisualStudio.Extensibility" Version="17.12.2051" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3485.44" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
     <PackageVersion Include="System.Management" Version="9.0.9" />
     <PackageVersion Include="Trivial" Version="9.7.0" />
   </ItemGroup>

@@ -42,7 +42,7 @@ body > section, body > header, body > footer {
 body > header:first-child {
     height: 40px;
     background-color: #333;
-    background-image: url(https://kingcean.net/images/bg/title.jpg);
+    background-image: url( https://cdn.jsdelivr.net/npm/hje@2.2.0/docs/images/bg/net/title.jpg);
     background-position: center top;
     background-repeat: no-repeat;
     white-space: nowrap;
@@ -79,7 +79,7 @@ body > script + footer {
     height: 340px;
     margin: 0;
     background-color: #333;
-    background-image: url(https://kingcean.net/images/bg/bottom.jpg);
+    background-image: url( https://cdn.jsdelivr.net/npm/hje@2.2.0/docs/images/bg/net/bottom.jpg);
     background-position: center;
     background-repeat: no-repeat;
 }

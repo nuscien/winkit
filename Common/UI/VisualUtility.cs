@@ -1565,6 +1565,63 @@ public static partial class VisualUtility
     }
 
     /// <summary>
+    /// Runs the command and gets the output.
+    /// </summary>
+    /// <param name="fileName">An application with which to start a process.</param>
+    /// <param name="args">Command-line arguments to pass to the application when the process starts.</param>
+    /// <param name="callback">The callback when the start information object is initialized.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The lines of output.</returns>
+    public static async Task<string> RunCommandForOutputAsync(string fileName, string args, Action<ProcessStartInfo> callback, CancellationToken cancellationToken = default)
+    {
+        using var process = CreateRedirectOutputProcess(fileName, args, callback);
+        if (process == null) return null;
+        var output = new StringBuilder();
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data is null) return;
+            output.AppendLine(e.Data);
+        };
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        await process.WaitForExitAsync(cancellationToken);
+        return output.ToString();
+    }
+
+    /// <summary>
+    /// Runs the command and gets the output.
+    /// </summary>
+    /// <param name="fileName">An application with which to start a process.</param>
+    /// <param name="args">Command-line arguments to pass to the application when the process starts.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The lines of output.</returns>
+    public static Task<string> RunCommandForOutputAsync(string fileName, string args = null, CancellationToken cancellationToken = default)
+        => RunCommandForOutputAsync(fileName, args, null, cancellationToken);
+
+    /// <summary>
+    /// Gets the port number of Foundry local service.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The port number of Foundry local service; or -1, if fails to get.</returns>
+    public static async Task<int> GetFoundryLocalPortAsync(CancellationToken cancellationToken = default)
+    {
+        var s = await RunCommandForOutputAsync("foundry", "service status", start =>
+        {
+            start.EnvironmentVariables["DOTNET_ENVIRONMENT"] = null;
+        }, cancellationToken);
+        if (string.IsNullOrWhiteSpace(s)) return -1;
+        var i = s.IndexOf("http://");
+        if (i < 0) return -1;
+        s = s[i..];
+        i = s.IndexOf('/', 10);
+        s = s[..i];
+        i = s.LastIndexOf(':');
+        if (i < 1) return -1;
+        s = s[(i + 1)..];
+        return int.TryParse(s, out var port) ? port : -1;
+    }
+
+    /// <summary>
     /// Starts a specific Windows service.
     /// </summary>
     /// <param name="name">The service name.</param>
@@ -1790,6 +1847,44 @@ public static partial class VisualUtility
         if (targetType == typeof(string)) return b ? JsonBooleanNode.TrueString : JsonBooleanNode.FalseString;
         if (targetType == typeof(UnaryBooleanOperator)) return b ? UnaryBooleanOperator.Default : UnaryBooleanOperator.Not;
         return useUnsetValue ? DependencyProperty.UnsetValue : null;
+    }
+
+    private static Process CreateRedirectOutputProcess(string fileName, string args, Action<ProcessStartInfo> callback)
+    {
+        try
+        {
+            var start = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = args,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            callback?.Invoke(start);
+            return Process.Start(start);
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (ExternalException)
+        {
+        }
+
+        return null;
     }
 
     private static void CreateTextInlines(List<Inline> arr, JsonObjectNode json, JsonTextStyle style, int intend)

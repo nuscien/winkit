@@ -504,6 +504,29 @@ public static partial class VisualUtility
     public static IEnumerable<Color> ToggleBrightness(IEnumerable<Color> value, RelativeBrightnessLevels level)
         => value?.Select(ele => ToggleBrightness(ele));
 
+    /// <summary>
+    /// Mixes colors.
+    /// </summary>
+    /// <param name="type">The type to mix colors.</param>
+    /// <param name="a">The blend color.</param>
+    /// <param name="b">The base color.</param>
+    /// <returns>A new color mixed.</returns>
+    public static Color Mix(ColorMixTypes type, Color a, Color b)
+        => ToColor(ColorCalculator.Mix(type, ToColor(a), ToColor(b)));
+
+    /// <summary>
+    /// Mixes colors.
+    /// </summary>
+    /// <param name="level">The relative saturation level.</param>
+    /// <param name="a">The blend color.</param>
+    /// <param name="b">The base color.</param>
+    /// <returns>A new color mixed.</returns>
+    public static Color Mix(RelativeSaturationLevels level, Color a, Color b)
+        => ToColor(ColorCalculator.Mix(level, ToColor(a), ToColor(b)));
+
+    private static System.Drawing.Color ToColor(Color c)
+        => System.Drawing.Color.FromArgb(c.A, c.R, c.G, c.B);
+
     private static byte InvertChannel(byte value)
         => (byte)(byte.MaxValue - value);
 

@@ -3,7 +3,7 @@
   <Import Project="..\Tools\Common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0-windows;net8.0-windows;net48</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows;net9.0-windows;net8.0-windows;net48</TargetFrameworks>
     <AssemblyName>Trivial.Debugger</AssemblyName>
     <RootNamespace>Trivial.Diagnostics</RootNamespace>
     <OutputType>WinExe</OutputType>

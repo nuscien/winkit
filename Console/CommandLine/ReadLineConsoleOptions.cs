@@ -111,15 +111,25 @@ public static partial class ConsoleRenderExtensions
             if (!options.HintInline) cli.WriteLine();
         }
 
-        var style = string.IsNullOrEmpty(options.Prefix) ? null : new ConsoleTextStyle(
+        var prefix = options.Prefix;
+        var style = string.IsNullOrEmpty(prefix) ? null : new ConsoleTextStyle(
                 options.PrefixForegroundRgbColor,
                 options.PrefixForegroundColor,
                 options.PrefixBackgroundRgbColor,
                 options.PrefixBackgroundColor);
+        var padding = false;
         if (style != null)
         {
-            cli.Write(style, options.Prefix);
-            if (!options.SkipPrefixPadding) cli.Write(' ');
+            cli.Write(style, prefix);
+            if (!options.SkipPrefixPadding)
+            {
+#if NET10_0_OR_GREATER
+                padding = !prefix.EndsWith(' ') && !prefix.EndsWith('\t') && !prefix.EndsWith('\n') && !prefix.EndsWith('\r');
+#else
+                padding = !prefix.EndsWith(" ") && !prefix.EndsWith("\t") && !prefix.EndsWith("\n") && !prefix.EndsWith("\r");
+#endif
+                if (padding) cli.Write(' ');
+            }
         }
 
         var s = cli.ReadLine();
@@ -132,8 +142,8 @@ public static partial class ConsoleRenderExtensions
         if (options.AgainIfEmpty) return null;
         if (style != null)
         {
-            cli.Write(style, options.Prefix);
-            if (!options.SkipPrefixPadding) cli.Write(' ');
+            cli.Write(style, prefix);
+            if (padding) cli.Write(' ');
         }
 
         s = cli.ReadLine();

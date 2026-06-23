@@ -139,7 +139,7 @@ public static partial class ConsoleRenderExtensions
             if (!string.IsNullOrEmpty(s)) return s;
         }
 
-        if (options.AgainIfEmpty) return null;
+        if (!options.AgainIfEmpty) return null;
         if (style != null)
         {
             cli.Write(style, prefix);

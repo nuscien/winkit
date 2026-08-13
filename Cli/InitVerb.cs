@@ -17,7 +17,7 @@ internal class InitVerb : BaseCommandVerb
     protected override async Task OnProcessAsync(CancellationToken cancellationToken = default)
     {
         const string FileName = "localwebapp.project.json";
-        var console = GetConsole();
+        var console = CurrentConsole;
         if (string.IsNullOrEmpty(Arguments.Verb?.Value))
         {
             console.Write(ConsoleColor.Red, "Error!");
@@ -123,7 +123,7 @@ internal class InitVerb : BaseCommandVerb
     /// <inheritdoc />
     protected override void OnGetHelp()
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         console.WriteLine("Initializes a new local web app project.");
         console.WriteLine();
         console.WriteLine("Usage:");
@@ -142,7 +142,7 @@ internal class InitVerb : BaseCommandVerb
         var s = Arguments.GetMergedValue(key)?.Trim();
         if (string.IsNullOrEmpty(s) && !skipTyping)
         {
-            var console = GetConsole();
+            var console = CurrentConsole;
             console.Write($"{key.ToSpecificCase(Cases.Capitalize)}: ");
             try
             {
@@ -160,7 +160,7 @@ internal class InitVerb : BaseCommandVerb
 
     private void WriteArgumentDescription(string key, string description)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         console.Write("  ");
         console.Write(ConsoleColor.Green, key);
         console.Write('\t');

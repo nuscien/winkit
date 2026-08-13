@@ -16,7 +16,7 @@ internal class BuildVerb : BaseCommandVerb
     /// <inheritdoc />
     protected override async Task OnProcessAsync(CancellationToken cancellationToken = default)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         if (string.IsNullOrEmpty(Arguments.Verb?.Value))
         {
             console.Write(ConsoleColor.Red, "Error!");
@@ -71,7 +71,7 @@ internal class BuildVerb : BaseCommandVerb
     /// <inheritdoc />
     protected override void OnGetHelp()
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         console.WriteLine("Build and package a local web app project.");
         console.WriteLine();
         console.WriteLine("Usage:");
@@ -103,7 +103,7 @@ internal class BuildVerb : BaseCommandVerb
 
     private void WriteArgumentDescription(string key, string description)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         console.Write("  ");
         console.Write(ConsoleColor.Green, key);
         console.Write('\t');

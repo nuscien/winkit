@@ -158,10 +158,6 @@ internal static class LocalWebAppExtensions
             resp.AdditionalInfo.SetValue("reasonPhrase", ex.ReasonPhrase);
             if (ex.StatusCode.HasValue) resp.AdditionalInfo.SetValue("status", (int)ex.StatusCode.Value);
         }
-        catch (FailedChangeException ex)
-        {
-            resp = HandleException(ex);
-        }
         catch (UnauthorizedAccessException ex)
         {
             resp = HandleException(ex);

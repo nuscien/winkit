@@ -22,7 +22,7 @@ internal class VersionVerb : BaseCommandVerb
     /// <inheritdoc />
     protected override async Task OnProcessAsync(CancellationToken cancellationToken = default)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         var now = DateTime.Now;
         if (string.IsNullOrEmpty(Arguments.Verb?.Value))
         {
@@ -139,7 +139,7 @@ internal class VersionVerb : BaseCommandVerb
     /// <inheritdoc />
     protected override void OnGetHelp()
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         console.WriteLine("Update the version of the local web app.");
         console.WriteLine();
         console.WriteLine("Usage:");
@@ -156,7 +156,7 @@ internal class VersionVerb : BaseCommandVerb
 
     private string SetVersion(string version, Func<int, int> update)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         var split = version.Split('.');
         if (split.Length < 3)
         {
@@ -209,7 +209,7 @@ internal class VersionVerb : BaseCommandVerb
 
     private string SetVersion(string id, string version, DirectoryInfo root, string newVersion, int minBuildNumber, out int build)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         var path = Arguments.GetFirst("file")?.Value;
         if (string.IsNullOrEmpty(path))
         {
@@ -410,7 +410,7 @@ internal class VersionVerb : BaseCommandVerb
 
     private void WriteArgumentDescription(string key, string description)
     {
-        var console = GetConsole();
+        var console = CurrentConsole;
         console.Write("  ");
         console.Write(ConsoleColor.Green, key);
         console.Write('\t');

@@ -138,4 +138,7 @@
   <data name="ToSelect" xml:space="preserve">
     <value>Выбирать: </value>
   </data>
+  <data name="ToInput" xml:space="preserve">
+    <value>Ввод: </value>
+  </data>
 </root>

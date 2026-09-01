@@ -75,7 +75,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("manualq")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string ManualQuestion { get; set; }
+    public string ManualQuestion { get; set; } = Resource.ToInput;
 
     /// <summary>
     /// Gets or sets the question message displayed when it is not supported.
@@ -203,7 +203,7 @@ public class SelectionConsoleOptions : ICloneable
     [JsonPropertyName("pagefore2")]
     [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter))]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ConsoleColor? PagingForegroundConsoleColor { get; set; }
+    public ConsoleColor? PagingForegroundConsoleColor { get; set; } = ConsoleColor.DarkGray;
 
     /// <summary>
     /// Gets or sets the foreground color for paing tips.
@@ -274,6 +274,13 @@ public class SelectionConsoleOptions : ICloneable
     [JsonPropertyName("selprefix")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string SelectedPrefix { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether still enable the customized style instead of using the default one for fallback.
+    /// </summary>
+    [JsonPropertyName("fallbackStyle")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool FallbackStyle { get; set; }
 
     /// <summary>
     /// Clones an object.

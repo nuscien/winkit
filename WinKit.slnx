@@ -21,6 +21,7 @@
   <Project Path="Cli/Lwac.csproj" />
   <Project Path="Common/Common.csproj" />
   <Project Path="Console/Console.csproj" />
+  <Project Path="ConsoleDemo/ConsoleDemo.csproj" Id="caf07a71-127a-4464-8a50-b552561f1d35" />
   <Project Path="Debugger/Debugger.csproj" />
   <Project Path="Demo/Demo.csproj">
     <Platform Solution="*|Any CPU" Project="x64" />

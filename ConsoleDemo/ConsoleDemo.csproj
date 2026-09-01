@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Tools\Packages.props" />
+
+  <PropertyGroup>
+    <AssemblyName>Trivial.Console.Demo</AssemblyName>
+    <RootNamespace>Trivial.CommandLine</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <Import Project="..\Tools\Build.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\Console\Console.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Trivial.CommandLine;
 
@@ -180,4 +179,25 @@ public static partial class DefaultConsole
     /// <param name="text2">The second text output after a tab.</param>
     public static void WriteOrderedLine(int index, ConsoleTextStyle style, string text, ConsoleTextStyle style2 = null, string text2 = null)
         => WriteOrderedLine(StyleConsole.Default, index, style, text, style2, text2);
+
+    /// <summary>
+    /// Writes a list of items to the console, each on a new line.
+    /// </summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="console">The console instance.</param>
+    /// <param name="items">The items to write.</param>
+    /// <param name="write">A function that converts an item to a console text.</param>
+    public static void WriteLines<T>(this StyleConsole console, IEnumerable<T> items, Func<T, ConsoleText> write)
+    {
+        if (items is null) return;
+        console ??= StyleConsole.Default;
+        write ??= item => new(item.ToString());
+        foreach (var item in items)
+        {
+            if (item is null) continue;
+            var text = write(item);
+            if (text is null) continue;
+            console.WriteLine(text);
+        }
+    }
 }

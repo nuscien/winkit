@@ -91,7 +91,7 @@ public class WebApiClientResultInfo<T>
     /// Tries to get result.
     /// </summary>
     /// <param name="result">The result.</param>
-    /// <returns>true if get succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if get succeeded; otherwise, <c>false</c>.</returns>
     public bool TryGetResult(out T result)
     {
         if (WebAccessingState == TaskStates.Done)
@@ -121,7 +121,7 @@ public class WebApiClientResultInfo<T>
     /// Tries to get web result.
     /// </summary>
     /// <param name="result">The result.</param>
-    /// <returns>true if get succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if get succeeded; otherwise, <c>false</c>.</returns>
     public bool TryGetWebResult(out T result)
     {
         if (WebAccessingState == TaskStates.Done)
@@ -697,6 +697,6 @@ public class WebApiRequestOptions<T>
     /// Tests if the result is valid.
     /// </summary>
     /// <param name="data">The result data.</param>
-    /// <returns>true if the result data is valid; otherwise, false.</returns>
+    /// <returns><c>true</c> if the result data is valid; otherwise, <c>false</c>.</returns>
     public virtual bool IsValid(T data) => validate == null || validate(data);
 }

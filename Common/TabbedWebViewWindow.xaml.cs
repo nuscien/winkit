@@ -369,7 +369,7 @@ public sealed partial class TabbedWebViewWindow : Window
     /// Removes a specific tab.
     /// </summary>
     /// <param name="item">The tab view item to remove.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public bool Remove(object item)
         => HostElement.Remove(item);
 
@@ -377,7 +377,7 @@ public sealed partial class TabbedWebViewWindow : Window
     /// Removes a specific tab.
     /// </summary>
     /// <param name="index">The index to remove.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public void RemoveAt(int index)
         => HostElement.RemoveAt(index);
 
@@ -391,7 +391,7 @@ public sealed partial class TabbedWebViewWindow : Window
     /// Determines whether the tabs contains a specific value.
     /// </summary>
     /// <param name="tab">The tab view item to test.</param>
-    /// <returns>true if contains; otherwise, false.</returns>
+    /// <returns><c>true</c> if contains; otherwise, <c>false</c>.</returns>
     public bool Contains(TabViewItem tab)
         => HostElement.Contains(tab);
 
@@ -399,7 +399,7 @@ public sealed partial class TabbedWebViewWindow : Window
     /// Determines whether the tabs contains a specific value.
     /// </summary>
     /// <param name="webview">The web view to test.</param>
-    /// <returns>true if contains; otherwise, false.</returns>
+    /// <returns><c>true</c> if contains; otherwise, <c>false</c>.</returns>
     public bool Contains(SingleWebView webview)
         => HostElement.Contains(webview);
 
@@ -407,7 +407,7 @@ public sealed partial class TabbedWebViewWindow : Window
     /// Determines whether the tabs contains a specific value.
     /// </summary>
     /// <param name="webview">The web view to test.</param>
-    /// <returns>true if contains; otherwise, false.</returns>
+    /// <returns><c>true</c> if contains; otherwise, <c>false</c>.</returns>
     public bool Contains(LocalWebAppPage webview)
         => HostElement.Contains(webview);
 

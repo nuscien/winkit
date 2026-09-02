@@ -369,7 +369,7 @@ public static partial class ConsoleRenderExtensions
 
             var result = Select(console, dispatcher);
             var arg = result.Data ?? result.Value;
-            if (string.IsNullOrWhiteSpace(arg)) return true;
+            if (string.IsNullOrWhiteSpace(arg)) return false;
             cmd = arg;
             return true;
         }, cancellationToken);
@@ -378,6 +378,44 @@ public static partial class ConsoleRenderExtensions
 
     public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, false, cancellationToken);
+
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, bool skipSelectionTips, CancellationToken cancellationToken = default)
+    {
+        if (dispatcher is null) return;
+        var console = StyleConsole.Default;
+        if (args is not null && args.HasVerb)
+        {
+            await dispatcher.ProcessAsync(args, cancellationToken);
+            return;
+        }
+
+        if (console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null)
+        {
+            await dispatcher.ProcessAsync(args, cancellationToken);
+            return;
+        }
+
+        var toSelect = Resource.ToSelect?.Trim();
+        if (!skipSelectionTips && !string.IsNullOrEmpty(toSelect))
+        {
+            if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
+            else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
+            if (!string.IsNullOrEmpty(toSelect)) console.WriteLine(ConsoleColor.DarkGray, toSelect);
+        }
+
+        var result = Select(console, dispatcher);
+        var arg = result.Data ?? result.Value;
+        if (string.IsNullOrWhiteSpace(arg))
+        {
+            await dispatcher.ProcessAsync(args, cancellationToken);
+            return;
+        }
+
+        await dispatcher.ProcessAsync(arg, cancellationToken);
+    }
+
+    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, CancellationToken cancellationToken = default)
+        => ProcessOrSelectAsync(dispatcher, args, false, cancellationToken);
 
     internal static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length)
         => RenderSentence(console, style, value, start, length, false, GetBufferSafeWidth(console));
@@ -396,22 +434,25 @@ public static partial class ConsoleRenderExtensions
         var i = 1;
         foreach (var item in list)
         {
-            if (item is null) continue;
+            var title = item?.Title?.Trim();
+            if (string.IsNullOrWhiteSpace(title)) continue;
             if (prefix is null)
             {
                 console.Append(ConsoleColor.Blue, i);
                 console.Append(ConsoleColor.Blue, i < 10 ? ".  " : ". ");
-            }
-            else if (string.IsNullOrWhiteSpace(item.Title))
-            {
-                continue;
+                var pos2 = title.IndexOf('\t');
+                if (pos2 > 0)
+                {
+                    var s = title.Substring(0, pos2).TrimEnd();
+                    title = string.Concat(s, s.Length > 3 ? " \t" : "\t\t", title.Substring(pos2 + 1).TrimStart());
+                }
             }
             else
             {
                 console.Append(prefix);
             }
 
-            console.WriteLine(item.Title, style);
+            console.WriteLine(title, style);
             i++;
         }
 

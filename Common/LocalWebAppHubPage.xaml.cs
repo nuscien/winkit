@@ -140,7 +140,7 @@ public sealed partial class LocalWebAppHubPage : Page
     /// Adds an additional dev local web app.
     /// </summary>
     /// <param name="info">The information of the dev local web app.</param>
-    /// <returns>true if add succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if add succeeded; otherwise, <c>false</c>.</returns>
     public bool AddAdditionalDevApp(LocalWebAppInfo info)
     {
         if (string.IsNullOrWhiteSpace(info?.ResourcePackageId) || additionalDevApps.Contains(info)) return false;
@@ -152,7 +152,7 @@ public sealed partial class LocalWebAppHubPage : Page
     /// Removes an additional dev local web app.
     /// </summary>
     /// <param name="info">The information of the dev local web app.</param>
-    /// <returns>true if item is successfully removed; otherwise, false. This method also returns false if item was not found in the collection.</returns>
+    /// <returns><c>true</c> if item is successfully removed; otherwise, false. This method also returns false if item was not found in the collection.</returns>
     public bool RemoveAdditionalDevApp(LocalWebAppInfo info)
     {
         if (info == null) return false;

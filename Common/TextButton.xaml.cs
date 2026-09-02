@@ -635,7 +635,7 @@ public sealed partial class TextButton : UserControl
     /// Transitions a control between two states, by requesting a new VisualState by name.
     /// </summary>
     /// <param name="name">The state to transition to.</param>
-    /// <returns>true if the control successfully transitions to the new state, or was already using that state; otherwise, false.</returns>
+    /// <returns><c>true</c> if the control successfully transitions to the new state, or was already using that state; otherwise, <c>false</c>.</returns>
     public bool GoToButtonState(string name)
         => VisualStateManager.GoToState(OwnerButton, name, true);
 

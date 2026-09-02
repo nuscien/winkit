@@ -111,7 +111,7 @@ public abstract class BaseCompactWidgetProvider : IWidgetProvider
     /// </summary>
     /// <param name="id">The widget identifier.</param>
     /// <param name="result">The widget instance.</param>
-    /// <returns>true if exists; otherwise, false.</returns>
+    /// <returns><c>true</c> if exists; otherwise, <c>false</c>.</returns>
     public bool TryGetWidget(string id, out BaseCompactWidget result)
         => widgets.TryGetValue(id, out result);
 

@@ -116,7 +116,7 @@ public class LocalWebAppFileInfo
     /// Verifies by signature.
     /// </summary>
     /// <param name="host">The standalone web app host.</param>
-    /// <returns>true if pass; otherwise, false.</returns>
+    /// <returns><c>true</c> if pass; otherwise, <c>false</c>.</returns>
     public bool Verify(LocalWebAppHost host)
         => Verify(host, out _);
 
@@ -125,7 +125,7 @@ public class LocalWebAppFileInfo
     /// </summary>
     /// <param name="host">The standalone web app host.</param>
     /// <param name="file">The file output.</param>
-    /// <returns>true if pass; otherwise, false.</returns>
+    /// <returns><c>true</c> if pass; otherwise, <c>false</c>.</returns>
     public bool Verify(LocalWebAppHost host, out FileInfo file)
     {
         if (host == null)
@@ -288,7 +288,7 @@ public class LocalWebAppFileInfo
     /// <param name="file">The file to test.</param>
     /// <param name="signature">The signature.</param>
     /// <param name="host">The standalone web app host.</param>
-    /// <returns>true if pass; otherwise, false.</returns>
+    /// <returns><c>true</c> if pass; otherwise, <c>false</c>.</returns>
     internal static bool Verify(FileInfo file, string signature, LocalWebAppHost host)
     {
         if (file == null || !file.Exists) return false;

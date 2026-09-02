@@ -33,7 +33,7 @@ public partial class LocalWebAppHost
     /// Removes a specific resource package.
     /// </summary>
     /// <param name="appId">The resource package identifier.</param>
-    /// <returns>true if the resource package exists and is removed; otherwise, false.</returns>
+    /// <returns><c>true</c> if the resource package exists and is removed; otherwise, <c>false</c>.</returns>
     private static async Task<DirectoryInfo> TryGetPackageFolderAsync(string appId)
     {
         try
@@ -68,7 +68,7 @@ public partial class LocalWebAppHost
     /// Removes a specific resource package.
     /// </summary>
     /// <param name="appId">The resource package identifier.</param>
-    /// <returns>true if the resource package exists and is removed; otherwise, false.</returns>
+    /// <returns><c>true</c> if the resource package exists and is removed; otherwise, <c>false</c>.</returns>
     private static async Task TryRemovePackageFolderAsync(string appId)
     {
         try

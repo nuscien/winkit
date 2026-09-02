@@ -174,7 +174,7 @@ public class LocalWebAppCoreClient
     /// Tests if the host loaded is the specific one.
     /// </summary>
     /// <param name="host">The host to test.</param>
-    /// <returns>true if they are the same one; otherwise, false.</returns>
+    /// <returns><c>true</c> if they are the same one; otherwise, <c>false</c>.</returns>
     public bool IsHost(LocalWebAppHost host)
         => host == this.host;
 
@@ -441,7 +441,7 @@ public class LocalWebAppCoreClient
     /// Tests if there is the command handler of given identifier.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <returns>true if exists; otherwise, false.</returns>
+    /// <returns><c>true</c> if exists; otherwise, <c>false</c>.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
     public bool ContainsCommandHandler(string id)
         => proc.ContainsKey(id);
@@ -451,7 +451,7 @@ public class LocalWebAppCoreClient
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <param name="handler">The command handler.</param>
-    /// <returns>true if exists; otherwise, false.</returns>
+    /// <returns><c>true</c> if exists; otherwise, <c>false</c>.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
     public bool TryGetCommandHandler(string id, out ILocalWebAppCommandHandler handler)
         => proc.TryGetValue(id, out handler);
@@ -478,7 +478,7 @@ public class LocalWebAppCoreClient
     /// Removes the command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public bool RemoveCommandHandler(string id)
         => proc.Remove(id);
 

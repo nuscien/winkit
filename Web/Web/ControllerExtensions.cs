@@ -184,7 +184,7 @@ public static class ControllerExtensions
     /// <param name="request">The query collection.</param>
     /// <param name="key">The key.</param>
     /// <param name="result">The output result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetInt32Value(this IQueryCollection request, string key, out int result)
     {
         var r = TryGetInt32Value(request, key);
@@ -217,7 +217,7 @@ public static class ControllerExtensions
     /// <param name="request">The query collection.</param>
     /// <param name="key">The key.</param>
     /// <param name="result">The output result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetInt64Value(this IQueryCollection request, string key, out long result)
     {
         var r = TryGetInt64Value(request, key);
@@ -250,7 +250,7 @@ public static class ControllerExtensions
     /// <param name="request">The query collection.</param>
     /// <param name="key">The key.</param>
     /// <param name="result">The output result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetSingleValue(this IQueryCollection request, string key, out float result)
     {
         var r = TryGetSingleValue(request, key);
@@ -283,7 +283,7 @@ public static class ControllerExtensions
     /// <param name="request">The query collection.</param>
     /// <param name="key">The key.</param>
     /// <param name="result">The output result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetDecimalValue(this IQueryCollection request, string key, out decimal result)
     {
         var r = TryGetDecimalValue(request, key);
@@ -316,7 +316,7 @@ public static class ControllerExtensions
     /// <param name="request">The query collection.</param>
     /// <param name="key">The key.</param>
     /// <param name="result">The output result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetDoubleValue(this IQueryCollection request, string key, out double result)
     {
         var r = TryGetDoubleValue(request, key);
@@ -335,7 +335,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="request">The query.</param>
     /// <param name="key">The property key.</param>
-    /// <returns>true if it is true; or false, if it is false; or null, if not supported.</returns>
+    /// <returns><c>true</c> if it is true; or false, if it is false; or null, if not supported.</returns>
     public static bool? TryGetBoolean(this IQueryCollection request, string key)
     {
         var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();
@@ -349,7 +349,7 @@ public static class ControllerExtensions
     /// <param name="request">The query.</param>
     /// <param name="key">The property key.</param>
     /// <param name="result">The result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetBoolean(this IQueryCollection request, string key, out bool result)
     {
         var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();

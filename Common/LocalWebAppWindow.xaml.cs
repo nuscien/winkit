@@ -369,7 +369,7 @@ public sealed partial class LocalWebAppWindow : Window
     /// Tests if there is the command handler of given identifier.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <returns>true if exists; otherwise, false.</returns>
+    /// <returns><c>true</c> if exists; otherwise, <c>false</c>.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
     public bool ContainsCommandHandler(string id)
         => MainElement.ContainsCommandHandler(id);
@@ -379,7 +379,7 @@ public sealed partial class LocalWebAppWindow : Window
     /// </summary>
     /// <param name="id">The handler identifier.</param>
     /// <param name="handler">The process handler.</param>
-    /// <returns>true if exists; otherwise, false.</returns>
+    /// <returns><c>true</c> if exists; otherwise, <c>false</c>.</returns>
     /// <exception cref="ArgumentNullException">id was null.</exception>
     public bool TryGetCommandHandler(string id, out ILocalWebAppCommandHandler handler)
         => MainElement.TryGetCommandHandler(id, out handler);
@@ -405,7 +405,7 @@ public sealed partial class LocalWebAppWindow : Window
     /// Removes the command handler.
     /// </summary>
     /// <param name="id">The handler identifier.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public bool RemoveCommandHandler(string id)
         => MainElement.RemoveCommandHandler(id);
 
@@ -413,7 +413,7 @@ public sealed partial class LocalWebAppWindow : Window
     /// Removes the command handler.
     /// </summary>
     /// <param name="handler">The process handler to remove.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public bool RemoveCommandHandler(ILocalWebAppCommandHandler handler)
         => MainElement.RemoveCommandHandler(handler);
 
@@ -438,7 +438,7 @@ public sealed partial class LocalWebAppWindow : Window
     /// </summary>
     /// <param name="path">The output path of the PDF format file.</param>
     /// <param name="printSettings">The print settings.</param>
-    /// <returns>true if print succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if print succeeded; otherwise, <c>false</c>.</returns>
     public Task<bool> PrintToPdfAsync(string path, CoreWebView2PrintSettings printSettings)
         => MainElement.PrintToPdfAsync(path, printSettings);
 

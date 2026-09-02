@@ -978,7 +978,7 @@ public partial class LocalWebAppHost
     /// Tests if the files are verified by signature.
     /// </summary>
     /// <param name="cancellationToken">The optional cancellation token to cancel operation.</param>
-    /// <returns>true if verified; otherwise, false.</returns>
+    /// <returns><c>true</c> if verified; otherwise, <c>false</c>.</returns>
     public async Task<bool> VerifyAsync(CancellationToken cancellationToken = default)
     {
         var state = await VerifyAsync(this, Options?.ManifestFileName, true, cancellationToken);
@@ -1684,7 +1684,7 @@ public partial class LocalWebAppHost
     /// </summary>
     /// <param name="resourcePackageId">The resource package identifier to remove.</param>
     /// <param name="dev">true if list dev apps; otherwise, false.</param>
-    /// <returns>true if the resource package exists and is removed; otherwise, false.</returns>
+    /// <returns><c>true</c> if the resource package exists and is removed; otherwise, <c>false</c>.</returns>
     public static async Task<bool> RemovePackageAsync(string resourcePackageId, bool dev = false)
     {
         if (string.IsNullOrWhiteSpace(resourcePackageId)) return false;

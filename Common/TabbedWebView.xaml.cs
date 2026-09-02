@@ -564,7 +564,7 @@ public sealed partial class TabbedWebView : UserControl
     /// Removes a specific tab.
     /// </summary>
     /// <param name="item">The tab view item to remove.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public bool Remove(object item)
         => item is not null && HostElement.TabItems.Remove(item);
 
@@ -572,7 +572,7 @@ public sealed partial class TabbedWebView : UserControl
     /// Removes a specific tab.
     /// </summary>
     /// <param name="index">The index to remove.</param>
-    /// <returns>true if remove succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if remove succeeded; otherwise, <c>false</c>.</returns>
     public void RemoveAt(int index)
     {
         var item = HostElement.TabItems.Skip(index).FirstOrDefault();
@@ -648,7 +648,7 @@ public sealed partial class TabbedWebView : UserControl
     /// Determines whether the tabs contains a specific value.
     /// </summary>
     /// <param name="tab">The tab view item to test.</param>
-    /// <returns>true if contains; otherwise, false.</returns>
+    /// <returns><c>true</c> if contains; otherwise, <c>false</c>.</returns>
     public bool Contains(TabViewItem tab)
         => tab != null && HostElement.TabItems.Contains(tab);
 
@@ -656,7 +656,7 @@ public sealed partial class TabbedWebView : UserControl
     /// Determines whether the tabs contains a specific value.
     /// </summary>
     /// <param name="webview">The web view to test.</param>
-    /// <returns>true if contains; otherwise, false.</returns>
+    /// <returns><c>true</c> if contains; otherwise, <c>false</c>.</returns>
     public bool Contains(SingleWebView webview)
         => webview != null && HostElement.TabItems.Any(ele => ele is TabViewItem tab && tab.Content is SingleWebView v && v == webview);
 
@@ -664,7 +664,7 @@ public sealed partial class TabbedWebView : UserControl
     /// Determines whether the tabs contains a specific value.
     /// </summary>
     /// <param name="webview">The web view to test.</param>
-    /// <returns>true if contains; otherwise, false.</returns>
+    /// <returns><c>true</c> if contains; otherwise, <c>false</c>.</returns>
     public bool Contains(LocalWebAppPage webview)
         => webview != null && HostElement.TabItems.Any(ele => ele is TabViewItem tab && tab.Content is LocalWebAppPage v && v == webview);
 

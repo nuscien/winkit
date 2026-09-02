@@ -69,7 +69,7 @@ public sealed class MemoryBasicInfo : BaseDeviceComponentBasicInfo
         /// Gets the current memory information and status.
         /// </summary>
         /// <param name="mi">The struct to transfer data.</param>
-        /// <returns>true if get succeeded; otherwise, false.</returns>
+        /// <returns><c>true</c> if get succeeded; otherwise, <c>false</c>.</returns>
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GlobalMemoryStatusEx(ref UnmanagedInfo mi);

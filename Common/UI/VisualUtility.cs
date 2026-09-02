@@ -79,7 +79,7 @@ public static partial class VisualUtility
     /// <typeparam name="T">The type of the resource.</typeparam>
     /// <param name="key">The resource key.</param>
     /// <param name="result">The result output.</param>
-    /// <returns>true if get succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if get succeeded; otherwise, <c>false</c>.</returns>
     /// <exception cref="InvalidCastException">The type is not the expected one.</exception>
     /// <exception cref="ArgumentException">key is invalid.</exception>
     /// <exception cref="COMException">COM exception.</exception>
@@ -93,7 +93,7 @@ public static partial class VisualUtility
     /// <param name="resources">The resources.</param>
     /// <param name="key">The resource key.</param>
     /// <param name="result">The result output.</param>
-    /// <returns>true if get succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if get succeeded; otherwise, <c>false</c>.</returns>
     /// <exception cref="InvalidCastException">The type is not the expected one.</exception>
     /// <exception cref="ArgumentException">key is invalid.</exception>
     /// <exception cref="COMException">COM exception.</exception>
@@ -1149,7 +1149,7 @@ public static partial class VisualUtility
     /// <param name="svgString">The SVG content string.</param>
     /// <param name="width">The width of the SVG element; or double.NaN if parses failed.</param>
     /// <param name="height">The height of the SVG element; or double.NaN if parses failed.</param>
-    /// <returns>true if parses succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parses succeeded; otherwise, <c>false</c>.</returns>
     public static bool GetSvgSize(string svgString, out double width, out double height)
     {
         var svg = XDocument.Parse(svgString).Root;
@@ -1168,7 +1168,7 @@ public static partial class VisualUtility
     /// <typeparam name="T">The type of tag.</typeparam>
     /// <param name="target">The target element.</param>
     /// <param name="result">The result.</param>
-    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if gets succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetTag<T>(object target, out T result)
     {
         if (target is FrameworkElement element && element.Tag is T tag)
@@ -1188,7 +1188,7 @@ public static partial class VisualUtility
     /// <typeparam name="TElement">The type of element.</typeparam>
     /// <param name="target">The target element.</param>
     /// <param name="result">The result.</param>
-    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if gets succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetTag<TTag, TElement>(object target, out TTag result) where TElement : FrameworkElement
     {
         if (target is TElement element && element.Tag is TTag tag)
@@ -1207,7 +1207,7 @@ public static partial class VisualUtility
     /// <typeparam name="T">The type of tag.</typeparam>
     /// <param name="target">The target element.</param>
     /// <param name="result">The result.</param>
-    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if gets succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetDataContext<T>(object target, out T result)
     {
         if (target is FrameworkElement element && element.DataContext is T tag)
@@ -1227,7 +1227,7 @@ public static partial class VisualUtility
     /// <typeparam name="TElement">The type of element.</typeparam>
     /// <param name="target">The target element.</param>
     /// <param name="result">The result.</param>
-    /// <returns>true if gets succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if gets succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryGetDataContext<TTag, TElement>(object target, out TTag result) where TElement : FrameworkElement
     {
         if (target is TElement element && element.DataContext is TTag tag)
@@ -1245,7 +1245,7 @@ public static partial class VisualUtility
     /// </summary>
     /// <param name="s">The input string to parse.</param>
     /// <param name="result">The result.</param>
-    /// <returns>true if parse succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
     public static bool TryParseColor(string s, out Color result)
     {
         if (!Drawing.ColorCalculator.TryParse(s, out var color))
@@ -1461,7 +1461,7 @@ public static partial class VisualUtility
     /// Opens a file.
     /// </summary>
     /// <param name="file">The file info.</param>
-    /// <returns>true if opens succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if opens succeeded; otherwise, <c>false</c>.</returns>
     public static async Task<bool> OpenFileAsync(FileInfo file)
     {
         if (file == null || !file.Exists) return false;
@@ -1497,7 +1497,7 @@ public static partial class VisualUtility
     /// Opens a file.
     /// </summary>
     /// <param name="file">The file path.</param>
-    /// <returns>true if opens succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if opens succeeded; otherwise, <c>false</c>.</returns>
     public static async Task<bool> OpenFileAsync(string file)
     {
         try
@@ -1532,7 +1532,7 @@ public static partial class VisualUtility
     /// Opens a directory.
     /// </summary>
     /// <param name="dir">The directory info.</param>
-    /// <returns>true if opens succeeded; otherwise, false.</returns>
+    /// <returns><c>true</c> if opens succeeded; otherwise, <c>false</c>.</returns>
     public static async Task<bool> OpenFolderAsync(DirectoryInfo dir)
     {
         if (dir == null || !dir.Exists) return false;

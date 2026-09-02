@@ -93,19 +93,19 @@ public interface IBasicWindowStateController
     /// <summary>
     /// Restores the window.
     /// </summary>
-    /// <returns>true if succeed; otherwise, false.</returns>
+    /// <returns><c>true</c> if succeed; otherwise, <c>false</c>.</returns>
     bool Restore();
 
     /// <summary>
     /// Maximizes the window.
     /// </summary>
-    /// <returns>true if succeed; otherwise, false.</returns>
+    /// <returns><c>true</c> if succeed; otherwise, <c>false</c>.</returns>
     bool Maximize();
 
     /// <summary>
     /// Minimizes the window.
     /// </summary>
-    /// <returns>true if succeed; otherwise, false.</returns>
+    /// <returns><c>true</c> if succeed; otherwise, <c>false</c>.</returns>
     bool Minimize();
 
     /// <summary>
@@ -361,7 +361,7 @@ public class BasicWindowStateController : IBasicWindowStateController
     /// <summary>
     /// Restores the window.
     /// </summary>
-    /// <returns>true if succeed; otherwise, false.</returns>
+    /// <returns><c>true</c> if succeed; otherwise, <c>false</c>.</returns>
     public bool Restore()
     {
         try
@@ -396,7 +396,7 @@ public class BasicWindowStateController : IBasicWindowStateController
     /// <summary>
     /// Maximizes the window.
     /// </summary>
-    /// <returns>true if succeed; otherwise, false.</returns>
+    /// <returns><c>true</c> if succeed; otherwise, <c>false</c>.</returns>
     public bool Maximize()
     {
         try
@@ -431,7 +431,7 @@ public class BasicWindowStateController : IBasicWindowStateController
     /// <summary>
     /// Minimizes the window.
     /// </summary>
-    /// <returns>true if succeed; otherwise, false.</returns>
+    /// <returns><c>true</c> if succeed; otherwise, <c>false</c>.</returns>
     public bool Minimize()
     {
         try

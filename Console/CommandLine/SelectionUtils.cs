@@ -120,7 +120,7 @@ public static partial class ConsoleRenderExtensions
     /// Tests if the input string is to get help.
     /// </summary>
     /// <param name="s">The input string.</param>
-    /// <returns>true if to get help; otherwise, false.</returns>
+    /// <returns><c>true</c> if to get help; otherwise, <c>false</c>.</returns>
     public static bool IsAboutToGetHelp(string s)
         => !string.IsNullOrEmpty(s) && s.Trim().ToLowerInvariant() switch
         {
@@ -132,7 +132,7 @@ public static partial class ConsoleRenderExtensions
     /// Tests if the input string is to exit.
     /// </summary>
     /// <param name="s">The input string.</param>
-    /// <returns>true if to exit; otherwise, false.</returns>
+    /// <returns><c>true</c> if to exit; otherwise, <c>false</c>.</returns>
     public static bool IsAboutToExit(string s)
         => !string.IsNullOrEmpty(s) && s.Trim().ToLowerInvariant() switch
         {

@@ -6,6 +6,7 @@
     <AssemblyName>Trivial.Console.Demo</AssemblyName>
     <RootNamespace>Trivial.CommandLine</RootNamespace>
     <OutputType>Exe</OutputType>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

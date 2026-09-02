@@ -9,4 +9,6 @@ console.WriteLine(new LinearGradientConsoleStyle(null, Color.FromArgb(15, 250, 2
 console.WriteLine();
 var dispatcher = new CommandDispatcher();
 dispatcher.Register<SelectionCli>("select");
-await dispatcher.ProcessAsync();
+dispatcher.Register<ProgressCli>("progress");
+
+await dispatcher.ProcessOrSelectAsync();

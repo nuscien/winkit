@@ -2,16 +2,48 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
 using System.Data;
+using System.Drawing;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Trivial.Collection;
 
 namespace Trivial.CommandLine;
 
 public static partial class ConsoleRenderExtensions
 {
+    /// <summary>
+    /// Writes a collection of item for selecting.
+    /// </summary>
+    /// <param name="console">The command line interface proxy.</param>
+    /// <param name="dispatcher">The command dispatcher.</param>
+    /// <param name="options">The selection display options.</param>
+    /// <returns>The result of selection.</returns>
+    public static SelectionResult<string> Select(this StyleConsole console, CommandDispatcher dispatcher, SelectionConsoleOptions options = null)
+    {
+        var selection = new SelectionData<string>();
+        var description = dispatcher.GetDescription();
+        foreach (var item in description)
+        {
+            selection.Add($"{item.Key}\t{item.Value}".Trim(), item.Key);
+        }
+
+        return Select(console, selection, options ?? new()
+        {
+            Prefix = "· ",
+            SelectedPrefix = "→ ",
+            Tips = null,
+            Question = null,
+            SelectedForegroundConsoleColor = ConsoleColor.Yellow,
+            SelectedForegroundRgbColor = Color.FromArgb(0x55, 0xCC, 0xEE),
+            SelectedBackgroundConsoleColor = null,
+            SelectedBackgroundRgbColor = null,
+        });
+    }
+
     /// <summary>
     /// Writes a collection of item for selecting.
     /// </summary>
@@ -39,6 +71,7 @@ public static partial class ConsoleRenderExtensions
     {
         if (data is null) return new(string.Empty, SelectionResultTypes.Canceled);
         console ??= StyleConsole.Default;
+        options ??= new();
         if ((console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null) || !console.TryGetCursorTop().HasValue)
             return SelectInternal(console, data, options);
         console.Flush();
@@ -46,23 +79,20 @@ public static partial class ConsoleRenderExtensions
         while (true)
         {
             var refreshWindow = false;
-            var index = selected;
-            if (index < 0)
+            if (selected < 0)
             {
                 selected = 0;
-                index = 0;
             }
 
             var list = data.ToList();
             var count = list.Count;
-            if (index >= count)
+            if (selected >= count)
             {
                 if (count < 1) return new(string.Empty, SelectionResultTypes.Canceled);
-                index %= count;
-                selected = index;
+                selected %= count;
             }
 
-            var select = list[index];
+            var select = list[selected];
             var maxWidth = GetBufferSafeWidth(console);
             var maxHeight = GetBufferSafeHeight(console);
             var maxRows = options.MaxRow ?? 50;
@@ -92,10 +122,11 @@ public static partial class ConsoleRenderExtensions
             var pageSize = count;
             if (options.MaxRow.HasValue && !isFullWindow)
                 pageSize = maxRows * columns;
-            var start = index >= pageSize ? (index / pageSize * pageSize) : 0;
+            var start = selected >= pageSize ? (selected / pageSize * pageSize) : 0;
             var pos = 0;
             var len = absolutePageSize + start;
             var selectText = string.Empty;
+            var singleColumn = columns == 1 && !options.Column.HasValue;
             for (var i = start; i < len; i++)
             {
                 var item = i >= list.Count ? new(string.Empty) : list[i];
@@ -107,12 +138,25 @@ public static partial class ConsoleRenderExtensions
                     console.WriteLine();
                 }
 
-                var isSelect = i == index;
-                var title = item?.Title ?? string.Empty;
+                var isSelect = i == selected;
+                var title = item?.Title?.Trim() ?? string.Empty;
                 if (isSelect) selectText = title;
                 var prefix = isSelect ? options.SelectedPrefix : options.Prefix;
                 if (!string.IsNullOrEmpty(prefix)) title = string.Concat(prefix, title);
-                if (title.Length < 1) title = " ";
+                if (title.Length < 1)
+                {
+                    title = " ";
+                }
+                else if (singleColumn)
+                {
+                    var pos2 = title.IndexOf('\t');
+                    if (pos2 > 0)
+                    {
+                        var s = title.Substring(0, pos2).TrimEnd();
+                        title = string.Concat(s, s.Length > 7 ? " \t" : "\t\t", title.Substring(pos2 + 1).TrimStart());
+                    }
+                }
+
                 RenderSentence(console, isSelect ? new()
                 {
                     ForegroundConsoleColor = options.SelectedForegroundConsoleColor ?? options.ForegroundColor,
@@ -125,7 +169,7 @@ public static partial class ConsoleRenderExtensions
                     ForegroundRgbColor = options.ItemForegroundRgbColor,
                     BackgroundConsoleColor = options.ItemBackgroundConsoleColor ?? options.BackgroundColor,
                     BackgroundRgbColor = options.ItemBackgroundRgbColor,
-                }, title, pos, itemWidth - 1, maxWidth);
+                }, title, pos, itemWidth - 1, singleColumn, maxWidth);
                 pos = nextPos;
             }
 
@@ -148,7 +192,7 @@ public static partial class ConsoleRenderExtensions
                 .Replace("{end}", end.ToString("g"))
                 .Replace("{count}", (end - start).ToString("g"))
                 .Replace("{size}", absolutePageSize.ToString("g"))
-                .Replace("{total}", list.Count.ToString("g")), 0, maxWidth, maxWidth);
+                .Replace("{total}", list.Count.ToString("g")), 0, maxWidth, true, maxWidth);
                 console.WriteLine();
             }
 
@@ -160,20 +204,25 @@ public static partial class ConsoleRenderExtensions
                     ForegroundRgbColor = options.TipsForegroundRgbColor,
                     BackgroundConsoleColor = options.TipsBackgroundConsoleColor ?? options.BackgroundColor,
                     BackgroundRgbColor = options.TipsBackgroundRgbColor,
-                }, options.Tips, 0, maxWidth, maxWidth);
+                }, options.Tips, 0, maxWidth, true, maxWidth);
                 console.WriteLine();
             }
 
-            RenderSentence(console, null, string.Empty, 0, maxWidth, maxWidth);
+            console.Clear(StyleConsole.RelativeAreas.Line);
             console.BackspaceToBeginning();
-            console.Write(new ConsoleTextStyle
+            if (options.Question is not null)
             {
-                ForegroundConsoleColor = options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
-                ForegroundRgbColor = options.QuestionForegroundRgbColor,
-                BackgroundConsoleColor = options.QuestionBackgroundConsoleColor ?? options.BackgroundColor,
-                BackgroundRgbColor = options.QuestionBackgroundRgbColor,
-            }, options.Question);
-            console.Write(selectText);
+                console.Write(new ConsoleTextStyle
+                {
+                    ForegroundConsoleColor = options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
+                    ForegroundRgbColor = options.QuestionForegroundRgbColor,
+                    BackgroundConsoleColor = options.QuestionBackgroundConsoleColor ?? options.BackgroundColor,
+                    BackgroundRgbColor = options.QuestionBackgroundRgbColor,
+                }, options.Question);
+                var pos2 = selectText.IndexOf('\t');
+                if (pos2 > 0) selectText = selectText.Substring(0, pos2);
+                console.Write(selectText);
+            }
 
             var key = console.ReadKey(true);
             switch (key.Key)
@@ -182,7 +231,7 @@ public static partial class ConsoleRenderExtensions
                 case ConsoleKey.Select:
                 case ConsoleKey.Spacebar:
                     console.WriteLine();
-                    return new(select.Title, -1, select.Data, select.Title, SelectionResultTypes.Selected);
+                    return new(select.Title, selected, select.Data, select.Title, SelectionResultTypes.Selected);
                 case ConsoleKey.Backspace:
                 case ConsoleKey.Delete:
                 case ConsoleKey.Clear:
@@ -297,8 +346,41 @@ public static partial class ConsoleRenderExtensions
         }
     }
 
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, bool skipSelectionTips, CancellationToken cancellationToken = default)
+    {
+        if (dispatcher is null) return;
+        var console = StyleConsole.Default;
+        if (console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null)
+        {
+            await dispatcher.ProcessAsync(cancellationToken);
+            return;
+        }
+
+        string cmd = null;
+        await dispatcher.ProcessAsync(() =>
+        {
+            var toSelect = Resource.ToSelect?.Trim();
+            if (!skipSelectionTips && !string.IsNullOrEmpty(toSelect))
+            {
+                if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
+                else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
+                if (!string.IsNullOrEmpty(toSelect)) console.WriteLine(ConsoleColor.DarkGray, toSelect);
+            }
+
+            var result = Select(console, dispatcher);
+            var arg = result.Data ?? result.Value;
+            if (string.IsNullOrWhiteSpace(arg)) return true;
+            cmd = arg;
+            return true;
+        }, cancellationToken);
+        if (!string.IsNullOrEmpty(cmd)) await dispatcher.ProcessAsync(cmd, cancellationToken);
+    }
+
+    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CancellationToken cancellationToken = default)
+        => ProcessOrSelectAsync(dispatcher, false, cancellationToken);
+
     internal static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length)
-        => RenderSentence(console, style, value, start, length, GetBufferSafeWidth(console));
+        => RenderSentence(console, style, value, start, length, false, GetBufferSafeWidth(console));
 
     private static SelectionResult<T> SelectInternal<T>(StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options = null)
     {
@@ -363,8 +445,7 @@ public static partial class ConsoleRenderExtensions
         foreach (var ele in list)
         {
             i++;
-            if (ele.Title != s)
-                continue;
+            if (ele is null || !ele.Equals(s)) continue;
             item = ele;
             break;
         }
@@ -389,7 +470,7 @@ public static partial class ConsoleRenderExtensions
 
     }
 
-    private static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length, int maxWidth)
+    private static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length, bool keepTab, int maxWidth)
     {
         if (start + length > maxWidth) length = maxWidth - start;
         var left = TryGetCursorLeft(console);
@@ -400,6 +481,8 @@ public static partial class ConsoleRenderExtensions
             console.Write(' ', -diff);
 
         value ??= string.Empty;
+        if (keepTab) value = value.Replace("\r\n", " \t").Replace("\r", " \t").Replace("\n", " \t").Replace("\v", " \t");
+        else value = value.Replace("\r\n", "  ").Replace("\t", "  ").Replace("\r", "  ").Replace("\n", "  ").Replace("\v", "  ");
         var sb = new StringBuilder();
         var i = 0;
         foreach (var c in value)

@@ -346,7 +346,7 @@ public static partial class ConsoleRenderExtensions
         }
     }
 
-    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, bool skipSelectionTips, CancellationToken cancellationToken = default)
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, ConsoleText text, CancellationToken cancellationToken = default)
     {
         if (dispatcher is null) return;
         var console = StyleConsole.Default;
@@ -359,14 +359,7 @@ public static partial class ConsoleRenderExtensions
         string cmd = null;
         await dispatcher.ProcessAsync(() =>
         {
-            var toSelect = Resource.ToSelect?.Trim();
-            if (!skipSelectionTips && !string.IsNullOrEmpty(toSelect))
-            {
-                if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
-                else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
-                if (!string.IsNullOrEmpty(toSelect)) console.WriteLine(ConsoleColor.DarkGray, toSelect);
-            }
-
+            if (text is not null) console.WriteLine(text);
             var result = Select(console, dispatcher);
             var arg = result.Data ?? result.Value;
             if (string.IsNullOrWhiteSpace(arg)) return false;
@@ -376,10 +369,16 @@ public static partial class ConsoleRenderExtensions
         if (!string.IsNullOrEmpty(cmd)) await dispatcher.ProcessAsync(cmd, cancellationToken);
     }
 
+    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, bool skipSelectionTips, CancellationToken cancellationToken = default)
+        => ProcessOrSelectAsync(dispatcher, skipSelectionTips ? null : CreateSelectText(), cancellationToken);
+
     public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, false, cancellationToken);
 
-    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, bool skipSelectionTips, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, bool skipSelectionTips, CancellationToken cancellationToken = default)
+        => ProcessOrSelectAsync(dispatcher, args, skipSelectionTips ? null : CreateSelectText(), cancellationToken);
+
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, ConsoleText text, CancellationToken cancellationToken = default)
     {
         if (dispatcher is null) return;
         var console = StyleConsole.Default;
@@ -396,13 +395,7 @@ public static partial class ConsoleRenderExtensions
         }
 
         var toSelect = Resource.ToSelect?.Trim();
-        if (!skipSelectionTips && !string.IsNullOrEmpty(toSelect))
-        {
-            if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
-            else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
-            if (!string.IsNullOrEmpty(toSelect)) console.WriteLine(ConsoleColor.DarkGray, toSelect);
-        }
-
+        if (text is not null) console.WriteLine(text);
         var result = Select(console, dispatcher);
         var arg = result.Data ?? result.Value;
         if (string.IsNullOrWhiteSpace(arg))
@@ -545,5 +538,15 @@ public static partial class ConsoleRenderExtensions
             console.Backspace(diff);
         else if (diff < 0)
             console.Write(' ', -diff);
+    }
+
+    private static ConsoleText CreateSelectText()
+    {
+        var toSelect = Resource.ToSelect?.Trim();
+        if (string.IsNullOrEmpty(toSelect)) return null;
+        if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
+        else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
+        if (string.IsNullOrEmpty(toSelect)) return null;
+        return new(toSelect, ConsoleColor.DarkGray);
     }
 }

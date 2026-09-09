@@ -377,7 +377,7 @@ public static partial class ConsoleRenderExtensions
     public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, SelectionConsoleOptions options, ConsoleText label, CancellationToken cancellationToken = default)
     {
         if (dispatcher is null) return;
-        var console = StyleConsole.Default;
+        var console = dispatcher.Console ?? StyleConsole.Default;
         if (console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null)
         {
             await dispatcher.ProcessAsync(cancellationToken);
@@ -392,7 +392,7 @@ public static partial class ConsoleRenderExtensions
             var arg = result.Data ?? result.Value;
             if (string.IsNullOrWhiteSpace(arg))
             {
-                (dispatcher.Console ?? StyleConsole.Default).WriteLine();
+                console.WriteLine();
                 return false;
             }
 
@@ -476,7 +476,7 @@ public static partial class ConsoleRenderExtensions
     public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, ConsoleText label, CancellationToken cancellationToken = default)
     {
         if (dispatcher is null) return;
-        var console = StyleConsole.Default;
+        var console = dispatcher.Console ?? StyleConsole.Default;
         if (args is not null && args.HasVerb)
         {
             await dispatcher.ProcessAsync(args, cancellationToken);
@@ -494,7 +494,7 @@ public static partial class ConsoleRenderExtensions
         var arg = result.Data ?? result.Value;
         if (string.IsNullOrWhiteSpace(arg))
         {
-            (dispatcher.Console ?? StyleConsole.Default).WriteLine();
+            console.WriteLine();
             await dispatcher.ProcessAsync(args, cancellationToken);
             return;
         }

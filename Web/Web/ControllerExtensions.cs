@@ -506,6 +506,20 @@ public static class ControllerExtensions
     }
 
     /// <summary>
+    /// Parses a JWT string encoded.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <returns>A JSON web token object.</returns>
+    /// <exception cref="InvalidOperationException">Verify failure.</exception>
+    /// <exception cref="JsonException">Deserialize failed.</exception>
+    public static JsonWebToken<T>.Parser GetJsonWebTokenParser<T>(this HttpRequest request)
+    {
+        var auth = request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(auth)) return null;
+        return new JsonWebToken<T>.Parser(auth);
+    }
+
+    /// <summary>
     /// Convert to an action result.
     /// </summary>
     /// <param name="data">The source data to output.</param>

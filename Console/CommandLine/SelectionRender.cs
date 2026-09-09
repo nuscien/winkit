@@ -69,7 +69,7 @@ public static partial class ConsoleRenderExtensions
     /// <returns>The result of selection.</returns>
     public static SelectionResult<T> Select<T>(this StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options = null)
     {
-        if (data is null) return new(string.Empty, SelectionResultTypes.Canceled);
+        if (data is null) return new(string.Empty, SelectionResultTypes.Empty);
         console ??= StyleConsole.Default;
         options ??= new();
         if ((console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null) || !console.TryGetCursorTop().HasValue)
@@ -89,7 +89,7 @@ public static partial class ConsoleRenderExtensions
             var count = list.Count;
             if (selected >= count)
             {
-                if (count < 1) return new(string.Empty, SelectionResultTypes.Canceled);
+                if (count < 1) return new(string.Empty, SelectionResultTypes.Empty);
                 selected %= count;
             }
 

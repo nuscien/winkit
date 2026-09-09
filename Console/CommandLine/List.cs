@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -179,4 +180,35 @@ public static partial class DefaultConsole
     /// <param name="text2">The second text output after a tab.</param>
     public static void WriteOrderedLine(int index, ConsoleTextStyle style, string text, ConsoleTextStyle style2 = null, string text2 = null)
         => WriteOrderedLine(StyleConsole.Default, index, style, text, style2, text2);
+
+    /// <summary>
+    /// Writes lines in order.
+    /// </summary>
+    /// <param name="console">The console instance.</param>
+    /// <param name="col">The lines.</param>
+    /// <param name="style">The style of line.</param>
+    /// <param name="skipEmpty">true if skip empty line; otherwise, false.</param>
+    public static void WriteOrderedLine(this StyleConsole console, IEnumerable<string> col, ConsoleTextStyle style, bool skipEmpty = false)
+    {
+        if (col is null) return;
+        console ??= StyleConsole.Default;
+        var i = 1;
+        foreach (var line in col)
+        {
+            if (string.IsNullOrEmpty(line) && skipEmpty) continue;
+            console.Append(ConsoleColor.Blue, i);
+            console.Append(ConsoleColor.Blue, i >= 10 ? ". " : ".  ");
+            console.WriteLine(style, line.Trim());
+            i++;
+        }
+    }
+
+    /// <summary>
+    /// Writes lines in order.
+    /// </summary>
+    /// <param name="console">The console instance.</param>
+    /// <param name="col">The lines.</param>
+    /// <param name="skipEmpty">true if skip empty line; otherwise, false.</param>
+    public static void WriteOrderedLine(this StyleConsole console, IEnumerable<string> col, bool skipEmpty = false)
+        => WriteOrderedLine(console, col, null, skipEmpty);
 }

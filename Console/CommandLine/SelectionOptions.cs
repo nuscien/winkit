@@ -276,6 +276,13 @@ public class SelectionConsoleOptions : ICloneable
     public string SelectedPrefix { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether disable hotkey to enter the item but instead to select.
+    /// </summary>
+    [JsonPropertyName("disableHotkey")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool DisableHotkey { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether still enable the customized style instead of using the default one for fallback.
     /// </summary>
     [JsonPropertyName("fallbackStyle")]

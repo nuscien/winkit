@@ -48,7 +48,7 @@ internal class SelectionCli : BaseCommandVerb
         {
             MaxRow = 5,
             Column = 4,
-            Prefix = " ",
+            Prefix = "· ",
             SelectedPrefix = "→ ",
         };
         var sel = ConsoleRenderExtensions.Select(console, selection, options);

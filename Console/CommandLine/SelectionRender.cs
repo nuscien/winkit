@@ -390,7 +390,12 @@ public static partial class ConsoleRenderExtensions
             if (label is not null) console.WriteLine(label);
             var result = Select(console, dispatcher, options);
             var arg = result.Data ?? result.Value;
-            if (string.IsNullOrWhiteSpace(arg)) return false;
+            if (string.IsNullOrWhiteSpace(arg))
+            {
+                (dispatcher.Console ?? StyleConsole.Default).WriteLine();
+                return false;
+            }
+
             cmd = arg;
             return true;
         }, cancellationToken);
@@ -484,12 +489,12 @@ public static partial class ConsoleRenderExtensions
             return;
         }
 
-        var toSelect = Resource.ToSelect?.Trim();
         if (label is not null) console.WriteLine(label);
         var result = Select(console, dispatcher);
         var arg = result.Data ?? result.Value;
         if (string.IsNullOrWhiteSpace(arg))
         {
+            (dispatcher.Console ?? StyleConsole.Default).WriteLine();
             await dispatcher.ProcessAsync(args, cancellationToken);
             return;
         }

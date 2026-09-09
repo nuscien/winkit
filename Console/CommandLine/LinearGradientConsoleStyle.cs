@@ -119,10 +119,10 @@ public class LinearGradientConsoleStyle : IConsoleTextPrettier
         var hasFore = fromFore.HasValue || toFore.HasValue;
         var hasBack = fromBack.HasValue || toBack.HasValue;
         var foreDelta = fromFore.HasValue && toFore.HasValue
-            ? ((toFore.Value.R - fromFore.Value.R) * 1.0 / steps, (toFore.Value.G - fromFore.Value.B) * 1.0 / steps, (toFore.Value.B - fromFore.Value.B) * 1.0 / steps)
+            ? ((toFore.Value.R - fromFore.Value.R) * 1.0 / steps, (toFore.Value.G - fromFore.Value.G) * 1.0 / steps, (toFore.Value.B - fromFore.Value.B) * 1.0 / steps)
             : (0.0, 0.0, 0.0);
         var backDelta = fromBack.HasValue && toBack.HasValue
-            ? ((toBack.Value.R - fromBack.Value.R) * 1.0 / steps, (toBack.Value.G - fromBack.Value.B) * 1.0 / steps, (toBack.Value.B - fromBack.Value.B) * 1.0 / steps)
+            ? ((toBack.Value.R - fromBack.Value.R) * 1.0 / steps, (toBack.Value.G - fromBack.Value.G) * 1.0 / steps, (toBack.Value.B - fromBack.Value.B) * 1.0 / steps)
             : (0.0, 0.0, 0.0);
         double foreR = fromFore?.R ?? toFore?.R ?? 0;
         double foreG = fromFore?.G ?? toFore?.G ?? 0;

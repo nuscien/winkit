@@ -21,7 +21,7 @@ internal class ProgressCli : BaseCommandVerb
 
     private async Task Test(ConsoleProgressStyle style, CancellationToken cancellationToken = default)
     {
-        var console = CurrentConsole;
+        var console = GetConsole();
         var progress = console.WriteLine(style);
         for (var i = 0d; i < 1; i += 0.04)
         {

@@ -11,4 +11,4 @@ var dispatcher = new CommandDispatcher();
 dispatcher.Register<SelectionCli>("select");
 dispatcher.Register<ProgressCli>("progress");
 
-await dispatcher.ProcessOrSelectAsync();
+await dispatcher.ProcessAsync();

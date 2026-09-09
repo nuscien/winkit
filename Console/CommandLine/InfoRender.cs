@@ -357,4 +357,32 @@ public static partial class ConsoleRenderExtensions
 
         return 70;
     }
+
+    private static int GetBufferSafeHeight(StyleConsole cli)
+    {
+        try
+        {
+            return (cli ?? StyleConsole.Default).BufferHeight;
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+
+        return 20;
+    }
 }

@@ -1,857 +1,569 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
+using System.Data;
+using System.Drawing;
 using System.Linq;
-using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Security;
-
 using Trivial.Collection;
 
 namespace Trivial.CommandLine;
 
-/// <summary>
-/// The extensions for console renderer.
-/// </summary>
 public static partial class ConsoleRenderExtensions
 {
     /// <summary>
     /// Writes a collection of item for selecting.
     /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
-    /// <param name="convert">The converter.</param>
+    /// <param name="console">The command line interface proxy.</param>
+    /// <param name="dispatcher">The command dispatcher.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(this StyleConsole cli, IEnumerable<T> collection, Func<T, SelectionItem<T>> convert, SelectionConsoleOptions options = null)
+    public static SelectionResult<string> Select(this StyleConsole console, CommandDispatcher dispatcher, SelectionConsoleOptions options = null)
     {
-        var c = new SelectionData<T>();
-        c.AddRange(collection.Select(convert));
-        return Select(cli, c, options);
-    }
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(this StyleConsole cli, IEnumerable<SelectionItem<T>> collection, SelectionConsoleOptions options = null)
-    {
-        var c = new SelectionData<T>();
-        c.AddRange(collection);
-        return Select(cli, c, options);
-    }
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="path">The parent foler path.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <param name="searchPattern">The search string to match against the names of directories and files. This parameter can contain a combination of valid literal path and wildcard (* and ?) characters, but it doesn't support regular expressions.</param>
-    /// <returns>The result of selection.</returns>
-    /// <exception cref="ArgumentException">searchPattern contains one or more invalid characters defined by the System.IO.Path.GetInvalidPathChars method.</exception>
-    /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
-    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(this StyleConsole cli, DirectoryInfo path, SelectionConsoleOptions options = null, string searchPattern = null)
-    {
-        var c = new SelectionData<FileSystemInfo>();
-        var col = string.IsNullOrEmpty(searchPattern) ? path.GetFileSystemInfos() : path.GetFileSystemInfos(searchPattern);
-        foreach (var f in col)
+        var selection = new SelectionData<string>();
+        var description = dispatcher.GetDescription();
+        foreach (var item in description)
         {
-            c.Add(f.Name, f);
+            selection.Add($"{item.Key}\t{item.Value}".Trim(), item.Key);
         }
 
-        return Select(cli, c, options);
-    }
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="path">The parent foler path.</param>
-    /// <param name="onlyFiles">true if only display files; otherwise, false.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <param name="searchPattern">The search string to match against the names of directories and files. This parameter can contain a combination of valid literal path and wildcard (* and ?) characters, but it doesn't support regular expressions.</param>
-    /// <returns>The result of selection.</returns>
-    /// <exception cref="ArgumentException">searchPattern contains one or more invalid characters defined by the System.IO.Path.GetInvalidPathChars method.</exception>
-    /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
-    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(this StyleConsole cli, DirectoryInfo path, bool onlyFiles, SelectionConsoleOptions options = null, string searchPattern = null)
-    {
-        if (!onlyFiles) return Select(cli, path, options, searchPattern);
-        var c = new SelectionData<FileSystemInfo>();
-        var col = string.IsNullOrEmpty(searchPattern) ? path.GetFiles() : path.GetFiles(searchPattern);
-        foreach (var f in col)
+        return Select(console, selection, options ?? new()
         {
-            c.Add(f.Name, f);
-        }
-
-        return Select(cli, c, options);
-    }
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="path">The parent foler path.</param>
-    /// <param name="predicate">A function to test each element for a condition.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <returns>The result of selection.</returns>
-    /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
-    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(this StyleConsole cli, DirectoryInfo path, Func<FileSystemInfo, bool> predicate, SelectionConsoleOptions options = null)
-    {
-        var c = new SelectionData<FileSystemInfo>();
-        IEnumerable<FileSystemInfo> col = path.GetFileSystemInfos();
-        if (predicate != null) col = col.Where(predicate);
-        foreach (var f in col)
-        {
-            c.Add(f.Name, f);
-        }
-
-        return Select(cli, c, options);
+            Prefix = "· ",
+            SelectedPrefix = "→ ",
+            Tips = null,
+            Question = null,
+            SelectedForegroundConsoleColor = ConsoleColor.Yellow,
+            SelectedForegroundRgbColor = Color.FromArgb(0x55, 0xCC, 0xEE),
+            SelectedBackgroundConsoleColor = null,
+            SelectedBackgroundRgbColor = null,
+        });
     }
 
     /// <summary>
     /// Writes a collection of item for selecting.
     /// </summary>
     /// <typeparam name="T">The type of data.</typeparam>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
+    /// <param name="console">The command line interface proxy.</param>
+    /// <param name="data">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(this StyleConsole cli, SelectionData<T> collection, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(this StyleConsole console, IEnumerable<SelectionItem<T>> data, SelectionConsoleOptions options = null)
     {
-        if (collection == null) return null;
-        if (cli == null) cli = StyleConsole.Default;
-        if (options == null) options = new();
-        else options = options.Clone();
-        cli.Flush();
-        if (cli.Handler == null && cli.Mode == StyleConsole.Modes.Text)
-            return SelectForText(cli, collection, options);
-        return Select(cli, collection, options, 0);
-    }
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <returns>The result of selection.</returns>
-    public static SelectionResult<string> Select(this StyleConsole cli, IEnumerable<string> collection, SelectionConsoleOptions options = null)
-    {
-        if (collection == null) return null;
-        if (cli == null) cli = StyleConsole.Default;
-        if (options == null) options = new();
-        else options = options.Clone();
-        cli.Flush();
-        var c = new SelectionData<string>();
-        c.AddRange(collection);
-        if (cli.Handler == null && cli.Mode == StyleConsole.Modes.Text)
-            return SelectForText(cli, c, options);
-        return Select(cli, c, options, 0);
+        var selection = new SelectionData<T>();
+        selection.AddRange(data);
+        return Select(console, selection, options);
     }
 
     /// <summary>
     /// Writes a collection of item for selecting.
     /// </summary>
     /// <typeparam name="T">The type of data.</typeparam>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
+    /// <param name="console">The command line interface proxy.</param>
+    /// <param name="data">The collection data.</param>
     /// <param name="options">The selection display options.</param>
-    /// <param name="select">The index of item selected.</param>
     /// <returns>The result of selection.</returns>
-    private static SelectionResult<T> Select<T>(StyleConsole cli, SelectionData<T> collection, SelectionConsoleOptions options, int select)
+    public static SelectionResult<T> Select<T>(this StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options = null)
     {
-        var temp = (0, 0, 0, 0, false, false, 0, 0);
-        var oldSelect = select;
+        if (data is null) return new(string.Empty, SelectionResultTypes.Canceled);
+        console ??= StyleConsole.Default;
+        options ??= new();
+        if ((console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null) || !console.TryGetCursorTop().HasValue)
+            return SelectInternal(console, data, options);
+        console.Flush();
+        var selected = -1;
+        var continueSelected = false;
         while (true)
         {
-            var list = collection.ToList();
-            void resetSelect()
+            var refreshWindow = false;
+            if (selected < 0)
             {
-                if (oldSelect < 0 || oldSelect >= list.Count) return;
-                var h = temp.Item3 + (temp.Item5 ? 2 : 1) + (temp.Item6 ? 1 : 0);
-                var oldItem = list[oldSelect];
-                var y2 = Math.DivRem(oldSelect % temp.Item7, temp.Item4, out var x2) - h;
-                x2 *= temp.Item8;
-                cli.MoveCursorBy(x2, y2);
-                RenderData(cli, oldItem, options, false, temp.Item8);
-                cli.MoveCursorBy(-x2 - temp.Item8, -y2);
-            };
-
-            if (temp.Item3 > 0 && select >= temp.Item1 && select < (temp.Item1 + temp.Item2))
-            {
-                cli.BackspaceToBeginning();
-                var h = temp.Item3 + (temp.Item5 ? 2 : 1) + (temp.Item6 ? 1 : 0);
-                if (oldSelect != select) resetSelect();
-                if (select < 0 || select >= list.Count) select = 0;
-                var item = list[select];
-                var y = Math.DivRem(select % temp.Item7, temp.Item4, out var x) - h;
-                x *= temp.Item8;
-                cli.MoveCursorBy(x, y);
-                RenderData(cli, item, options, true, temp.Item8);
-                cli.MoveCursorBy(-x - temp.Item8, -y);
-                RenderSelectResult(cli, item?.Title, options);
+                selected = 0;
             }
-            else
+
+            var list = data.ToList();
+            var count = list.Count;
+            if (selected >= count)
             {
-                if (temp.Item3 > 0)
+                if (count < 1) return new(string.Empty, SelectionResultTypes.Canceled);
+                selected %= count;
+            }
+
+            var select = list[selected];
+            var maxWidth = GetBufferSafeWidth(console);
+            var maxHeight = GetBufferSafeHeight(console);
+            var maxRows = options.MaxRow ?? 50;
+            var hasTips = !string.IsNullOrWhiteSpace(options.Tips);
+            var tipsHeight = hasTips ? 3 : 2;
+            if (maxRows < 1) maxRows = 1;
+            else if (maxRows > maxHeight) maxRows = maxHeight - tipsHeight;
+            var columns = options.Column ?? 1;
+            if (columns < 1) columns = 1;
+            var itemWidth = maxWidth / columns;
+            if (options.MinLength.HasValue && itemWidth < options.MinLength.Value)
+            {
+                columns = maxWidth / options.MinLength.Value;
+                if (columns < 1) columns = 1;
+            }
+
+            if (options.MaxLength.HasValue && options.MaxLength.Value > 1 && itemWidth > options.MaxLength.Value)
+                itemWidth = options.MaxLength.Value;
+            var absolutePageSize = maxRows * columns;
+            var isFullWindow = absolutePageSize >= count;
+            if (isFullWindow)
+            {
+                maxRows = (int)Math.Ceiling(count * 1.0 / columns);
+                absolutePageSize = maxRows * columns;
+            }
+
+            var pageSize = count;
+            if (!isFullWindow)
+                pageSize = maxRows * columns;
+            var start = selected >= pageSize ? (selected / pageSize * pageSize) : 0;
+            var pos = 0;
+            var len = absolutePageSize + start;
+            var selectText = string.Empty;
+            var singleColumn = columns == 1 && !options.Column.HasValue;
+            for (var i = start; i < len; i++)
+            {
+                var outOfRange = i >= list.Count;
+                var item = outOfRange ? new(string.Empty) : list[i];
+                var nextPos = pos + itemWidth;
+                if (nextPos > maxWidth)
                 {
-                    cli.BackspaceToBeginning();
-                    var h = temp.Item3 + (temp.Item5 ? 2 : 1) + (temp.Item6 ? 1 : 0);
-                    for (var i = 0; i < h; i++)
+                    pos = 0;
+                    nextPos = itemWidth;
+                    console.WriteLine();
+                }
+
+                var isSelect = i == selected;
+                var title = item?.Title?.Trim() ?? string.Empty;
+                if (isSelect) selectText = title;
+                var prefix = isSelect ? options.SelectedPrefix : options.Prefix;
+                if (!string.IsNullOrEmpty(prefix) && !outOfRange) title = string.Concat(prefix, title);
+                if (title.Length < 1)
+                {
+                    title = " ";
+                }
+                else if (singleColumn)
+                {
+                    var pos2 = title.IndexOf('\t');
+                    if (pos2 > 0)
                     {
-                        cli.MoveCursorBy(0, -1);
-                        cli.Clear(StyleConsole.RelativeAreas.Line);
+                        var s = title.Substring(0, pos2).TrimEnd();
+                        title = string.Concat(s, s.Length > 7 ? " \t" : "\t\t", title.Substring(pos2 + 1).TrimStart());
                     }
                 }
 
-                temp = RenderData(cli, list, options, select);
+                RenderSentence(console, isSelect ? new()
+                {
+                    ForegroundConsoleColor = options.SelectedForegroundConsoleColor ?? options.ForegroundColor,
+                    ForegroundRgbColor = options.SelectedForegroundRgbColor,
+                    BackgroundConsoleColor = outOfRange ? null : options.SelectedBackgroundConsoleColor ?? options.BackgroundColor,
+                    BackgroundRgbColor = outOfRange ? null : options.SelectedBackgroundRgbColor,
+                } : new()
+                {
+                    ForegroundConsoleColor = options.ItemForegroundConsoleColor ?? options.ForegroundColor,
+                    ForegroundRgbColor = options.ItemForegroundRgbColor,
+                    BackgroundConsoleColor = outOfRange ? null : options.ItemBackgroundConsoleColor ?? options.BackgroundColor,
+                    BackgroundRgbColor = outOfRange ? null : options.ItemBackgroundRgbColor,
+                }, title, pos, itemWidth - 1, singleColumn, maxWidth);
+                pos = nextPos;
             }
 
-            oldSelect = select;
-            ConsoleKeyInfo key;
-            try
+            console.WriteLine();
+            var end = Math.Min(start + absolutePageSize, list.Count);
+            if (string.IsNullOrWhiteSpace(options.PagingTips) || isFullWindow)
             {
-                key = cli.ReadKey();
+                tipsHeight--;
             }
-            catch (InvalidOperationException)
+            else
             {
-                return SelectByManualTyping(cli, collection, options);
-            }
-            catch (IOException)
-            {
-                return SelectByManualTyping(cli, collection, options);
-            }
-            catch (SecurityException)
-            {
-                return SelectByManualTyping(cli, collection, options);
-            }
-            catch (NotSupportedException)
-            {
-                return SelectByManualTyping(cli, collection, options);
+                RenderSentence(console, new()
+                {
+                    ForegroundConsoleColor = options.PagingForegroundConsoleColor ?? options.ForegroundColor,
+                    ForegroundRgbColor = options.PagingForegroundRgbColor,
+                    BackgroundConsoleColor = options.PagingBackgroundConsoleColor ?? options.BackgroundColor,
+                    BackgroundRgbColor = options.PagingBackgroundRgbColor,
+                }, options.PagingTips
+                .Replace("{from}", (start + 1).ToString("g"))
+                .Replace("{end}", end.ToString("g"))
+                .Replace("{count}", (end - start).ToString("g"))
+                .Replace("{size}", absolutePageSize.ToString("g"))
+                .Replace("{total}", list.Count.ToString("g")), 0, maxWidth, true, maxWidth);
+                console.WriteLine();
             }
 
+            if (hasTips)
+            {
+                RenderSentence(console, new()
+                {
+                    ForegroundConsoleColor = options.TipsForegroundConsoleColor ?? options.ForegroundColor,
+                    ForegroundRgbColor = options.TipsForegroundRgbColor,
+                    BackgroundConsoleColor = options.TipsBackgroundConsoleColor ?? options.BackgroundColor,
+                    BackgroundRgbColor = options.TipsBackgroundRgbColor,
+                }, options.Tips, 0, maxWidth, true, maxWidth);
+                console.WriteLine();
+            }
+
+            console.Clear(StyleConsole.RelativeAreas.Line);
+            console.BackspaceToBeginning();
+            if (options.Question is not null)
+            {
+                console.Write(new ConsoleTextStyle
+                {
+                    ForegroundConsoleColor = options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
+                    ForegroundRgbColor = options.QuestionForegroundRgbColor,
+                    BackgroundConsoleColor = options.QuestionBackgroundConsoleColor ?? options.BackgroundColor,
+                    BackgroundRgbColor = options.QuestionBackgroundRgbColor,
+                }, options.Question);
+                var pos2 = selectText.IndexOf('\t');
+                if (pos2 > 0) selectText = selectText.Substring(0, pos2);
+                console.Write(selectText);
+            }
+
+            if (continueSelected) return new(select.Title, selected, select.Data, select.Title, SelectionResultTypes.Selected);
+            var key = console.ReadKey(true);
             switch (key.Key)
             {
                 case ConsoleKey.Enter:
                 case ConsoleKey.Select:
                 case ConsoleKey.Spacebar:
-                    if (select < 0 || select >= list.Count)
-                    {
-                        select = temp.Item1;
-                        if (select < 0 || select >= list.Count)
-                            select = 0;
-                        break;
-                    }
-
-                    var sel = list[select];
-                    RenderSelectResult(cli, sel?.Title, options);
-                    cli.WriteLine();
-                    return new SelectionResult<T>(sel.Title, select, sel.Data, sel.Title);
+                    console.WriteLine();
+                    return new(select.Title, selected, select.Data, select.Title, SelectionResultTypes.Selected);
                 case ConsoleKey.Backspace:
                 case ConsoleKey.Delete:
                 case ConsoleKey.Clear:
-                    cli.Write(' ');
-                    cli.BackspaceToBeginning();
-                    resetSelect();
-                    return SelectByManualTyping(cli, collection, options);
+                case ConsoleKey.F4:
+                    console.Clear(StyleConsole.RelativeAreas.Line);
+                    console.BackspaceToBeginning();
+                    console.Write(new ConsoleTextStyle
+                    {
+                        ForegroundConsoleColor = options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
+                        ForegroundRgbColor = options.QuestionForegroundRgbColor,
+                        BackgroundConsoleColor = options.QuestionBackgroundConsoleColor ?? options.BackgroundColor,
+                        BackgroundRgbColor = options.QuestionBackgroundRgbColor,
+                    }, options.ManualQuestion ?? options.Question);
+                    return SelectInternal(console, console.ReadLine(), data);
                 case ConsoleKey.Escape:
                 case ConsoleKey.Pause:
-                    cli.Write(' ');
-                    cli.BackspaceToBeginning();
-                    resetSelect();
-                    RenderSelectResult(cli, null, options);
-                    cli.WriteLine();
+                case ConsoleKey.BrowserStop:
+                    console.Clear(StyleConsole.RelativeAreas.Line);
+                    console.BackspaceToBeginning();
                     return new SelectionResult<T>(string.Empty, SelectionResultTypes.Canceled);
                 case ConsoleKey.Help:
                 case ConsoleKey.F1:
                     {
-                        cli.BackspaceToBeginning();
-                        resetSelect();
-                        RenderSelectResult(cli, "?", options);
-                        cli.WriteLine();
-                        var item = collection.Get('?', out select);
+                        console.Clear(StyleConsole.RelativeAreas.Line);
+                        console.BackspaceToBeginning();
+                        console.Write(new ConsoleTextStyle
+                        {
+                            ForegroundConsoleColor = options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
+                            ForegroundRgbColor = options.QuestionForegroundRgbColor,
+                            BackgroundConsoleColor = options.QuestionBackgroundConsoleColor ?? options.BackgroundColor,
+                            BackgroundRgbColor = options.QuestionBackgroundRgbColor,
+                        }, options.ManualQuestion ?? options.Question);
+                        console.WriteLine("?");
+                        var item = data.Get('?', out var select2);
                         return item == null
                             ? new SelectionResult<T>("?", SelectionResultTypes.Selected)
-                            : new SelectionResult<T>("?", select, item.Data, item.Title);
+                            : new SelectionResult<T>("?", select2, item.Data, item.Title);
                     }
-                case ConsoleKey.F4:
-                    if (temp.Item3 > 0)
-                    {
-                        cli.BackspaceToBeginning();
-                        var h = temp.Item3 + (temp.Item5 ? 2 : 1) + (temp.Item6 ? 1 : 0);
-                        for (var i = 0; i < h; i++)
-                        {
-                            cli.MoveCursorBy(0, -1);
-                            cli.Clear(StyleConsole.RelativeAreas.Line);
-                        }
-                    }
-
-                    return SelectByManualTyping(cli, collection, options, true);
+                case ConsoleKey.BrowserRefresh:
                 case ConsoleKey.F5:
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
-                        select = 0;
+                        selected = 0;
                     break;
                 case ConsoleKey.F6:
-                    cli.BackspaceToBeginning();
-                    resetSelect();
-                    RenderSelectResult(cli, null, options);
-                    cli.WriteLine();
-                    if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
-                        select = 0;
-                    temp = RenderData(cli, list, options, select);
+                    console.Clear(StyleConsole.RelativeAreas.Line);
+                    console.BackspaceToBeginning();
+                    console.WriteLine("---");
+                    refreshWindow = true;
                     break;
                 case ConsoleKey.F12:
-                    {
-                        cli.BackspaceToBeginning();
-                        resetSelect();
-                        RenderSelectResult(cli, "?", options);
-                        cli.WriteLine();
-                        var item = collection.Get('?', out select);
-                        return item == null
-                            ? new SelectionResult<T>("?", SelectionResultTypes.Canceled)
-                            : new SelectionResult<T>("?", select, item.Data, item.Title);
-                    }
+                    console.Clear(StyleConsole.RelativeAreas.Line);
+                    console.BackspaceToBeginning();
+                    console.WriteLine("---");
+                    return SelectInternal(console, data, options);
                 case ConsoleKey.PageUp:
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
-                        select = 0;
+                    {
+                        selected = 0;
+                    }
                     else
-                        select = Math.Max(0, temp.Item1 - temp.Item7);
+                    {
+                        var offsetRelatived = selected % pageSize;
+                        selected = Math.Max(start - pageSize + offsetRelatived, 0);
+                    }
+
                     break;
                 case ConsoleKey.PageDown:
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
-                        select = list.Count - 1;
-                    else
-                        select = Math.Min(list.Count - 1, temp.Item1 + temp.Item7);
-                    break;
-                case ConsoleKey.UpArrow:
-                    if (select < temp.Item4)
                     {
-                        select += list.Count - (list.Count % temp.Item4);
-                        if (select >= list.Count) select -= temp.Item4;
-                        if (select >= list.Count) select = list.Count - 1;
-                        else if (select < 0) select = 0;
+                        selected = count - 1;
                     }
                     else
                     {
-                        select -= temp.Item4;
+                        var offsetRelatived = selected % pageSize;
+                        selected = Math.Min(start + pageSize + offsetRelatived, count - 1);
+                    }
+
+                    break;
+                case ConsoleKey.UpArrow:
+                    {
+                        var i = selected - columns;
+                        if (i < 0) i = count / columns * columns + (selected % columns);
+                        if (i >= count) i -= columns;
+                        selected = i;
                     }
 
                     break;
                 case ConsoleKey.DownArrow:
-                    select += temp.Item4;
-                    if (select >= list.Count)
                     {
-                        select %= temp.Item4;
-                        if (select >= list.Count) select = list.Count - 1;
+                        var i = selected + columns;
+                        if (i >= count) i = selected % columns;
+                        selected = i;
                     }
 
                     break;
                 case ConsoleKey.LeftArrow:
-                    select--;
-                    if (select < 0) select = list.Count - 1;
+                    selected = selected < 1 ? (count - 1) : (selected - 1);
                     break;
                 case ConsoleKey.RightArrow:
-                    select++;
-                    if (select >= list.Count) select = 0;
+                    selected = (selected + 1) % count;
                     break;
                 case ConsoleKey.Home:
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
-                        select = 0;
+                        selected = 0;
                     else
-                        select = temp.Item1;
+                        selected = start;
                     break;
                 case ConsoleKey.End:
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
-                        select = list.Count - 1;
+                        selected = count - 1;
                     else
-                        select = temp.Item1 + temp.Item2 - 1;
+                        selected = Math.Min(start + pageSize - 1, count - 1);
                     break;
                 default:
                     {
-                        var item = collection.Get(key.KeyChar, out select);
-                        if (item == null)
+                        var item = data.Get(key.KeyChar, out var selectIndex);
+                        if (item is not null && selectIndex >= 0)
                         {
-                            select = oldSelect;
-                            continue;
+                            selected = selectIndex;
+                            continueSelected = !options.DisableHotkey;
                         }
 
-                        cli.Write(' ');
-                        cli.BackspaceToBeginning();
-                        resetSelect();
-                        RenderSelectResult(cli, item.Title, options);
-                        cli.WriteLine();
-                        return new SelectionResult<T>(item.Title, select, item.Data, item.Title);
+                        break;
                     }
             }
+
+            var currentTop = console.TryGetCursorTop();
+            if (currentTop.HasValue && !refreshWindow) console.MoveCursorTo(0, currentTop.Value - maxRows - tipsHeight + 1);
         }
     }
 
     /// <summary>
-    /// Tests if the input string is to get help.
+    /// Processes.
     /// </summary>
-    /// <param name="s">The input string.</param>
-    /// <returns>true if to get help; otherwise, false.</returns>
-    public static bool IsAboutToGetHelp(string s)
-        => !string.IsNullOrEmpty(s) && s.Trim().ToLowerInvariant() switch
-        {
-            "?" or "help" or "gethelp" or "get-help" or "-?" or "/h" or "--?" or "-help" or "--help" or "/help" or "帮助" or "bangzhu" or "/bangzhu" or "--bangzhu" or "获取帮助" or "助け" or "❓" => true,
-            _ => false
-        };
-
-    /// <summary>
-    /// Tests if the input string is to exit.
-    /// </summary>
-    /// <param name="s">The input string.</param>
-    /// <returns>true if to exit; otherwise, false.</returns>
-    public static bool IsAboutToExit(string s)
-        => !string.IsNullOrEmpty(s) && s.Trim().ToLowerInvariant() switch
-        {
-            "exit" or "quit" or "close" or "bye" or "byebye" or "goodbye" or "good-bye" or "end" or "shutdown" or "shut-down" or "关闭" or "退出" or "再见" or "guanbi" or "tuichu" or "zaijian" or "さようなら" => true,
-            _ => false
-        };
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <typeparam name="T">The type of data.</typeparam>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
+    /// <param name="dispatcher">The command dispatcher.</param>
+    /// <param name="args">The arguments.</param>
     /// <param name="options">The selection display options.</param>
-    /// <param name="select">The index of item selected.</param>
-    /// <returns>The result of selection: offset, count, rows, columns, paging tips, customized tips, page size, item length.</returns>
-    private static (int, int, int, int, bool, bool, int, int) RenderData<T>(this StyleConsole cli, List<SelectionItem<T>> collection, SelectionConsoleOptions options, int select)
+    /// <param name="disalbeLabel">true if disable the default label; otherwise, false.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
+    /// <returns>A task that represents the asynchronous processing operation.</returns>
+    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, bool disalbeLabel, CancellationToken cancellationToken = default)
+        => ProcessOrSelectAsync(dispatcher, args, options, disalbeLabel ? null : CreateSelectText(), cancellationToken);
+
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="dispatcher">The command dispatcher.</param>
+    /// <param name="args">The arguments.</param>
+    /// <param name="options">The selection display options.</param>
+    /// <param name="label">The optional text above the selection.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
+    /// <returns>A task that represents the asynchronous processing operation.</returns>
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, ConsoleText label, CancellationToken cancellationToken = default)
     {
-        var maxWidth = GetBufferSafeWidth(cli);
-        var itemLen = options.Column.HasValue ? (int)Math.Floor(maxWidth * 1.0 / options.Column.Value) : maxWidth;
-        if (options.MaxLength.HasValue) itemLen = Math.Min(options.MaxLength.Value, itemLen);
-        if (options.MinLength.HasValue) itemLen = Math.Max(options.MinLength.Value, itemLen);
-        if (itemLen > maxWidth) itemLen = maxWidth;
-        var columns = (int)Math.Floor(maxWidth * 1.0 / itemLen);
-        if (options.Column.HasValue && columns > options.Column.Value) columns = options.Column.Value;
-        var maxRows = 50;
-        try
+        if (dispatcher is null) return;
+        var console = dispatcher.Console ?? StyleConsole.Default;
+        if (args is not null && args.HasVerb)
         {
-            maxRows = Console.BufferHeight - 5;
-            if (maxRows < 1) maxRows = 50;
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (IOException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (NotSupportedException)
-        {
+            await dispatcher.ProcessAsync(args, cancellationToken);
+            return;
         }
 
-        if (options.MaxRow.HasValue && options.MaxRow.Value < maxRows)
-            maxRows = options.MaxRow.Value;
-        var pageSize = columns * maxRows;
-        var needPaging = collection.Count > pageSize;
-        if (select >= collection.Count) select = collection.Count - 1;
-        var list = collection;
-        var offset = 0;
-        if (select >= pageSize)
+        if (console.Mode != StyleConsole.Modes.Ansi && console.Mode != StyleConsole.Modes.Cmd && console.Handler == null)
         {
-            offset = (int)Math.Floor(select * 1.0 / pageSize) * pageSize;
-            list = list.Skip(offset).Take(pageSize).ToList();
-        }
-        else if (needPaging)
-        {
-            list = list.Take(pageSize).ToList();
+            await dispatcher.ProcessAsync(args, cancellationToken);
+            return;
         }
 
-        var i = offset;
-        var lastColIndex = columns - 1;
-        var rows = -1;
-        SelectionItem<T> selItem = null;
+        if (label is not null) console.WriteLine(label);
+        var result = Select(console, dispatcher);
+        var arg = result.Data ?? result.Value;
+        if (string.IsNullOrWhiteSpace(arg))
+        {
+            console.WriteLine();
+            await dispatcher.ProcessAsync(args, cancellationToken);
+            return;
+        }
+
+        await dispatcher.ProcessAsync(arg, cancellationToken);
+    }
+
+    /// <summary>
+    /// Processes.
+    /// </summary>
+    /// <param name="dispatcher">The command dispatcher.</param>
+    /// <param name="args">The arguments.</param>
+    /// <param name="options">The selection display options.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
+    /// <returns>A task that represents the asynchronous processing operation.</returns>
+    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, CancellationToken cancellationToken = default)
+        => ProcessOrSelectAsync(dispatcher, args, options, false, cancellationToken);
+
+    internal static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length)
+        => RenderSentence(console, style, value, start, length, false, GetBufferSafeWidth(console));
+
+    private static SelectionResult<T> SelectInternal<T>(StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options = null)
+    {
+        var list = data.ToList();
+        var style = options.FallbackStyle ? new ConsoleTextStyle
+        {
+            ForegroundConsoleColor = options.ItemForegroundConsoleColor ?? options.ForegroundColor,
+            ForegroundRgbColor = options.ItemForegroundRgbColor,
+            BackgroundConsoleColor = options.ItemBackgroundConsoleColor ?? options.BackgroundColor,
+            BackgroundRgbColor = options.ItemBackgroundRgbColor,
+        } : null;
+        var prefix = !options.FallbackStyle || string.IsNullOrEmpty(options.Prefix) ? null : new ConsoleText(options.Prefix, style);
+        var i = 1;
         foreach (var item in list)
         {
-            if (string.IsNullOrEmpty(item.Title)) continue;
-            var isSel = i == select;
-            if (isSel) selItem = item;
-            RenderData(cli, item, options, isSel, itemLen);
-            var indexInRow = i % columns;
-            if (indexInRow == lastColIndex)
-                cli.Append(Environment.NewLine);
-            else if (indexInRow == 0)
-                rows++;
+            var title = item?.Title?.Trim();
+            if (string.IsNullOrWhiteSpace(title)) continue;
+            if (prefix is null)
+            {
+                console.Append(ConsoleColor.Blue, i);
+                console.Append(ConsoleColor.Blue, i < 10 ? ".  " : ". ");
+                var pos2 = title.IndexOf('\t');
+                if (pos2 > 0)
+                {
+                    var s = title.Substring(0, pos2).TrimEnd();
+                    title = string.Concat(s, s.Length > 3 ? " \t" : "\t\t", title.Substring(pos2 + 1).TrimStart());
+                }
+            }
+            else
+            {
+                console.Append(prefix);
+            }
+
+            console.WriteLine(title, style);
             i++;
         }
 
-        if (list.Count % columns > 0) cli.Append(Environment.NewLine);
-        var hasPagingTips = false;
-        var tipsP = options.PagingTips;
-        if (needPaging && !string.IsNullOrEmpty(tipsP))
+        console.Write(new ConsoleTextStyle
         {
-            cli.Append(
-                new ConsoleTextStyle(
-                    options.PagingForegroundRgbColor,
-                    options.PagingForegroundConsoleColor ?? options.ForegroundColor,
-                    options.PagingBackgroundRgbColor,
-                    options.PagingBackgroundConsoleColor ?? options.BackgroundColor),
-                tipsP
-                    .Replace("{from}", (offset + 1).ToString())
-                    .Replace("{end}", (offset + list.Count).ToString())
-                    .Replace("{count}", list.Count.ToString("g"))
-                    .Replace("{size}", pageSize.ToString("g"))
-                    .Replace("{total}", collection.Count.ToString("g")));
-            cli.Append(Environment.NewLine);
-            hasPagingTips = true;
-        }
-
-        var hasTips = false;
-        if (!string.IsNullOrEmpty(options.Tips))
-        {
-            cli.Append(
-                new ConsoleTextStyle(
-                    options.TipsForegroundRgbColor,
-                    options.TipsForegroundConsoleColor ?? options.ForegroundColor,
-                    options.TipsBackgroundRgbColor,
-                    options.TipsBackgroundConsoleColor ?? options.BackgroundColor),
-                options.Tips.Length < maxWidth - 1
-                    ? options.Tips
-                    : (options.Tips.Substring(0, maxWidth - 5) + "..."));
-            cli.Append(Environment.NewLine);
-            hasTips = true;
-        }
-
-        RenderSelectResult(cli, selItem?.Title, options);
-        return (offset, list.Count, rows, columns, hasPagingTips, hasTips, pageSize, itemLen);
+            ForegroundConsoleColor = options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
+            ForegroundRgbColor = options.QuestionForegroundRgbColor,
+            BackgroundConsoleColor = options.QuestionBackgroundConsoleColor ?? options.BackgroundColor,
+            BackgroundRgbColor = options.QuestionBackgroundRgbColor,
+        }, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
+        return SelectInternal(console, console.ReadLine(), data, true);
     }
 
-    private static void RenderSelectResult(StyleConsole cli, string value, SelectionConsoleOptions options)
+    private static SelectionResult<T> SelectInternal<T>(StyleConsole console, string s, SelectionData<T> data, bool enableIndex = false)
     {
-        cli.Append(
-            new ConsoleTextStyle(
-                options.QuestionForegroundRgbColor,
-                options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
-                options.QuestionBackgroundRgbColor,
-                options.QuestionBackgroundConsoleColor ?? options.BackgroundColor),
-            options.Question);
-        if (!string.IsNullOrWhiteSpace(value))
-            cli.Write(options.ForegroundColor, options.BackgroundColor, value);
-        else
-            cli.Flush();
-    }
-
-    private static void RenderData<T>(StyleConsole cli, SelectionItem<T> item, SelectionConsoleOptions options, bool isSelect, int len)
-    {
-        var style = isSelect ? new ConsoleTextStyle(
-            options.SelectedForegroundRgbColor,
-            options.SelectedForegroundConsoleColor ?? options.ForegroundColor,
-            options.SelectedBackgroundRgbColor,
-            options.SelectedBackgroundConsoleColor ?? options.BackgroundColor) : new ConsoleTextStyle(
-            options.ItemForegroundRgbColor,
-            options.ItemForegroundConsoleColor ?? options.ForegroundColor,
-            options.ItemBackgroundRgbColor,
-            options.ItemBackgroundConsoleColor ?? options.BackgroundColor);
-        var sb = new StringBuilder();
-        var j = 0;
-        var maxLen = len - 1;
-        var curLeft = TryGetCursorLeft(cli) ?? -1;
-        foreach (var c in (isSelect ? options.SelectedPrefix : options.Prefix) ?? string.Empty)
-        {
-            var c2 = c;
-            switch (c)
-            {
-                case '\t':
-                case '\r':
-                case '\n':
-                    j++;
-                    c2 = ' ';
-                    break;
-                case '\0':
-                case '\b':
-                    continue;
-                default:
-                    j += GetLetterWidth(c);
-                    break;
-            }
-
-            if (j >= maxLen) break;
-            sb.Append(c2);
-        }
-
-        foreach (var c in item.Title)
-        {
-            var c2 = c;
-            switch (c)
-            {
-                case '\t':
-                case '\r':
-                case '\n':
-                    j++;
-                    c2 = ' ';
-                    break;
-                case '\0':
-                case '\b':
-                    continue;
-                default:
-                    j += GetLetterWidth(c);
-                    break;
-            }
-
-            if (j >= maxLen) break;
-            sb.Append(c2);
-        }
-
-        if (curLeft >= 0)
-        {
-            cli.Write(style, sb);
-            var rest = curLeft + len - cli.CursorLeft;
-            if (rest > 0)
-                cli.Write(style, ' ', rest);
-            else if (rest < 0)
-                cli.Write(
-                    new ConsoleTextStyle(
-                        options.ItemForegroundRgbColor,
-                        options.ItemForegroundConsoleColor ?? options.ForegroundColor,
-                        options.ItemBackgroundRgbColor,
-                        options.ItemBackgroundConsoleColor ?? options.BackgroundColor),
-                    " \b");
-        }
-        else
-        {
-            sb.Append(' ', len - j);
-            cli.Write(style, sb);
-        }
-
-        try
-        {
-            if (curLeft >= 0)
-            {
-                curLeft += len;
-                var rest = curLeft - cli.CursorLeft;
-                if (rest < 0)
-                {
-                    cli.MoveCursorBy(rest, 0);
-                    cli.Write(
-                        new ConsoleTextStyle(
-                        options.ItemForegroundRgbColor,
-                        options.ItemForegroundConsoleColor ?? options.ForegroundColor,
-                        options.ItemBackgroundRgbColor,
-                        options.ItemBackgroundConsoleColor ?? options.BackgroundColor),
-                        " \b");
-                }
-                else if (rest > 0)
-                {
-                    cli.MoveCursorBy(rest, 0);
-                }
-            }
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (IOException)
-        {
-        }
-        catch (SecurityException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-    }
-
-    private static int GetLetterWidth(char c)
-    {
-        if (c < 0x2E80) return 1;
-        return c < 0xA500 || (c >= 0xF900 && c < 0xFB00) || (c >= 0xFE30 && c < 0xFE70)
-            ? 2
-            : 1;
-    }
-
-    /// <summary>
-    /// Asks to type the item keyword.
-    /// </summary>
-    /// <typeparam name="T">The type of data.</typeparam>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <param name="listAllData">true if list all data before typing; otherwise, false.</param>
-    /// <returns>The result of selection.</returns>
-    private static SelectionResult<T> SelectByManualTyping<T>(StyleConsole cli, SelectionData<T> collection, SelectionConsoleOptions options, bool listAllData = false)
-    {
-        cli.BackspaceToBeginning();
-        int i;
-        if (listAllData)
-        {
-            var maxWidth = GetBufferSafeWidth(cli);
-            var itemLen = options.Column.HasValue ? (int)Math.Floor(maxWidth * 1.0 / options.Column.Value) : maxWidth;
-            if (options.MaxLength.HasValue) itemLen = Math.Min(options.MaxLength.Value, itemLen);
-            if (options.MinLength.HasValue) itemLen = Math.Max(options.MinLength.Value, itemLen);
-            if (itemLen > maxWidth) itemLen = maxWidth;
-            var columns = (int)Math.Floor(maxWidth * 1.0 / itemLen);
-            if (options.Column.HasValue && columns > options.Column.Value) columns = options.Column.Value;
-            var list = collection.ToList();
-            i = 0;
-            var lastColIndex = columns - 1;
-            var rows = -1;
-            foreach (var ele in list)
-            {
-                if (string.IsNullOrEmpty(ele.Title)) continue;
-                RenderData(cli, ele, options, false, itemLen);
-                var indexInRow = i % columns;
-                if (indexInRow == lastColIndex)
-                    cli.Append(Environment.NewLine);
-                else if (indexInRow == 0)
-                    rows++;
-                i++;
-            }
-
-            if (list.Count % columns > 0) cli.Append(Environment.NewLine);
-            return SelectByManualTyping(cli, collection, options);
-        }
-
-        cli.Write(
-            new ConsoleTextStyle(
-                options.QuestionForegroundRgbColor,
-                options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
-                options.QuestionBackgroundRgbColor,
-                options.QuestionBackgroundConsoleColor ?? options.BackgroundColor),
-            options.ManualQuestion ?? options.Question);
-        string s;
-        try
-        {
-            s = cli.ReadLine();
-        }
-        catch (IOException)
-        {
-            return new SelectionResult<T>(string.Empty, SelectionResultTypes.NotSupported);
-        }
-        catch (InvalidOperationException)
-        {
-            return new SelectionResult<T>(string.Empty, SelectionResultTypes.NotSupported);
-        }
-        catch (ArgumentException)
-        {
-            return new SelectionResult<T>(string.Empty, SelectionResultTypes.NotSupported);
-        }
-        catch (NotSupportedException)
-        {
-            return new SelectionResult<T>(string.Empty, SelectionResultTypes.NotSupported);
-        }
-
         if (string.IsNullOrEmpty(s))
             return new SelectionResult<T>(s, SelectionResultTypes.Canceled);
         SelectionItem<T> item = null;
+        int i;
         if (s.Trim().Length == 1)
         {
-            item = collection.Get(s[0], out i);
+            item = data.Get(s[0], out i);
             if (item != null)
+            {
                 return new SelectionResult<T>(s, i, item.Data, item.Title);
+            }
         }
 
         i = -1;
-        foreach (var ele in collection.ToList())
-        {
-            i++;
-            if (ele.Title != s)
-                continue;
-            item = ele;
-            break;
-        }
-
-        return item == null
-            ? new SelectionResult<T>(s, SelectionResultTypes.Typed)
-            : new SelectionResult<T>(s, i, item.Data, item.Title, SelectionResultTypes.Typed);
-    }
-
-    /// <summary>
-    /// Writes a collection of item for selecting.
-    /// </summary>
-    /// <typeparam name="T">The type of data.</typeparam>
-    /// <param name="cli">The command line interface proxy.</param>
-    /// <param name="collection">The collection data.</param>
-    /// <param name="options">The selection display options.</param>
-    /// <returns>The result of selection.</returns>
-    private static SelectionResult<T> SelectForText<T>(StyleConsole cli, SelectionData<T> collection, SelectionConsoleOptions options)
-    {
-        var list = collection.ToList();
-        cli.WriteLines(list.Select((ele, i) => $"#{i + 1}\t{ele.Title}"));
-        var style = new ConsoleTextStyle(
-            options.QuestionForegroundRgbColor,
-            options.QuestionForegroundConsoleColor ?? options.ForegroundColor,
-            options.QuestionBackgroundRgbColor,
-            options.QuestionBackgroundConsoleColor ?? options.BackgroundColor);
-        cli.Append(style, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
-        string text;
-        try
-        {
-            text = cli.ReadLine();
-        }
-        catch (NotSupportedException)
-        {
-            return new SelectionResult<T>(null, SelectionResultTypes.NotSupported);
-        }
-        catch (InvalidOperationException)
-        {
-            return new SelectionResult<T>(null, SelectionResultTypes.NotSupported);
-        }
-        catch (IOException)
-        {
-            return new SelectionResult<T>(null, SelectionResultTypes.NotSupported);
-        }
-        catch (ArgumentException)
-        {
-            return new SelectionResult<T>(null, SelectionResultTypes.NotSupported);
-        }
-
-        if (string.IsNullOrEmpty(text))
-        {
-            cli.Append(style, options.QuestionWhenNotSupported ?? options.ManualQuestion ?? options.Question);
-            text = cli.ReadLine();
-            if (string.IsNullOrEmpty(text))
-                return new SelectionResult<T>(text, SelectionResultTypes.Canceled);
-        }
-
-        SelectionItem<T> item = null;
-        int i;
-        if (text.Trim().Length == 1)
-        {
-            item = collection.Get(text[0], out i);
-            if (item != null)
-                return new SelectionResult<T>(text, i, item.Data, item.Title);
-        }
-
-#pragma warning disable IDE0057
-        if (text.StartsWith("#") && int.TryParse(text.Substring(1).Trim(), out i) && i > 0 && i <= list.Count)
-        {
-            item = list[i];
-            return new SelectionResult<T>(text, i, item.Data, item.Title);
-        }
-#pragma warning restore IDE0057
-
-        i = -1;
+        var list = data.ToList();
         foreach (var ele in list)
         {
             i++;
-            if (ele.Title != text)
-                continue;
+            if (ele is null || !ele.Equals(s)) continue;
             item = ele;
             break;
         }
 
-        if (item != null)
-            return new SelectionResult<T>(text, i, item.Data, item.Title, SelectionResultTypes.Typed);
-
-        if (int.TryParse(text.Trim(), out i) && i > 0 && i <= list.Count)
+        if (item is null && enableIndex && int.TryParse(s, out i) && i > 0 && i <= list.Count)
         {
-            item = list[i];
-            return new SelectionResult<T>(text, i, item.Data, item.Title);
+            try
+            {
+                item = list[i - 1];
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
         }
 
-        return new SelectionResult<T>(text, SelectionResultTypes.Typed);
+        return item is null
+            ? new SelectionResult<T>(s, SelectionResultTypes.Typed)
+            : new SelectionResult<T>(s, i, item.Data, item.Title, SelectionResultTypes.Typed);
+
+    }
+
+    private static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length, bool keepTab, int maxWidth)
+    {
+        if (start + length > maxWidth) length = maxWidth - start;
+        var left = TryGetCursorLeft(console);
+        var diff = (left ?? start) - start;
+        if (diff > 0)
+            console.Backspace(diff);
+        else if (diff < 0)
+            console.Write(' ', -diff);
+
+        value ??= string.Empty;
+        if (keepTab) value = value.Replace("\r\n", " \t").Replace("\r", " \t").Replace("\n", " \t").Replace("\v", " \t");
+        else value = value.Replace("\r\n", "  ").Replace("\t", "  ").Replace("\r", "  ").Replace("\n", "  ").Replace("\v", "  ");
+        var sb = new StringBuilder();
+        var i = 0;
+        foreach (var c in value)
+        {
+            i += GetLetterWidth(c);
+            if (i > length) break;
+            sb.Append(c);
+        }
+
+        console.Write(style, sb);
+        var left2 = TryGetCursorLeft(console);
+        if (!left2.HasValue)
+        {
+            return;
+        }
+
+        diff = left2.Value - start - length;
+        if (diff > 0)
+            console.Backspace(diff);
+        else if (diff < 0)
+            console.Write(' ', -diff);
+    }
+
+    private static ConsoleText CreateSelectText()
+    {
+        var toSelect = Resource.ToSelect?.Trim();
+        if (string.IsNullOrEmpty(toSelect)) return null;
+        if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
+        else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
+        if (string.IsNullOrEmpty(toSelect)) return null;
+        return new(toSelect, ConsoleColor.DarkGray);
     }
 }

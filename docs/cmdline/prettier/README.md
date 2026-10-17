@@ -4,7 +4,9 @@ The console text prettier.
 
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
-![./Screenshot](screenshot1.jpg)
+<!-- Start -->
+
+![Screenshot](./screenshot1.jpg)
 
 ## Linear Gradient
 

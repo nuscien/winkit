@@ -1,0 +1,145 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/hje@3.2.1/dist/mdblogs.schema.json",
+  "name": "Trivial WinKit libraries",
+  "description": "Trivial libraries contain a lot of utilities, models and components, which are trivial but useful, to help you to focus on the business logic of your projects.",
+  "description#zh": "Trivial 库包含许多实用的工具、模型和组件，这些都是琐碎但有用的，帮助您专注于项目的业务逻辑。",
+  "docs": [
+    {
+      "disable": "label",
+      "name": "WinKit"
+    },
+    {
+      "name": "Windows Kit",
+      "dir": "winkit",
+      "file": true,
+      "end": true
+    },
+    {
+      "disable": "label",
+      "name": "LWA"
+    },
+    {
+      "name": "Local Web App",
+      "dir": "localwebapp",
+      "file": true,
+      "file#zh": "Shuoming.md",
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "name": "Native API",
+      "name#zh": "原生扩展",
+      "dir": "localwebapp",
+      "file": "native-api.md",
+      "file#zh": "yuanshengkuozhan.md",
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "name": "Spec",
+      "name#zh": "规格",
+      "dir": "localwebapp",
+      "file": "spec.md",
+      "file#zh": "guige.md",
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "name": "Customized Native Extends",
+      "name#zh": "自定义扩展",
+      "dir": "localwebapp",
+      "file": "command-handler.md",
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "disable": "label",
+      "name": "Command Line",
+      "name#zh": "命令行"
+    },
+    {
+      "name": "Selection",
+      "name#zh": "选择器",
+      "dir": "cmdline/selection",
+      "file": true,
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "name": "Progress Bar",
+      "name#zh": "进度条",
+      "dir": "cmdline/progress",
+      "file": true,
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "name": "Prettier",
+      "name#zh": "美化输出",
+      "dir": "cmdline/prettier",
+      "file": true,
+      "end": true
+    },
+    {
+      "name": "Data Format",
+      "name#zh": "格式化输出",
+      "dir": "cmdline/data",
+      "file": true,
+      "end": {
+        "start": true,
+        "end": true
+      }
+    },
+    {
+      "disable": "label",
+      "name": "ASP.NET"
+    },
+    {
+      "name": "Web API Controller",
+      "name#zh": "网络控制器",
+      "dir": "web/controller",
+      "file": true,
+      "end": {
+        "start": true,
+        "end": true
+      }
+    }
+  ],
+  "options": {
+    "disableName": true
+  },
+  "redir": {
+  },
+  "$defs": {
+    "contributors": [
+      {
+        "name": "Kingcean Tuan",
+        "url": "https://kingcean.net"
+      }
+    ],
+    "keywords": [
+      {
+        "name": "Installation",
+        "name#zh": "安装",
+        "value": "install"
+      },
+      {
+        "name": "Prepare",
+        "name#zh": "准备",
+        "value": "prepare"
+      }
+    ]
+  }
+}

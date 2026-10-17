@@ -1,7 +1,33 @@
-body {
-    background-image: none;
-}
 body > main.main-content {
-    min-height: 420px;
+    min-height: 480px;
 }
-
+body > main.main-content > p > img {
+    max-width: 100%;
+}
+body > section > article > div.x-zone-banner > p > img,
+body > section > article > div.x-zone-banner > p > a > img {
+    margin-right: 4px;
+}
+body > header:first-child > section:first-child > h1 > img {
+    width: 48px;
+    height: 48px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+body > header:first-child > section:first-child > h1 > img:hover {
+    width: 50px; height: 50px; vertical-align: middle; margin-right: 6px;
+}
+body > section#blog_content {
+    min-height: 640px; margin-bottom: 60px;
+}
+body > footer > section:first-child > div.x-copyright > img:first-child {
+    width: 250px; height: 50px; background-color: transparent; padding: 0; border-radius: 0;
+}
+body > footer > section:first-child > div.x-copyright > img:first-child + span {
+    margin-bottom: 10px; text-align: left;
+}
+body > footer > section:first-child > div.x-copyright > span,
+body > footer > section:first-child > div.x-copyright > strong,
+body > footer > section:first-child > div.x-copyright > a{
+    display: block;
+}

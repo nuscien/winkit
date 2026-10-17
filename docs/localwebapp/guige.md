@@ -4,6 +4,8 @@
 
 # Local Web App
 
+<!-- Start -->
+
 宿主应用通常都会从其 AppData 中加载 LWA 资源包。
 
 ## 文件结构

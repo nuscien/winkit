@@ -5,6 +5,8 @@ so that user just need press the arrow buttons and `ENTER` in keyboard to select
 
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
+<!-- Start -->
+
 ![Screenshot](./init.jpg)
 
 ## Control

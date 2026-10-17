@@ -4,6 +4,8 @@ It can present the latest state during the specific task running.
 
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
+<!-- Start -->
+
 ![Screenshot](./loading.jpg)
 
 ## Control

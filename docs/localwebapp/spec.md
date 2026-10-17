@@ -4,6 +4,8 @@ This spec is about the workflow the framework works. See [documentation](../loca
 
 # Local Web App
 
+<!-- Start -->
+
 Host app should load the resource package from appdata to show the local web app to end-users.
 
 ## File architecture

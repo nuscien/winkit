@@ -2,6 +2,8 @@
 
 # Native extended capabilities
 
+<!-- Start -->
+
 Host app provide JS bridge to extend native APIs to webpage. All components are on `window.localWebApp` object. Most of the method/function are invoked asynchronously so their return results are encapsulated by Promise/A.
 
 See [Type Script definition file](https://raw.githubusercontent.com/nuscien/winkit/main/FileBrowser/src/localWebApp.d.ts) for API details. Following are the summary.

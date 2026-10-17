@@ -2,6 +2,8 @@
 
 # Local Web App
 
+<!-- Start -->
+
 Local web app is a new way to run your web app locally.
 
 You can develop an web SPA as the same way you always do. Then package it and publish online. The host app will check update for your package automatically.

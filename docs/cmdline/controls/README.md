@@ -1,5 +1,7 @@
 # Console Controls
 
+<!-- Start -->
+
 A lot of useful rich command line controls.
 
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).

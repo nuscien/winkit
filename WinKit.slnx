@@ -9,6 +9,8 @@
   <Folder Name="/Solution Items/">
     <File Path="CONTRIBUTING.md" />
     <File Path="Directory.Packages.props" />
+    <File Path="docs/docs.json" />
+    <File Path="index.html" />
     <File Path="LICENSE" />
     <File Path="Materials/logo.png" />
     <File Path="README.md" />

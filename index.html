@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:image" content="./Materials/poster.png">
+    <title>WinKit &amp; LWA - Trivial</title>
+    <link href="https://cdn.jsdelivr.net/npm/hje@3.2.1/css/site.net.css" rel="stylesheet" />
+    <link href="./docs/css/current.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/vs2015.min.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="./docs/assets/logo.png" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/marked@16.2.1/lib/marked.umd.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/hje@3.2.1/dist/mdblogs.bundle.js"></script>
+</head>
+<body>
+    <header>
+        <section>
+            <h1><img alt="Trivial" src="./docs/assets/logo.png" /><a href="https://trivial.nuscien.com/"><span>Trivial</span></a></h1>
+            <ul>
+                <li>
+                    <a href="https://trivial.nuscien.com/">Core libraries</a>
+                </li>
+                <li class="state-sel">
+                    <a href="https://winkit.nuscien.com/">WinKit &amp; LWA</a>
+                </li>
+                <li>
+                    <a href="https://nuscien.github.io/science/">Maths &amp; Messages</a>
+                </li>
+            </ul>
+        </section>
+    </header>
+    <section id="blog_content" ></section>
+    <script type="text/javascript">
+    DeepX.MdBlogs.render("blog_content", "./docs/docs.json", {
+        title: true,
+        banner: {
+            tagName: "div",
+            className: "x-zone-banner",
+            children: [
+                {
+                    tagName: "p",
+                    children: [
+                        { tagName: "span", children: "Trivial libraries contain a lot of utilities, models and components, which are trivial but useful, to help you to focus on the business logic of your projects." }
+                    ]
+                },
+                {
+                    tagName: "p",
+                    children: [
+                        {
+                            tagName: "a",
+                            props: { href: "https://www.nuget.org/packages/Trivial.WindowsKit" },
+                            children: [{ tagName: "img", props: { alt: "NuGet package", src: "https://img.shields.io/nuget/dt/Trivial.WindowsKit?label=nuget+downloads" } }]
+                        },
+                        {
+                            tagName: "a",
+                            props: { href: "https://github.com/nuscien/winkit" },
+                            children: [{ tagName: "img", props: { alt: "GitHub Repo", src: "./docs/assets/badge_GitHub-Repo.svg" } }]
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    </script>
+    <footer>
+        <section>
+            <div class="x-copyright">
+                <img alt="Trivial" src="./docs/assets/wordmark.png" />
+                <span>&copy; Kingcean Tuan 2021. All rights reserved.</span>
+                <span>Other links</span>
+                <a href="https://kingcean.net">Kingcean.net</a>
+                <a href="https://nuscien.github.io">NuScien</a>
+                <a href="https://dot.net">Microsoft .NET</a>
+                <a href="https://docs.microsoft.com/zh-cn/windows/apps/windows-app-sdk/">Windows App SDK</a>
+                <a href="https://docs.microsoft.com/zh-cn/microsoft-edge/webview2/">Microsoft Edge WebView2</a>
+            </div>
+        </section>
+    </footer>
+</body>
+</html>

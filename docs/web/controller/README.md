@@ -4,6 +4,8 @@ Commonly used MIME content types and file extension mapping.
 
 In `Trivial.Web` [namespace](../) of `Trivial.Web.dll` library.
 
+<!-- Start -->
+
 ### Request
 
 You can get the field from HTTP request by the extension methods.

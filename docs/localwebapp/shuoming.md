@@ -2,6 +2,8 @@
 
 # Local Web App
 
+<!-- Start -->
+
 Local web app (LWA) 是一种全新的应用开发框架和模式，可以完全用 Web 开发（即 HTML + CSS + JS/TS）的方式进行开发，其运行于微软 Edge WebView2 之中，其 URL 被指定映射为基于 HTTPS 的 localhost 或其它指定域名，以确保运行环境与普通网页类似，但所有前端资源均直接从本地加载，即无相关网络传输耗时，并包含静默自动升级机制，以及原生支持。
 
 ## 应用模型

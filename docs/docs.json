@@ -1,5 +1,5 @@
 {
-  "$schema": "https://cdn.jsdelivr.net/npm/hje@3.2.1/dist/mdblogs.schema.json",
+  "$schema": "https://cdn.jsdelivr.net/npm/hje@3.3.0/dist/mdblogs.schema.json",
   "name": "Trivial WinKit libraries",
   "description": "Trivial libraries contain a lot of utilities, models and components, which are trivial but useful, to help you to focus on the business logic of your projects.",
   "description#zh": "Trivial 库包含许多实用的工具、模型和组件，这些都是琐碎但有用的，帮助您专注于项目的业务逻辑。",
@@ -25,6 +25,31 @@
       "file#zh": "Shuoming.md",
       "end": {
         "start": true,
+        "end": true,
+        "urls": [
+          {
+            "old": "./yuanshengkuozhan",
+            "by": "?localwebapp/yuanshengkuozhan"
+          },
+          {
+            "old": "./native-api",
+            "by": "?localwebapp/native-api"
+          },
+          {
+            "old": "./command-handler",
+            "by": "?localwebapp/command-handler"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Spec",
+      "name#zh": "规格",
+      "dir": "localwebapp",
+      "file": "spec.md",
+      "file#zh": "guige.md",
+      "end": {
+        "start": true,
         "end": true
       }
     },
@@ -34,17 +59,6 @@
       "dir": "localwebapp",
       "file": "native-api.md",
       "file#zh": "yuanshengkuozhan.md",
-      "end": {
-        "start": true,
-        "end": true
-      }
-    },
-    {
-      "name": "Spec",
-      "name#zh": "规格",
-      "dir": "localwebapp",
-      "file": "spec.md",
-      "file#zh": "guige.md",
       "end": {
         "start": true,
         "end": true
@@ -90,7 +104,10 @@
       "name#zh": "美化输出",
       "dir": "cmdline/prettier",
       "file": true,
-      "end": true
+      "end": {
+        "start": true,
+        "end": true
+      }
     },
     {
       "name": "Data Format",

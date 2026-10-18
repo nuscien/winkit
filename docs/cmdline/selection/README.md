@@ -1,11 +1,11 @@
 # Selection
 
-A beautiful list or table with customized style to the standard output stream 
-so that user just need press the arrow buttons and `ENTER` in keyboard to select.
-
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
 <!-- Start -->
+
+A beautiful list or table with customized style to the standard output stream 
+so that user just need press the arrow buttons and `ENTER` in keyboard to select.
 
 ![Screenshot](./init.jpg)
 

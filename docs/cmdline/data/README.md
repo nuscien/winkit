@@ -1,10 +1,10 @@
 # Data Formatter
 
-Format and output the struct to terminal.
-
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
 <!-- Start -->
+
+Format and output the struct to terminal.
 
 ## JSON
 

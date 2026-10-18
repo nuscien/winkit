@@ -1,10 +1,10 @@
 # Prettier
 
-The console text prettier.
-
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
 <!-- Start -->
+
+The console text prettier.
 
 ![Screenshot](./screenshot1.jpg)
 

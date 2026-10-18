@@ -1,10 +1,10 @@
 # Progress bar
 
-It can present the latest state during the specific task running.
-
 In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
 <!-- Start -->
+
+It can present the latest state during the specific task running.
 
 ![Screenshot](./loading.jpg)
 

@@ -1,10 +1,10 @@
 # Console Controls
 
+In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
+
 <!-- Start -->
 
 A lot of useful rich command line controls.
-
-In `Trivial.CommandLine` [namespace](../) of `Trivial.Console.dll` [library](../../).
 
 ![Sample screenshot](./sample.jpg)
 

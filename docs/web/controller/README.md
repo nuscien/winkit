@@ -1,10 +1,10 @@
 # Controller extensions of ASP.NET Core
 
-Commonly used MIME content types and file extension mapping.
-
 In `Trivial.Web` [namespace](../) of `Trivial.Web.dll` library.
 
 <!-- Start -->
+
+Commonly used MIME content types and file extension mapping.
 
 ### Request
 

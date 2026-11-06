@@ -369,29 +369,48 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="request">The HTTP request.</param>
     /// <param name="encoding">The optional encoding.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, Encoding encoding = null)
+    public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, Encoding? encoding, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
-        encoding ??= Encoding.UTF8;
-        using var reader = new StreamReader(request.Body, encoding);
-        return await reader.ReadToEndAsync();
+        using var reader = new StreamReader(request.Body, encoding ?? Encoding.UTF8);
+        return await reader.ReadToEndAsync(cancellationToken);
     }
 
     /// <summary>
     /// Gets the query data.
     /// </summary>
     /// <param name="request">The HTTP request.</param>
-    /// <param name="encoding">The optional encoding.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding encoding = null)
+    public static Task<string> ReadBodyAsStringAsync(this HttpRequest request, CancellationToken cancellationToken = default)
+        => ReadBodyAsStringAsync(request, null, cancellationToken);
+
+    /// <summary>
+    /// Gets the query data.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="encoding">The optional encoding.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>The string value; or null, if non-exist.</returns>
+    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding? encoding, CancellationToken cancellationToken = default)
     {
-        var query = await ReadBodyAsStringAsync(request, encoding);
+        var query = await ReadBodyAsStringAsync(request, encoding, cancellationToken);
         if (query == null) return null;
         var q = new QueryData();
         q.ParseSet(query, false, encoding);
         return q;
     }
+
+    /// <summary>
+    /// Gets the query data.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>The string value; or null, if non-exist.</returns>
+    public static Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, CancellationToken cancellationToken = default)
+        => ReadBodyAsQueryDataAsync(request, null, cancellationToken);
 
     /// <summary>
     /// Gets the JSON object from body.

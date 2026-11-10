@@ -31,6 +31,25 @@ internal class SelectionCli : BaseCommandVerb
             SelectedPrefix = "→ ",
         };
         var sel = ConsoleRenderExtensions.Select(console, selection, options);
-        console.WriteLine(sel.ToString());
+        console.WriteLine(sel.Data ?? sel.Value);
+        if (sel.Data is null) return;
+        selection = new SelectionData<string>();
+        selection.Add(new($"# 1 \t\t{sel.Data} 1"));
+        selection.Add(new($"two\t{sel.Data} 2"));
+        selection.Add(new($"3\t{sel.Data} 3"));
+        selection.Add(new($"4 abcdefg hijklmn\t{sel.Data} 4"));
+        selection.Add(new($"5 opq rst uvw xyz\t{sel.Data} 5"));
+        selection.Add(new($"6\t{sel.Data} 6"));
+        selection.Add(new($"7\tseven\t{sel.Data} 7"));
+        selection.Add(new($"8 八\t{sel.Data} 8"));
+        selection.Add(new($"999999999\t{sel.Data} 9"));
+        options = new SelectionConsoleOptions
+        {
+            MaxRow = 5,
+            Prefix = "· ",
+            SelectedPrefix = "→ ",
+        };
+        sel = ConsoleRenderExtensions.Select(console, selection, options);
+        console.WriteLine(sel.Data ?? sel.Value);
     }
 }

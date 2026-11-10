@@ -128,6 +128,8 @@ public static partial class ConsoleRenderExtensions
             var len = absolutePageSize + start;
             var selectText = string.Empty;
             var singleColumn = columns == 1 && !options.Column.HasValue;
+            console.Clear(StyleConsole.RelativeAreas.Line);
+            console.BackspaceToBeginning();
             for (var i = start; i < len; i++)
             {
                 var outOfRange = i >= list.Count;
@@ -138,6 +140,8 @@ public static partial class ConsoleRenderExtensions
                     pos = 0;
                     nextPos = itemWidth;
                     console.WriteLine();
+                    console.Clear(StyleConsole.RelativeAreas.Line);
+                    console.BackspaceToBeginning();
                 }
 
                 var isSelect = i == selected;
@@ -448,21 +452,22 @@ public static partial class ConsoleRenderExtensions
             if (string.IsNullOrWhiteSpace(title)) continue;
             if (prefix is null)
             {
-                console.Append(ConsoleColor.Blue, i);
-                console.Append(ConsoleColor.Blue, i < 10 ? ".  " : ". ");
                 var pos2 = title.IndexOf('\t');
                 if (pos2 > 0)
                 {
                     var s = title.Substring(0, pos2).TrimEnd();
-                    title = string.Concat(s, s.Length > 3 ? " \t" : "\t\t", title.Substring(pos2 + 1).TrimStart());
+                    console.WriteOrderedLine(i, style, s, style, title.Substring(pos2 + 1).TrimStart());
+                }
+                else
+                {
+                    console.WriteOrderedLine(i, style, title);
                 }
             }
             else
             {
                 console.Append(prefix);
+                console.WriteLine(title, style);
             }
-
-            console.WriteLine(title, style);
             i++;
         }
 

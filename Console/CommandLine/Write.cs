@@ -133,7 +133,6 @@ public static partial class DefaultConsole
         => StyleConsole.Default.Write(style, s, args);
 
 #if NET9_0_OR_GREATER
-
     /// <summary>
     /// Writes the specified string value to the standard output stream.
     /// Note it may not flush immediately.

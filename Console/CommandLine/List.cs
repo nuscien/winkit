@@ -21,10 +21,12 @@ public static partial class DefaultConsole
     public static void WriteOrdered(this StyleConsole console, int index, string text = null, string text2 = null)
     {
         console ??= StyleConsole.Default;
-        console.Write(ConsoleColor.Blue, index);
-        console.Write(ConsoleColor.Blue, index < 10 ? ".  " : ". ");
-        if (!string.IsNullOrEmpty(text)) console.Write(text);
-        if (!string.IsNullOrEmpty(text2)) console.Write($" \t{text2}");
+        var indexLen = WriteIndex(console, index).Length;
+        var hasText = !string.IsNullOrEmpty(text);
+        if (hasText) console.Write(text);
+        if (string.IsNullOrEmpty(text2)) return;
+        if (hasText) PaddingTwoSpace(console, text.Length + indexLen);
+        console.Write(text2);
     }
 
     /// <summary>
@@ -39,15 +41,13 @@ public static partial class DefaultConsole
     public static void WriteOrdered(this StyleConsole console, int index, ConsoleColor color, string text, ConsoleColor? color2 = null, string text2 = null)
     {
         console ??= StyleConsole.Default;
-        console.Write(ConsoleColor.Blue, index);
-        console.Write(ConsoleColor.Blue, index < 10 ? ".  " : ". ");
-        if (!string.IsNullOrEmpty(text)) console.Write(color, text);
-        if (!string.IsNullOrEmpty(text2))
-        {
-            console.Write(" \t");
-            if (color2.HasValue) console.Write(color2.Value, text2);
-            else console.Write(text2);
-        }
+        var indexLen = WriteIndex(console, index).Length;
+        var hasText = !string.IsNullOrEmpty(text);
+        if (hasText) console.Write(color, text);
+        if (string.IsNullOrEmpty(text2)) return;
+        if (hasText) PaddingTwoSpace(console, text.Length + indexLen);
+        if (color2.HasValue) console.Write(color2.Value, text2);
+        else console.Write(text2);
     }
 
     /// <summary>
@@ -62,15 +62,13 @@ public static partial class DefaultConsole
     public static void WriteOrdered(this StyleConsole console, int index, ConsoleTextStyle style, string text, ConsoleTextStyle style2 = null, string text2 = null)
     {
         console ??= StyleConsole.Default;
-        console.Write(ConsoleColor.Blue, index);
-        console.Write(ConsoleColor.Blue, index < 10 ? ".  " : ". ");
-        if (!string.IsNullOrEmpty(text)) console.Write(style, text);
-        if (!string.IsNullOrEmpty(text2))
-        {
-            console.Write(" \t");
-            if (style2 is not null) console.Write(style2, text2);
-            else console.Write(text2);
-        }
+        var indexLen = WriteIndex(console, index).Length;
+        var hasText = !string.IsNullOrEmpty(text);
+        if (hasText) console.Write(style, text);
+        if (string.IsNullOrEmpty(text2)) return;
+        if (hasText) PaddingTwoSpace(console, text.Length + indexLen);
+        if (style2 is not null) console.Write(style2, text2);
+        else console.Write(text2);
     }
 
     /// <summary>
@@ -196,9 +194,7 @@ public static partial class DefaultConsole
         foreach (var line in col)
         {
             if (string.IsNullOrEmpty(line) && skipEmpty) continue;
-            console.Append(ConsoleColor.Blue, i);
-            console.Append(ConsoleColor.Blue, i >= 10 ? ". " : ".  ");
-            console.WriteLine(style, line.Trim());
+            WriteOrderedLine(console, i, style, line);
             i++;
         }
     }
@@ -211,4 +207,40 @@ public static partial class DefaultConsole
     /// <param name="skipEmpty">true if skip empty line; otherwise, false.</param>
     public static void WriteOrderedLine(this StyleConsole console, IEnumerable<string> col, bool skipEmpty = false)
         => WriteOrderedLine(console, col, null, skipEmpty);
+
+    /// <summary>
+    /// Writes lines in order.
+    /// </summary>
+    /// <param name="console">The console instance.</param>
+    /// <param name="col">The lines.</param>
+    /// <param name="style1">The style of the first text.</param>
+    /// <param name="style2">The style of the second text.</param>
+    /// <param name="skipEmpty">true if skip empty line; otherwise, false.</param>
+    public static void WriteOrderedLine(this StyleConsole console, IEnumerable<(string, string)> col, ConsoleTextStyle style1, ConsoleTextStyle style2, bool skipEmpty = false)
+    {
+        if (col is null) return;
+        console ??= StyleConsole.Default;
+        var i = 1;
+        foreach (var line in col)
+        {
+            if (string.IsNullOrEmpty(line.Item1) && skipEmpty) continue;
+            WriteOrderedLine(console, i, style1, line.Item1, style2, line.Item2);
+            i++;
+        }
+    }
+
+    private static string WriteIndex(StyleConsole console, int index)
+    {
+        var s = index < 10 ? $"{index}.  " : $"{index}. ";
+        console.Append(ConsoleColor.Blue, s);
+        return s;
+    }
+
+    private static void PaddingTwoSpace(StyleConsole console, int textLength)
+    {
+        var left = console.TryGetCursorLeft();
+        if (!left.HasValue) left = textLength;
+        if (left.Value < 8) console.Append("\t\t");
+        else console.Append(" \t");
+    }
 }

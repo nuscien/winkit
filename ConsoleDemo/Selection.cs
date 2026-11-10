@@ -53,5 +53,26 @@ internal class SelectionCli : BaseCommandVerb
         };
         var sel = ConsoleRenderExtensions.Select(console, selection, options);
         console.WriteLine(sel.ToString());
+        if (sel.Data is null) return;
+        selection = new SelectionData<string>
+        {
+            { $"# 1 \t\t{sel.Data} 1" },
+            { $"two\t{sel.Data} 2" },
+            { $"3\t{sel.Data} 3" },
+            { $"4 abcdefg hijklmn\t{sel.Data} 4" },
+            { $"5 opq rst uvw xyz\t{sel.Data} 5" },
+            { $"6\t{sel.Data} 6" },
+            { $"7\tseven\t{sel.Data} 7" },
+            { $"8 八\t{sel.Data} 8" },
+            { $"999999999\t{sel.Data} 9" },
+        };
+        options = new SelectionConsoleOptions
+        {
+            MaxRow = 5,
+            Prefix = "· ",
+            SelectedPrefix = "→ ",
+        };
+        sel = ConsoleRenderExtensions.Select(console, selection, options);
+        console.WriteLine(sel.ToString());
     }
 }

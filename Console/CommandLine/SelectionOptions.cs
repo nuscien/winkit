@@ -51,7 +51,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("tip")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Tips { get; set; } = Resource.SelectionTips;
+    public string Tips { get; set; }
 
     /// <summary>
     /// Gets or sets the paging tips.

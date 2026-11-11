@@ -394,7 +394,7 @@ public static class ControllerExtensions
     /// <param name="encoding">The optional encoding.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding? encoding, CancellationToken cancellationToken = default)
+    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding encoding, CancellationToken cancellationToken = default)
     {
         var query = await ReadBodyAsStringAsync(request, encoding, cancellationToken);
         if (query == null) return null;
@@ -485,7 +485,61 @@ public static class ControllerExtensions
         if (string.IsNullOrWhiteSpace(auth)) return null;
         try
         {
-            return JsonWebToken<T>.Parse(auth, algorithmFactory, true);
+            return JsonWebToken<T>.Parse(auth, algorithmFactory, verify);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Parses a JWT string encoded.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="algorithmFactory">The signature algorithm factory.</param>
+    /// <param name="verify">true if verify the signature; otherwise, false.</param>
+    /// <returns>A JSON web token object.</returns>
+    /// <exception cref="InvalidOperationException">Verify failure.</exception>
+    /// <exception cref="JsonException">Deserialize failed.</exception>
+    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, Func<T, string, string, ISignatureProvider> algorithmFactory, bool verify = true)
+    {
+        var auth = request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(auth)) return null;
+        try
+        {
+            return JsonWebToken<T>.Parse(auth, algorithmFactory, verify);
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (FormatException)
+        {
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Parses a JWT string encoded.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="algorithmFactory">The signature algorithm factory.</param>
+    /// <param name="verify">true if verify the signature; otherwise, false.</param>
+    /// <returns>A JSON web token object.</returns>
+    /// <exception cref="InvalidOperationException">Verify failure.</exception>
+    /// <exception cref="JsonException">Deserialize failed.</exception>
+    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, IDictionary<string, ISignatureProvider> algorithmFactory, bool verify = true)
+    {
+        var auth = request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(auth)) return null;
+        try
+        {
+            return JsonWebToken<T>.Parse(auth, algorithmFactory, verify);
         }
         catch (ArgumentException)
         {
@@ -512,7 +566,7 @@ public static class ControllerExtensions
         if (string.IsNullOrWhiteSpace(auth)) return null;
         try
         {
-            return JsonWebToken<T>.Parse(auth, algorithm, true);
+            return JsonWebToken<T>.Parse(auth, algorithm, verify);
         }
         catch (ArgumentException)
         {
@@ -1070,7 +1124,7 @@ public static class ControllerExtensions
             {
                 result = tokenMaker();
                 result.ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest;
-                result.ErrorDescription = "The body was empty.";
+                result.ErrorDescription = "The request body was empty.";
                 return default;
             }
 
@@ -1303,7 +1357,7 @@ public static class ControllerExtensions
         var stream = request.Body;
         if (stream == null) return null;
         if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
-        return await route.ProcessAsync(stream, default);
+        return await route.ProcessAsync(stream, cancellationToken);
     }
 
     /// <summary>

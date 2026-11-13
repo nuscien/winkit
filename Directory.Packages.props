@@ -12,6 +12,6 @@
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2957" />
     <PackageVersion Include="System.Management" Version="10.0.15" />
-    <PackageVersion Include="Trivial" Version="10.0.0-preview8" />
+    <PackageVersion Include="Trivial" Version="10.0.0-preview9" />
   </ItemGroup>
 </Project>

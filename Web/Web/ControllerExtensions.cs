@@ -1437,11 +1437,9 @@ public static class ControllerExtensions
         if (string.IsNullOrWhiteSpace(fileExtension)) return null;
         if (method == null)
         {
-            method = typeof(WebFormat).GetMethod("GetMime", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[] { typeof(string) }, null);
-            if (method == null)
-                method = typeof(WebFormat).GetMethod("GetMime", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(string) }, null);
-            if (method == null)
-                return defaultMime;
+            method = typeof(WebFormat).GetMethod("GetMime", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[] { typeof(string) }, null)
+                ?? typeof(WebFormat).GetMethod("GetMime", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(string) }, null);
+            if (method == null) return defaultMime;
         }
 
         var r = method.Invoke(null, new object[] { fileExtension });

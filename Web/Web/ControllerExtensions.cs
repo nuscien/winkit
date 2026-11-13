@@ -1037,8 +1037,9 @@ public static class ControllerExtensions
     /// <param name="controller">The controller.</param>
     /// <param name="route">The token request route.</param>
     /// <param name="tokenMaker">The token maker.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The login response.</returns>
-    public static async Task<TToken> SignInAsync<TToken, TAccount>(ControllerBase controller, TokenRequestRoute<TAccount> route, Func<TToken> tokenMaker) where TToken : TokenInfo
+    public static async Task<TToken> SignInAsync<TToken, TAccount>(ControllerBase controller, TokenRequestRoute<TAccount> route, Func<TToken> tokenMaker, CancellationToken cancellationToken = default) where TToken : TokenInfo
     {
         TToken result;
         try
@@ -1057,10 +1058,14 @@ public static class ControllerExtensions
             string input;
             using (var reader = new StreamReader(controller.Request.Body, Encoding.UTF8))
             {
+#if NET6_0
                 input = await reader.ReadToEndAsync();
+#else
+                input = await reader.ReadToEndAsync(cancellationToken);
+#endif
             }
 
-            var r = await route.SignInAsync(input);
+            var r = await route.SignInAsync(input, cancellationToken);
             result = r?.ItemSelected as TToken;
             if (result != null) return result;
             result = tokenMaker();
@@ -1283,7 +1288,7 @@ public static class ControllerExtensions
         var stream = request.Body;
         if (stream == null) return null;
         if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
-        return await route.ProcessAsync(stream, default);
+        return await route.ProcessAsync(stream, cancellationToken);
     }
 
     /// <summary>

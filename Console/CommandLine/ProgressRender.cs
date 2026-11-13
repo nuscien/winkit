@@ -22,7 +22,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="style">The options.</param>
     /// <returns>The progress result.</returns>
-    public static OneProgress WriteLine(this StyleConsole cli, ConsoleProgressStyle style)
+    public static OneProgress WriteLine(this StyleConsole? cli, ConsoleProgressStyle? style)
         => WriteLine(cli, style, null);
 
     /// <summary>
@@ -33,7 +33,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="progressSize">The progress size.</param>
     /// <param name="kind">The progress kind.</param>
     /// <returns>The progress result.</returns>
-    public static OneProgress WriteLine(this StyleConsole cli, ConsoleProgressStyle.Sizes progressSize, string caption, ConsoleProgressStyle.Kinds kind = ConsoleProgressStyle.Kinds.Full)
+    public static OneProgress WriteLine(this StyleConsole? cli, ConsoleProgressStyle.Sizes progressSize, string? caption, ConsoleProgressStyle.Kinds kind = ConsoleProgressStyle.Kinds.Full)
         => WriteLine(cli, progressSize != ConsoleProgressStyle.Sizes.None ? new ConsoleProgressStyle
         {
             Size = progressSize,
@@ -47,7 +47,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="progressSize">The progress size.</param>
     /// <param name="kind">The progress kind.</param>
     /// <returns>The progress result.</returns>
-    public static OneProgress WriteLine(this StyleConsole cli, ConsoleProgressStyle.Sizes progressSize, ConsoleProgressStyle.Kinds kind = ConsoleProgressStyle.Kinds.Full)
+    public static OneProgress WriteLine(this StyleConsole? cli, ConsoleProgressStyle.Sizes progressSize, ConsoleProgressStyle.Kinds kind = ConsoleProgressStyle.Kinds.Full)
         => WriteLine(cli, progressSize != ConsoleProgressStyle.Sizes.None ? new ConsoleProgressStyle
         {
             Size = progressSize,
@@ -61,7 +61,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="caption">The caption; or null if no caption. It will be better if it is less than 20 characters.</param>
     /// <param name="style">The style.</param>
     /// <returns>The progress result.</returns>
-    public static OneProgress WriteLine(this StyleConsole cli, ConsoleProgressStyle style, string caption)
+    public static OneProgress WriteLine(this StyleConsole? cli, ConsoleProgressStyle? style, string? caption)
     {
         if (cli == null) cli = StyleConsole.Default;
         if (cli.Mode == StyleConsole.Modes.Text && cli.Handler == null)
@@ -113,7 +113,7 @@ public static partial class ConsoleRenderExtensions
         return progress;
     }
 
-    private static string RenderData(StyleConsole cli, ConsoleProgressStyle style, string caption, OneProgress value, string status)
+    private static string? RenderData(StyleConsole cli, ConsoleProgressStyle style, string? caption, OneProgress? value, string? status)
     {
         var maxWidth = GetBufferSafeWidth(cli);
         var width = style.Size switch
@@ -145,7 +145,7 @@ public static partial class ConsoleRenderExtensions
             _ => ' ',
         };
         var col = new List<ConsoleText>();
-        if (!string.IsNullOrWhiteSpace(caption))
+        if (caption is not null && !string.IsNullOrWhiteSpace(caption))
         {
             var sb = new StringBuilder();
             var j = style.IgnoreCaptionSeparator ? 0 : 1;

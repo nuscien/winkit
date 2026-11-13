@@ -1,4 +1,4 @@
-﻿# [Trivial.Console](https://trivial.kingcean.net/cmdline)
+﻿# Trivial.Console
 
 This library includes a lot of useful rich command line controls.
 

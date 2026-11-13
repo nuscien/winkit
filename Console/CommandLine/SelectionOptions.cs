@@ -51,7 +51,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("tip")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Tips { get; set; }
+    public string? Tips { get; set; }
 
     /// <summary>
     /// Gets or sets the paging tips.
@@ -59,7 +59,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("pagetip")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string PagingTips { get; set; } = "← [PgUp] | {from} - {end} / {total} | [PgDn] →";
+    public string? PagingTips { get; set; } = "← [PgUp] | {from} - {end} / {total} | [PgDn] →";
 
     /// <summary>
     /// Gets or sets the question message for keyboard selecting.
@@ -67,7 +67,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("q")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Question { get; set; } = Resource.ToSelect;
+    public string? Question { get; set; } = Resource.ToSelect;
 
     /// <summary>
     /// Gets or sets the question message for manual typing.
@@ -75,7 +75,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("manualq")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string ManualQuestion { get; set; } = Resource.ToInput;
+    public string? ManualQuestion { get; set; } = Resource.ToInput;
 
     /// <summary>
     /// Gets or sets the question message displayed when it is not supported.
@@ -83,7 +83,7 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("notsupportq")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string QuestionWhenNotSupported { get; set; }
+    public string? QuestionWhenNotSupported { get; set; }
 
     /// <summary>
     /// Gets or sets the foreground color for item.
@@ -266,14 +266,14 @@ public class SelectionConsoleOptions : ICloneable
     /// </summary>
     [JsonPropertyName("prefix")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Prefix { get; set; }
+    public string? Prefix { get; set; }
 
     /// <summary>
     /// Gets or sets the prefix for the item selected.
     /// </summary>
     [JsonPropertyName("selprefix")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string SelectedPrefix { get; set; }
+    public string? SelectedPrefix { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether disable hotkey to enter the item but instead to select.
@@ -293,7 +293,7 @@ public class SelectionConsoleOptions : ICloneable
     /// Clones an object.
     /// </summary>
     /// <returns>The object copied from this instance.</returns>
-    public virtual SelectionConsoleOptions Clone()
+    public virtual SelectionConsoleOptions? Clone()
         => MemberwiseClone() as SelectionConsoleOptions;
 
     /// <summary>

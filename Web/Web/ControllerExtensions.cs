@@ -30,7 +30,7 @@ namespace Trivial.Web;
 /// </summary>
 public static class ControllerExtensions
 {
-    private static MethodInfo method;
+    private static MethodInfo? method;
     private const string CharSet = "charset=utf-8";
     private const string CharSetSep = "; ";
     internal readonly static string jsonMime = string.Concat(JsonValues.JsonMIME, CharSetSep, CharSet);
@@ -54,10 +54,10 @@ public static class ControllerExtensions
     /// <param name="key">The key.</param>
     /// <param name="trim">true if need trim; otherwise, false.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static string GetFirstStringValue(this IFormCollection request, string key, bool trim = false)
+    public static string? GetFirstStringValue(this IFormCollection request, string key, bool trim = false)
     {
         var col = request[key];
-        string str = null;
+        string? str = null;
         if (trim)
         {
             foreach (var ele in col)
@@ -101,7 +101,7 @@ public static class ControllerExtensions
     /// <returns>The string value; or null, if non-exist.</returns>
     public static string GetMergedStringValue(this IFormCollection request, string key, char split = ',', bool trim = false)
     {
-        IEnumerable<string> col = request[key];
+        IEnumerable<string?> col = request[key];
         if (trim) col = col.Select(ele => ele?.Trim()).Where(ele => !string.IsNullOrEmpty(ele));
         return string.Join(split, col);
     }
@@ -113,10 +113,10 @@ public static class ControllerExtensions
     /// <param name="key">The key.</param>
     /// <param name="trim">true if need trim; otherwise, false.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static string GetFirstStringValue(this IQueryCollection request, string key, bool trim = false)
+    public static string? GetFirstStringValue(this IQueryCollection request, string key, bool trim = false)
     {
         var col = request[key];
-        string str = null;
+        string? str = null;
         if (trim)
         {
             foreach (var ele in col)
@@ -160,7 +160,7 @@ public static class ControllerExtensions
     /// <returns>The string value; or null, if non-exist.</returns>
     public static string GetMergedStringValue(this IQueryCollection request, string key, char split = ',', bool trim = false)
     {
-        IEnumerable<string> col = request[key];
+        IEnumerable<string?> col = request[key];
         if (trim) col = col.Select(ele => ele?.Trim()).Where(ele => !string.IsNullOrEmpty(ele));
         return string.Join(split, col);
     }
@@ -336,7 +336,7 @@ public static class ControllerExtensions
     /// <param name="request">The query.</param>
     /// <param name="key">The property key.</param>
     /// <returns><c>true</c> if it is true; or false, if it is false; or null, if not supported.</returns>
-    public static bool? TryGetBoolean(this IQueryCollection request, string key)
+    public static bool? TryGetBoolean(this IQueryCollection? request, string key)
     {
         var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();
         var isPlain = JsonBooleanNode.TryParse(plain);
@@ -350,7 +350,7 @@ public static class ControllerExtensions
     /// <param name="key">The property key.</param>
     /// <param name="result">The result.</param>
     /// <returns><c>true</c> if parse succeeded; otherwise, <c>false</c>.</returns>
-    public static bool TryGetBoolean(this IQueryCollection request, string key, out bool result)
+    public static bool TryGetBoolean(this IQueryCollection? request, string key, out bool result)
     {
         var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();
         var isPlain = JsonBooleanNode.TryParse(plain);
@@ -371,7 +371,7 @@ public static class ControllerExtensions
     /// <param name="encoding">The optional encoding.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, Encoding? encoding, CancellationToken cancellationToken = default)
+    public static async Task<string?> ReadBodyAsStringAsync(this HttpRequest? request, Encoding? encoding, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         using var reader = new StreamReader(request.Body, encoding ?? Encoding.UTF8);
@@ -384,7 +384,7 @@ public static class ControllerExtensions
     /// <param name="request">The HTTP request.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static Task<string> ReadBodyAsStringAsync(this HttpRequest request, CancellationToken cancellationToken = default)
+    public static Task<string?> ReadBodyAsStringAsync(this HttpRequest request, CancellationToken cancellationToken = default)
         => ReadBodyAsStringAsync(request, null, cancellationToken);
 
     /// <summary>
@@ -394,7 +394,7 @@ public static class ControllerExtensions
     /// <param name="encoding">The optional encoding.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding encoding, CancellationToken cancellationToken = default)
+    public static async Task<QueryData?> ReadBodyAsQueryDataAsync(this HttpRequest? request, Encoding? encoding, CancellationToken cancellationToken = default)
     {
         var query = await ReadBodyAsStringAsync(request, encoding, cancellationToken);
         if (query == null) return null;
@@ -409,7 +409,7 @@ public static class ControllerExtensions
     /// <param name="request">The HTTP request.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The string value; or null, if non-exist.</returns>
-    public static Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, CancellationToken cancellationToken = default)
+    public static Task<QueryData?> ReadBodyAsQueryDataAsync(this HttpRequest? request, CancellationToken cancellationToken = default)
         => ReadBodyAsQueryDataAsync(request, null, cancellationToken);
 
     /// <summary>
@@ -420,7 +420,7 @@ public static class ControllerExtensions
     /// <returns>A JSON object instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonObjectNode> ReadBodyAsJsonAsync(this HttpRequest request, CancellationToken cancellationToken = default)
+    public static Task<JsonObjectNode?>? ReadBodyAsJsonAsync(this HttpRequest? request, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonObjectNode.ParseAsync(request.Body, default, cancellationToken);
@@ -435,7 +435,7 @@ public static class ControllerExtensions
     /// <returns>A JSON object instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonObjectNode> ReadBodyAsJsonAsync(this HttpRequest request, JsonDocumentOptions options, CancellationToken cancellationToken = default)
+    public static Task<JsonObjectNode?>? ReadBodyAsJsonAsync(this HttpRequest? request, JsonDocumentOptions options, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonObjectNode.ParseAsync(request.Body, options, cancellationToken);
@@ -449,7 +449,7 @@ public static class ControllerExtensions
     /// <returns>A JSON array instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonArrayNode> ReadBodyAsJsonArrayAsync(this HttpRequest request, CancellationToken cancellationToken = default)
+    public static Task<JsonArrayNode>? ReadBodyAsJsonArrayAsync(this HttpRequest? request, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonArrayNode.ParseAsync(request.Body, default, cancellationToken);
@@ -464,7 +464,7 @@ public static class ControllerExtensions
     /// <returns>A JSON array instance; or null, if no body.</returns>
     /// <exception cref="JsonException">json does not represent a valid single JSON object.</exception>
     /// <exception cref="ArgumentException">options contains unsupported options.</exception>
-    public static Task<JsonArrayNode> ReadBodyAsJsonArrayAsync(this HttpRequest request, JsonDocumentOptions options, CancellationToken cancellationToken = default)
+    public static Task<JsonArrayNode>? ReadBodyAsJsonArrayAsync(this HttpRequest? request, JsonDocumentOptions options, CancellationToken cancellationToken = default)
     {
         if (request == null || request.Body == null) return null;
         return JsonArrayNode.ParseAsync(request.Body, options, cancellationToken);
@@ -479,7 +479,7 @@ public static class ControllerExtensions
     /// <returns>A JSON web token object.</returns>
     /// <exception cref="InvalidOperationException">Verify failure.</exception>
     /// <exception cref="JsonException">Deserialize failed.</exception>
-    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, Func<T, string, ISignatureProvider> algorithmFactory, bool verify = true)
+    public static JsonWebToken<T>? GetJsonWebToken<T>(this HttpRequest request, Func<T, string, ISignatureProvider> algorithmFactory, bool verify = true)
     {
         var auth = request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(auth)) return null;
@@ -506,7 +506,7 @@ public static class ControllerExtensions
     /// <returns>A JSON web token object.</returns>
     /// <exception cref="InvalidOperationException">Verify failure.</exception>
     /// <exception cref="JsonException">Deserialize failed.</exception>
-    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, Func<T, string, string, ISignatureProvider> algorithmFactory, bool verify = true)
+    public static JsonWebToken<T>? GetJsonWebToken<T>(this HttpRequest request, Func<T, string, string, ISignatureProvider> algorithmFactory, bool verify = true)
     {
         var auth = request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(auth)) return null;
@@ -533,7 +533,7 @@ public static class ControllerExtensions
     /// <returns>A JSON web token object.</returns>
     /// <exception cref="InvalidOperationException">Verify failure.</exception>
     /// <exception cref="JsonException">Deserialize failed.</exception>
-    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, IDictionary<string, ISignatureProvider> algorithmFactory, bool verify = true)
+    public static JsonWebToken<T>? GetJsonWebToken<T>(this HttpRequest request, IDictionary<string, ISignatureProvider> algorithmFactory, bool verify = true)
     {
         var auth = request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(auth)) return null;
@@ -560,7 +560,7 @@ public static class ControllerExtensions
     /// <returns>A JSON web token object.</returns>
     /// <exception cref="InvalidOperationException">Verify failure.</exception>
     /// <exception cref="JsonException">Deserialize failed.</exception>
-    public static JsonWebToken<T> GetJsonWebToken<T>(this HttpRequest request, ISignatureProvider algorithm, bool verify = true)
+    public static JsonWebToken<T>? GetJsonWebToken<T>(this HttpRequest request, ISignatureProvider algorithm, bool verify = true)
     {
         var auth = request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(auth)) return null;
@@ -585,7 +585,7 @@ public static class ControllerExtensions
     /// <returns>A JSON web token object.</returns>
     /// <exception cref="InvalidOperationException">Verify failure.</exception>
     /// <exception cref="JsonException">Deserialize failed.</exception>
-    public static JsonWebToken<T>.Parser GetJsonWebTokenParser<T>(this HttpRequest request)
+    public static JsonWebToken<T>.Parser? GetJsonWebTokenParser<T>(this HttpRequest request)
     {
         var auth = request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(auth)) return null;
@@ -599,7 +599,7 @@ public static class ControllerExtensions
     /// <param name="handler">The handler to fill data into response body.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(T data, Func<T, HttpResponse, Task> handler, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(T data, Func<T, HttpResponse, Task> handler, Action<HttpResponse>? prepare = null)
         => new DataHandlingActionResult<T>(data, handler, prepare);
 
     /// <summary>
@@ -607,7 +607,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static ActionResult ToActionResult(this ChangingResultInfo value)
+    public static ActionResult ToActionResult(this ChangingResultInfo? value)
     {
         if (value == null) return new NotFoundResult();
         var ex = value.GetException();
@@ -673,7 +673,7 @@ public static class ControllerExtensions
     /// <param name="expires">The optional expiration date time of the resource.</param>
     /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this JsonObjectNode value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+    public static IActionResult ToActionResult(this JsonObjectNode value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue? cacheControl = null)
         => new JsonValueNodeActionResult(value, null, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
 
     /// <summary>
@@ -686,7 +686,7 @@ public static class ControllerExtensions
     /// <param name="expires">The optional expiration date time of the resource.</param>
     /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this JsonObjectNode value, Action<HttpResponse> prepare, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+    public static IActionResult ToActionResult(this JsonObjectNode value, Action<HttpResponse> prepare, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue? cacheControl = null)
         => new JsonValueNodeActionResult(value, prepare, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
 
     /// <summary>
@@ -696,7 +696,7 @@ public static class ControllerExtensions
     /// <param name="prepare">The preparing callback.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this JsonObjectNode value, int statusCode, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this JsonObjectNode value, int statusCode, Action<HttpResponse>? prepare = null)
         => new JsonValueNodeActionResult(value, prepare, null, new HttpResponseStatusFilling(statusCode));
 
     /// <summary>
@@ -723,7 +723,7 @@ public static class ControllerExtensions
     /// <param name="prepare">The preparing callback.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this JsonArrayNode value, int statusCode, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this JsonArrayNode value, int statusCode, Action<HttpResponse>? prepare = null)
         => new JsonValueNodeActionResult(value, prepare, null, new HttpResponseStatusFilling(statusCode));
 
     /// <summary>
@@ -731,7 +731,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IJsonObjectHost value)
+    public static IActionResult ToActionResult(this IJsonObjectHost? value)
         => new JsonValueNodeActionResult(value?.ToJson(), null, null);
 
     /// <summary>
@@ -740,7 +740,7 @@ public static class ControllerExtensions
     /// <param name="value">The value.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IJsonObjectHost value, Action<HttpResponse> prepare)
+    public static IActionResult ToActionResult(this IJsonObjectHost? value, Action<HttpResponse> prepare)
         => new JsonValueNodeActionResult(value?.ToJson(), prepare, null);
 
     /// <summary>
@@ -752,7 +752,7 @@ public static class ControllerExtensions
     /// <param name="expires">The optional expiration date time of the resource.</param>
     /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IJsonObjectHost value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+    public static IActionResult ToActionResult(this IJsonObjectHost? value, EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue? cacheControl = null)
         => new JsonValueNodeActionResult(value?.ToJson(), null, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
 
     /// <summary>
@@ -765,7 +765,7 @@ public static class ControllerExtensions
     /// <param name="expires">The optional expiration date time of the resource.</param>
     /// <param name="cacheControl">An optional policy to control caching in browsers and shared caches.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IJsonObjectHost value, Action<HttpResponse> prepare, EntityTagHeaderValue entityTag = null, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null)
+    public static IActionResult ToActionResult(this IJsonObjectHost? value, Action<HttpResponse> prepare, EntityTagHeaderValue? entityTag = null, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue? cacheControl = null)
         => new JsonValueNodeActionResult(value?.ToJson(), prepare, null, new HttpResponseHeadersFilling(entityTag, lastModified, expires, cacheControl));
 
     /// <summary>
@@ -775,7 +775,7 @@ public static class ControllerExtensions
     /// <param name="prepare">The preparing callback.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IJsonObjectHost value, int statusCode, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this IJsonObjectHost? value, int statusCode, Action<HttpResponse>? prepare = null)
         => new JsonValueNodeActionResult(value?.ToJson(), prepare, null, new HttpResponseStatusFilling(statusCode));
 
     /// <summary>
@@ -783,7 +783,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonObject value)
+    public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonObject? value)
         => new()
         {
             ContentType = jsonMime,
@@ -796,7 +796,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>The action result.</returns>
-    public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonArray value)
+    public static ContentResult ToActionResult(System.Text.Json.Nodes.JsonArray? value)
         => new()
         {
             ContentType = jsonMime,
@@ -819,7 +819,7 @@ public static class ControllerExtensions
     /// <param name="data">The data.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IEnumerable<ServerSentEventInfo> data, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this IEnumerable<ServerSentEventInfo> data, Action<HttpResponse>? prepare = null)
         => ToActionResult(data, WriteToAsync, prepare);
 
     /// <summary>
@@ -837,7 +837,7 @@ public static class ControllerExtensions
     /// <param name="data">The data.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IAsyncEnumerable<ServerSentEventInfo> data, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this IAsyncEnumerable<ServerSentEventInfo> data, Action<HttpResponse>? prepare = null)
         => ToActionResult(data, WriteToAsync, prepare);
 
     /// <summary>
@@ -855,7 +855,7 @@ public static class ControllerExtensions
     /// <param name="data">The data.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IAsyncEnumerable<JsonObjectNode> data, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this IAsyncEnumerable<JsonObjectNode> data, Action<HttpResponse>? prepare = null)
         => ToActionResult(data, WriteToAsync, prepare);
 
     /// <summary>
@@ -873,7 +873,7 @@ public static class ControllerExtensions
     /// <param name="data">The data.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IAsyncEnumerable<BaseJsonValueNode> data, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this IAsyncEnumerable<BaseJsonValueNode> data, Action<HttpResponse>? prepare = null)
         => ToActionResult(data, WriteToAsync, prepare);
 
     /// <summary>
@@ -891,7 +891,7 @@ public static class ControllerExtensions
     /// <param name="data">The data.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult(this IAsyncEnumerable<IJsonValueNode> data, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult(this IAsyncEnumerable<IJsonValueNode> data, Action<HttpResponse>? prepare = null)
         => ToActionResult(data, WriteToAsync, prepare);
 
     /// <summary>
@@ -900,7 +900,7 @@ public static class ControllerExtensions
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(Action<CollectionResultBuilder<T>> append, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(Action<CollectionResultBuilder<T>> append, Action<HttpResponse>? prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare);
 
     /// <summary>
@@ -910,7 +910,7 @@ public static class ControllerExtensions
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Action<CollectionResultBuilder<T>> append, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Action<CollectionResultBuilder<T>> append, Action<HttpResponse>? prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare, builder);
 
     /// <summary>
@@ -919,7 +919,7 @@ public static class ControllerExtensions
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse>? prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare);
 
     /// <summary>
@@ -929,7 +929,7 @@ public static class ControllerExtensions
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse>? prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare, builder);
 
     /// <summary>
@@ -938,7 +938,7 @@ public static class ControllerExtensions
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse>? prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare);
 
     /// <summary>
@@ -948,7 +948,7 @@ public static class ControllerExtensions
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <returns>The action result.</returns>
-    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse> prepare = null)
+    public static IActionResult ToActionResult<T>(CollectionResultBuilder<T> builder, Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse>? prepare = null)
         => new PushingCollectionActionResult<T>(append, prepare, builder);
 
     /// <summary>
@@ -958,7 +958,7 @@ public static class ControllerExtensions
     /// <param name="mime">The content type.</param>
     /// <param name="response">The HTTP response to flush.</param>
     /// <returns>The count of line.</returns>
-    public static async Task<int> WriteToAsync(BaseLinesStringTableParser lines, string mime, HttpResponse response)
+    public static async Task<int> WriteToAsync(BaseLinesStringTableParser? lines, string mime, HttpResponse response)
     {
         var data = lines?.ToLinesString();
         if (data == null) return 0;
@@ -1000,7 +1000,7 @@ public static class ControllerExtensions
     /// <param name="ex">The exception.</param>
     /// <param name="ignoreUnknownException">true if return null for unknown exception; otherwise, false.</param>
     /// <returns>The action result.</returns>
-    public static ActionResult ExceptionResult(this ControllerBase controller, Exception ex, bool ignoreUnknownException = false)
+    public static ActionResult? ExceptionResult(this ControllerBase controller, Exception? ex, bool ignoreUnknownException = false)
     {
         if (ex == null) return controller.StatusCode(500);
         var result = new ErrorMessageResult(ex);
@@ -1020,7 +1020,7 @@ public static class ControllerExtensions
     /// <param name="errorCode">The error code.</param>
     /// <param name="ignoreUnknownException">true if return null for unknown exception; otherwise, false.</param>
     /// <returns>The action result.</returns>
-    public static ActionResult ExceptionResult(this ControllerBase controller, Exception ex, string errorCode, bool ignoreUnknownException = false)
+    public static ActionResult? ExceptionResult(this ControllerBase controller, Exception? ex, string errorCode, bool ignoreUnknownException = false)
     {
         if (ex == null) return controller.StatusCode(500);
         var result = new ErrorMessageResult(ex, errorCode);
@@ -1039,7 +1039,7 @@ public static class ControllerExtensions
     /// <param name="status">The HTTP status code.</param>
     /// <param name="ex">The exception.</param>
     /// <returns>The action result.</returns>
-    public static ActionResult ExceptionResult(this ControllerBase controller, int status, Exception ex)
+    public static ActionResult ExceptionResult(this ControllerBase controller, int status, Exception? ex)
     {
         if (ex == null) return controller.StatusCode(status);
         var result = new ErrorMessageResult(ex);
@@ -1057,7 +1057,7 @@ public static class ControllerExtensions
     /// <param name="ex">The exception.</param>
     /// <param name="errorCode">The error code.</param>
     /// <returns>The action result.</returns>
-    public static ActionResult ExceptionResult(this ControllerBase controller, int status, Exception ex, string errorCode)
+    public static ActionResult ExceptionResult(this ControllerBase controller, int status, Exception? ex, string errorCode)
     {
         if (ex == null) return controller.StatusCode(status);
         var result = new ErrorMessageResult(ex, errorCode);
@@ -1076,7 +1076,7 @@ public static class ControllerExtensions
     /// <param name="errorCode">The optional error code.</param>
     /// <returns>The action result.</returns>
 #pragma warning disable IDE0060
-    public static ActionResult ExceptionResult(this ControllerBase controller, int status, string ex, string errorCode = null)
+    public static ActionResult ExceptionResult(this ControllerBase controller, int status, string ex, string? errorCode = null)
 #pragma warning restore IDE0060
     {
         var result = new ErrorMessageResult(ex, errorCode);
@@ -1091,7 +1091,7 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="request">The request.</param>
     /// <returns>The query data instance.</returns>
-    public static QueryData GetQueryData(this IQueryCollection request)
+    public static QueryData? GetQueryData(this IQueryCollection? request)
     {
         if (request == null) return null;
         var q = new QueryData();
@@ -1112,7 +1112,7 @@ public static class ControllerExtensions
     /// <param name="tokenMaker">The token maker.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The login response.</returns>
-    public static async Task<TToken> SignInAsync<TToken, TAccount>(ControllerBase controller, TokenRequestRoute<TAccount> route, Func<TToken> tokenMaker, CancellationToken cancellationToken = default) where TToken : TokenInfo
+    public static async Task<TToken?> SignInAsync<TToken, TAccount>(ControllerBase? controller, TokenRequestRoute<TAccount> route, Func<TToken>? tokenMaker, CancellationToken cancellationToken = default) where TToken : TokenInfo
     {
         TToken result;
         try
@@ -1135,8 +1135,8 @@ public static class ControllerExtensions
             }
 
             var r = await route.SignInAsync(input, cancellationToken);
-            result = r?.ItemSelected as TToken;
-            if (result != null) return result;
+            var signInResult = r?.ItemSelected as TToken;
+            if (signInResult != null) return signInResult;
             result = tokenMaker();
             result.ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest;
             result.ErrorDescription = "Cannot sign in.";
@@ -1144,14 +1144,14 @@ public static class ControllerExtensions
         }
         catch (ArgumentException ex)
         {
-            result = tokenMaker();
+            result = tokenMaker!();
             result.ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest;
             result.ErrorDescription = ex.Message;
             return result;
         }
         catch (IOException ex)
         {
-            result = tokenMaker();
+            result = tokenMaker!();
             result.ErrorCode = TokenInfo.ErrorCodeConstants.ServerError;
             result.ErrorDescription = ex.Message;
             return result;
@@ -1178,11 +1178,11 @@ public static class ControllerExtensions
     /// <param name="entityTag">The entity tag associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if non-exists.</returns>
-    public static FileStreamResult FileResult(FileInfo source, EntityTagHeaderValue entityTag = null, string mime = null)
+    public static FileStreamResult? FileResult(FileInfo? source, EntityTagHeaderValue? entityTag = null, string? mime = null)
     {
         if (source == null || !source.Exists) return null;
         mime ??= GetByFileExtension(source.Extension, WebFormat.StreamMIME);
-        var result = new FileStreamResult(source.OpenRead(), mime)
+        var result = new FileStreamResult(source.OpenRead(), mime!)
         {
             LastModified = source.LastWriteTime,
             FileDownloadName = source.Name,
@@ -1198,7 +1198,7 @@ public static class ControllerExtensions
     /// <param name="entityTag">The entity tag associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if non-exists.</returns>
-    public static FileStreamResult FileResult(IO.BaseFileReferenceInfo<FileInfo> source, EntityTagHeaderValue entityTag = null, string mime = null)
+    public static FileStreamResult? FileResult(IO.BaseFileReferenceInfo<FileInfo>? source, EntityTagHeaderValue? entityTag = null, string? mime = null)
         => FileResult(source?.Source, entityTag, mime);
 
     /// <summary>
@@ -1209,7 +1209,7 @@ public static class ControllerExtensions
     /// <param name="lastModified">The last modified information associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if non-exists.</returns>
-    public static FileStreamResult FileResult(Stream source, string downloadName, DateTimeOffset? lastModified = null, string mime = null)
+    public static FileStreamResult? FileResult(Stream? source, string? downloadName, DateTimeOffset? lastModified = null, string? mime = null)
         => FileResult(source, downloadName, null, lastModified, mime);
 
     /// <summary>
@@ -1221,7 +1221,7 @@ public static class ControllerExtensions
     /// <param name="lastModified">The last modified information associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if stream source is null.</returns>
-    public static FileStreamResult FileResult(Stream source, string downloadName, EntityTagHeaderValue entityTag, DateTimeOffset? lastModified = null, string mime = null)
+    public static FileStreamResult? FileResult(Stream? source, string? downloadName, EntityTagHeaderValue? entityTag, DateTimeOffset? lastModified = null, string? mime = null)
     {
         if (source == null) return null;
         if (string.IsNullOrEmpty(mime) && downloadName?.Contains('.') == true)
@@ -1233,7 +1233,7 @@ public static class ControllerExtensions
                 mime = GetByFileExtension("." + ext, WebFormat.StreamMIME);
         }
 
-        var result = new FileStreamResult(source, mime)
+        var result = new FileStreamResult(source, mime!)
         {
             LastModified = lastModified,
             EntityTag = entityTag
@@ -1253,7 +1253,7 @@ public static class ControllerExtensions
     /// <param name="lastModified">The last modified information associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if stream source is null.</returns>
-    public static FileStreamResult FileResult(Stream source, string downloadName, EntityTagHeaderValue entityTag, bool enableRangeProcessing, DateTimeOffset? lastModified = null, string mime = null)
+    public static FileStreamResult? FileResult(Stream source, string downloadName, EntityTagHeaderValue entityTag, bool enableRangeProcessing, DateTimeOffset? lastModified = null, string? mime = null)
     {
         var result = FileResult(source, downloadName, entityTag, lastModified, mime);
         if (result == null) return null;
@@ -1270,7 +1270,7 @@ public static class ControllerExtensions
     /// <param name="entityTag">The entity tag associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if non-exists.</returns>
-    public static FileStreamResult FileResult(Assembly assembly, string subPath, string downloadName, EntityTagHeaderValue entityTag, string mime = null)
+    public static FileStreamResult? FileResult(Assembly? assembly, string? subPath, string? downloadName, EntityTagHeaderValue? entityTag, string? mime = null)
     {
         if (string.IsNullOrWhiteSpace(subPath)) return null;
         if (assembly == null)
@@ -1292,7 +1292,7 @@ public static class ControllerExtensions
     /// <param name="entityTag">The entity tag associated with the file.</param>
     /// <param name="mime">The optional MIME content type; or null, if detects automatically.</param>
     /// <returns>A file result; or null, if non-exists.</returns>
-    public static FileStreamResult FileResult(Assembly assembly, string subPath, EntityTagHeaderValue entityTag, string mime = null)
+    public static FileStreamResult? FileResult(Assembly? assembly, string? subPath, EntityTagHeaderValue? entityTag, string? mime = null)
         => FileResult(assembly, subPath, null, entityTag, mime);
 
     /// <summary>
@@ -1351,7 +1351,7 @@ public static class ControllerExtensions
     /// <param name="request">The JSON-RPC request object.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>The JSON-RPC response object.</returns>
-    public static async Task<BaseJsonRpcResponseObject> ProcessAsync(this JsonRpcRequestRoute route, HttpRequest request, CancellationToken cancellationToken = default)
+    public static async Task<BaseJsonRpcResponseObject?> ProcessAsync(this JsonRpcRequestRoute? route, HttpRequest? request, CancellationToken cancellationToken = default)
     {
         if (route == null || request == null) return null;
         var stream = request.Body;
@@ -1367,7 +1367,7 @@ public static class ControllerExtensions
     /// <param name="request">The JSON-RPC request object collection.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>The JSON-RPC response object collection.</returns>
-    public static async IAsyncEnumerable<BaseJsonRpcResponseObject> ProcessBatchAsync(this JsonRpcRequestRoute route, HttpRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public static async IAsyncEnumerable<BaseJsonRpcResponseObject> ProcessBatchAsync(this JsonRpcRequestRoute? route, HttpRequest? request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (route == null || request == null) yield break;
         var stream = request.Body;
@@ -1386,7 +1386,7 @@ public static class ControllerExtensions
     /// <param name="ex">The exception.</param>
     /// <param name="ignoreUnknownException">true if return null for unknown exception; otherwise, false.</param>
     /// <returns>The action result.</returns>
-    private static int? GetStatusCode(Exception ex, bool ignoreUnknownException = false)
+    private static int? GetStatusCode(Exception? ex, bool ignoreUnknownException = false)
     {
         if (ex == null) return 500;
         if (ex.InnerException != null)
@@ -1432,7 +1432,7 @@ public static class ControllerExtensions
     /// <param name="fileExtension">The file extension.</param>
     /// <param name="defaultMime">The default MIME content type.</param>
     /// <returns>The MIME content type.</returns>
-    private static string GetByFileExtension(string fileExtension, string defaultMime)
+    private static string? GetByFileExtension(string? fileExtension, string? defaultMime)
     {
         if (string.IsNullOrWhiteSpace(fileExtension)) return null;
         if (method == null)
@@ -1446,7 +1446,7 @@ public static class ControllerExtensions
         if (r == null) return defaultMime;
         try
         {
-            return (string)r;
+            return (string)r!;
         }
         catch (InvalidCastException)
         {
@@ -1475,7 +1475,7 @@ public static class ControllerExtensions
     /// <param name="data">The server-sent event info collection to write.</param>
     /// <param name="response">The HTTP response to flush.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
-    private static async Task<int> WriteJsonlToAsync<T>(IAsyncEnumerable<T> data, HttpResponse response) where T : IJsonValueNode
+    private static async Task<int> WriteJsonlToAsync<T>(IAsyncEnumerable<T>? data, HttpResponse response) where T : IJsonValueNode
     {
         response.ContentType = jsonlMime;
         if (data == null) return 0;
@@ -1501,7 +1501,7 @@ public static class ControllerExtensions
     /// <returns>The count of server-sent event information writen.</returns>
     /// <exception cref="InvalidOperationException">The stream is disposed.</exception>
     /// <exception cref="ArgumentException">stream is not writable.</exception>
-    private static async Task<int> WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo> col, Stream stream, Encoding encoding = null)
+    private static async Task<int> WriteToAsync(this IAsyncEnumerable<ServerSentEventInfo>? col, Stream? stream, Encoding? encoding = null)
     {
         if (col == null || stream == null) return 0;
         var writer = new StreamWriter(stream, encoding ?? Encoding.UTF8);

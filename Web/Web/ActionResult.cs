@@ -23,7 +23,7 @@ namespace Trivial.Web;
 /// <param name="data">The source data to output.</param>
 /// <param name="handler">The handler to fill data into response body.</param>
 /// <param name="prepare">The preparing callback.</param>
-internal class DataHandlingActionResult<T>(T data, Func<T, HttpResponse, Task> handler, Action<HttpResponse> prepare) : IActionResult
+internal class DataHandlingActionResult<T>(T data, Func<T, HttpResponse, Task> handler, Action<HttpResponse>? prepare) : IActionResult
 {
     /// <inheritdoc />
     public async Task ExecuteResultAsync(ActionContext context)
@@ -39,12 +39,12 @@ internal class DataHandlingActionResult<T>(T data, Func<T, HttpResponse, Task> h
 /// <typeparam name="T">The type of the source data.</typeparam>
 internal class PushingCollectionActionResult<T> : IActionResult
 {
-    private readonly SemaphoreSlim slim1;
-    private readonly SemaphoreSlim slim2;
-    private readonly Action<HttpResponse> prepare;
-    private readonly Action<CollectionResultBuilder<T>> fill;
-    private CollectionResultBuilder<T> data;
-    private HttpResponse response;
+    private readonly SemaphoreSlim? slim1;
+    private readonly SemaphoreSlim? slim2;
+    private readonly Action<HttpResponse>? prepare;
+    private readonly Action<CollectionResultBuilder<T>>? fill;
+    private CollectionResultBuilder<T>? data;
+    private HttpResponse? response;
 
     /// <summary>
     /// Initializes a new instance of the PushingCollectionActionResult class.
@@ -52,7 +52,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <param name="builder">The optional builder initialized.</param>
-    public PushingCollectionActionResult(Action<CollectionResultBuilder<T>> append, Action<HttpResponse> prepare, CollectionResultBuilder<T> builder = null)
+    public PushingCollectionActionResult(Action<CollectionResultBuilder<T>>? append, Action<HttpResponse>? prepare, CollectionResultBuilder<T>? builder = null)
     {
         this.prepare = prepare;
         if (append == null) return;
@@ -68,7 +68,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <param name="builder">The optional builder initialized.</param>
-    public PushingCollectionActionResult(Func<CollectionResultBuilder<T>, Task> append, Action<HttpResponse> prepare, CollectionResultBuilder<T> builder = null)
+    public PushingCollectionActionResult(Func<CollectionResultBuilder<T>, Task>? append, Action<HttpResponse>? prepare, CollectionResultBuilder<T>? builder = null)
     {
         this.prepare = prepare;
         if (append == null) return;
@@ -84,7 +84,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
     /// <param name="append">The callback for collection result builder.</param>
     /// <param name="prepare">The preparing callback.</param>
     /// <param name="builder">The optional builder initialized.</param>
-    public PushingCollectionActionResult(Func<CollectionResultBuilder<T>, CancellationToken, Task> append, Action<HttpResponse> prepare, CollectionResultBuilder<T> builder = null)
+    public PushingCollectionActionResult(Func<CollectionResultBuilder<T>, CancellationToken, Task>? append, Action<HttpResponse>? prepare, CollectionResultBuilder<T>? builder = null)
     {
         this.prepare = prepare;
         if (append == null) return;
@@ -98,8 +98,8 @@ internal class PushingCollectionActionResult<T> : IActionResult
     {
         try
         {
-            slim1.Dispose();
-            slim2.Dispose();
+            slim1!.Dispose();
+            slim2!.Dispose();
             data = null;
             response = null;
         }
@@ -125,7 +125,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
             this.response = response;
             response.ContentType = ControllerExtensions.sseMime;
             prepare?.Invoke(response);
-            fill(data);
+            fill!(data);
             await WaitAsync();
         }
         finally
@@ -134,7 +134,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
         }
     }
 
-    private void OnInit(CollectionResultBuilder<T> data)
+    private void OnInit(CollectionResultBuilder<T>? data)
     {
         data ??= new();
         this.data = data;
@@ -145,11 +145,11 @@ internal class PushingCollectionActionResult<T> : IActionResult
     private void OnDataCreated(object sender, DataEventArgs<ServerSentEventInfo> e)
         => _ = OnDataCreated(e);
 
-    private async Task OnDataCreated(DataEventArgs<ServerSentEventInfo> e)
+    private async Task OnDataCreated(DataEventArgs<ServerSentEventInfo>? e)
     {
         try
         {
-            await slim2.WaitAsync();
+            await slim2!.WaitAsync();
         }
         catch (InvalidOperationException)
         {
@@ -182,7 +182,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
         {
             try
             {
-                slim2.Release();
+                slim2!.Release();
             }
             catch (InvalidOperationException)
             {
@@ -226,7 +226,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
     {
         try
         {
-            await slim1.WaitAsync();
+            await slim1!.WaitAsync();
         }
         catch (InvalidOperationException)
         {
@@ -240,7 +240,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
     {
         try
         {
-            if (slim1.CurrentCount == 0) slim1.Release();
+            if (slim1!.CurrentCount == 0) slim1.Release();
         }
         catch (InvalidOperationException)
         {
@@ -261,7 +261,7 @@ internal class PushingCollectionActionResult<T> : IActionResult
 /// <param name="prepare">The preparing callback.</param>
 /// <param name="mime">The content type.</param>
 /// <param name="filling">The response filling.</param>
-internal class JsonValueNodeActionResult(BaseJsonValueNode data, Action<HttpResponse> prepare, string mime, IHttpResponseFilling filling = null) : IActionResult
+internal class JsonValueNodeActionResult(BaseJsonValueNode? data, Action<HttpResponse>? prepare, string? mime, IHttpResponseFilling? filling = null) : IActionResult
 {
     /// <inheritdoc />
     public async Task ExecuteResultAsync(ActionContext context)
@@ -284,7 +284,7 @@ internal class JsonValueNodeActionResult(BaseJsonValueNode data, Action<HttpResp
 /// <param name="prepare">The preparing callback.</param>
 /// <param name="mime">The content type.</param>
 /// <param name="filling">The response filling.</param>
-internal class JsonWriterActionResult(Action<Utf8JsonWriter, JsonSerializerOptions> write, Action<HttpResponse> prepare, string mime, IHttpResponseFilling filling = null) : IActionResult
+internal class JsonWriterActionResult(Action<Utf8JsonWriter, JsonSerializerOptions?>? write, Action<HttpResponse>? prepare, string? mime, IHttpResponseFilling? filling = null) : IActionResult
 {
     /// <inheritdoc />
     public async Task ExecuteResultAsync(ActionContext context)

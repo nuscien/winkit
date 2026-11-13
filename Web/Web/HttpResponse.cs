@@ -10,12 +10,12 @@ namespace Trivial.Web;
 
 internal interface IHttpResponseFilling
 {
-    public void ExecuteResult(HttpResponse response);
+    public void ExecuteResult(HttpResponse? response);
 }
 
-internal class HttpResponseHeadersFilling(EntityTagHeaderValue entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue cacheControl = null) : IHttpResponseFilling
+internal class HttpResponseHeadersFilling(EntityTagHeaderValue? entityTag, DateTime? lastModified = null, DateTime? expires = null, CacheControlHeaderValue? cacheControl = null) : IHttpResponseFilling
 {
-    public void ExecuteResult(HttpResponse response)
+    public void ExecuteResult(HttpResponse? response)
     {
         if (response == null) return;
         if (entityTag != null) response.Headers.ETag = entityTag.ToString();
@@ -27,7 +27,7 @@ internal class HttpResponseHeadersFilling(EntityTagHeaderValue entityTag, DateTi
 
 internal class HttpResponseStatusFilling(int statusCode) : IHttpResponseFilling
 {
-    public void ExecuteResult(HttpResponse response)
+    public void ExecuteResult(HttpResponse? response)
     {
         if (response == null) return;
         response.StatusCode = statusCode;

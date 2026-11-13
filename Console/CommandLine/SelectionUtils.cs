@@ -23,7 +23,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="convert">The converter.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(this StyleConsole cli, IEnumerable<T> collection, Func<T, SelectionItem<T>> convert, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(this StyleConsole? cli, IEnumerable<T> collection, Func<T, SelectionItem<T>> convert, SelectionConsoleOptions? options = null)
     {
         var c = new SelectionData<T>();
         c.AddRange(collection.Select(convert));
@@ -41,7 +41,7 @@ public static partial class ConsoleRenderExtensions
     /// <exception cref="ArgumentException">searchPattern contains one or more invalid characters defined by the System.IO.Path.GetInvalidPathChars method.</exception>
     /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(this StyleConsole cli, DirectoryInfo path, SelectionConsoleOptions options = null, string searchPattern = null)
+    public static SelectionResult<FileSystemInfo> Select(this StyleConsole? cli, DirectoryInfo path, SelectionConsoleOptions? options = null, string? searchPattern = null)
     {
         var c = new SelectionData<FileSystemInfo>();
         var col = string.IsNullOrEmpty(searchPattern) ? path.GetFileSystemInfos() : path.GetFileSystemInfos(searchPattern);
@@ -65,7 +65,7 @@ public static partial class ConsoleRenderExtensions
     /// <exception cref="ArgumentException">searchPattern contains one or more invalid characters defined by the System.IO.Path.GetInvalidPathChars method.</exception>
     /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(this StyleConsole cli, DirectoryInfo path, bool onlyFiles, SelectionConsoleOptions options = null, string searchPattern = null)
+    public static SelectionResult<FileSystemInfo> Select(this StyleConsole? cli, DirectoryInfo path, bool onlyFiles, SelectionConsoleOptions? options = null, string? searchPattern = null)
     {
         if (!onlyFiles) return Select(cli, path, options, searchPattern);
         var c = new SelectionData<FileSystemInfo>();
@@ -88,7 +88,7 @@ public static partial class ConsoleRenderExtensions
     /// <returns>The result of selection.</returns>
     /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(this StyleConsole cli, DirectoryInfo path, Func<FileSystemInfo, bool> predicate, SelectionConsoleOptions options = null)
+    public static SelectionResult<FileSystemInfo> Select(this StyleConsole? cli, DirectoryInfo path, Func<FileSystemInfo, bool>? predicate, SelectionConsoleOptions? options = null)
     {
         var c = new SelectionData<FileSystemInfo>();
         IEnumerable<FileSystemInfo> col = path.GetFileSystemInfos();
@@ -108,7 +108,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="collection">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<string> Select(this StyleConsole cli, IEnumerable<string> collection, SelectionConsoleOptions options = null)
+    public static SelectionResult<string> Select(this StyleConsole? cli, IEnumerable<string?>? collection, SelectionConsoleOptions? options = null)
     {
         if (collection is null) return new(string.Empty, SelectionResultTypes.Canceled);
         var c = new SelectionData<string>();
@@ -121,8 +121,8 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="s">The input string.</param>
     /// <returns><c>true</c> if to get help; otherwise, <c>false</c>.</returns>
-    public static bool IsAboutToGetHelp(string s)
-        => !string.IsNullOrEmpty(s) && s.Trim().ToLowerInvariant() switch
+    public static bool IsAboutToGetHelp(string? s)
+        => s is { Length: > 0 } && s.Trim().ToLowerInvariant() switch
         {
             "?" or "help" or "gethelp" or "get-help" or "-?" or "/h" or "--?" or "-help" or "--help" or "/help" or "帮助" or "bangzhu" or "/bangzhu" or "--bangzhu" or "获取帮助" or "助け" or "❓" => true,
             _ => false
@@ -133,8 +133,8 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="s">The input string.</param>
     /// <returns><c>true</c> if to exit; otherwise, <c>false</c>.</returns>
-    public static bool IsAboutToExit(string s)
-        => !string.IsNullOrEmpty(s) && s.Trim().ToLowerInvariant() switch
+    public static bool IsAboutToExit(string? s)
+        => s is { Length: > 0 } && s.Trim().ToLowerInvariant() switch
         {
             "exit" or "quit" or "close" or "bye" or "byebye" or "goodbye" or "good-bye" or "end" or "shutdown" or "shut-down" or "关闭" or "退出" or "结束" or "再见" or "guanbi" or "tuichu" or "jieshu" or "zaijian" or "さようなら" => true,
             _ => false

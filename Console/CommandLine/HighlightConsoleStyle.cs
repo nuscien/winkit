@@ -21,7 +21,7 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// </summary>
     /// <param name="highlight">The highlight style.</param>
     /// <param name="q">The query string.</param>
-    public HighlightConsoleStyle(ConsoleTextStyle highlight, IEnumerable<string> q)
+    public HighlightConsoleStyle(ConsoleTextStyle? highlight, IEnumerable<string?>? q)
         : this(null, highlight, q)
     {
     }
@@ -32,7 +32,7 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// <param name="highlight">The highlight style.</param>
     /// <param name="q">The query string.</param>
     /// <param name="comparisonType">One of the enumeration values that specifies the rules for the search.</param>
-    public HighlightConsoleStyle(ConsoleTextStyle highlight, string q, StringComparison? comparisonType = null)
+    public HighlightConsoleStyle(ConsoleTextStyle? highlight, string? q, StringComparison? comparisonType = null)
         : this(null, highlight, q, comparisonType)
     {
     }
@@ -43,11 +43,11 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// <param name="normal">The normal style.</param>
     /// <param name="highlight">The highlight style.</param>
     /// <param name="q">The query string.</param>
-    public HighlightConsoleStyle(ConsoleTextStyle normal, ConsoleTextStyle highlight, IEnumerable<string> q)
+    public HighlightConsoleStyle(ConsoleTextStyle? normal, ConsoleTextStyle? highlight, IEnumerable<string?>? q)
     {
         Normal = normal;
         Highlight = highlight;
-        if (q != null) Query.AddRange(q.Where(ele => !string.IsNullOrEmpty(ele)));
+        if (q != null) Query.AddRange(q.OfType<string>().Where(ele => ele.Length > 0));
     }
 
     /// <summary>
@@ -57,11 +57,11 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// <param name="highlight">The highlight style.</param>
     /// <param name="q">The query string.</param>
     /// <param name="comparisonType">One of the enumeration values that specifies the rules for the search.</param>
-    public HighlightConsoleStyle(ConsoleTextStyle normal, ConsoleTextStyle highlight, string q, StringComparison? comparisonType = null)
+    public HighlightConsoleStyle(ConsoleTextStyle? normal, ConsoleTextStyle? highlight, string? q, StringComparison? comparisonType = null)
     {
         Normal = normal;
         Highlight = highlight;
-        if (!string.IsNullOrEmpty(q)) Query.Add(q);
+        if (q is { Length: > 0 }) Query.Add(q);
         if (comparisonType.HasValue) ComparisonType = comparisonType.Value;
     }
 
@@ -69,13 +69,13 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// Gets or sets the fallback foreground color.
     /// </summary>
     [JsonPropertyName("normal")]
-    public ConsoleTextStyle Normal { get; } = new();
+    public ConsoleTextStyle? Normal { get; } = new();
 
     /// <summary>
     /// Gets or sets the fallback background color.
     /// </summary>
     [JsonPropertyName("highlight")]
-    public ConsoleTextStyle Highlight { get; } = new();
+    public ConsoleTextStyle? Highlight { get; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether the text is strikeout.
@@ -104,9 +104,10 @@ public class HighlightConsoleStyle : IConsoleTextPrettier
     /// </summary>
     /// <param name="s">The text.</param>
     /// <returns>A collection of console text.</returns>
-    IEnumerable<ConsoleText> IConsoleTextPrettier.CreateTextCollection(string s)
+    IEnumerable<ConsoleText> IConsoleTextPrettier.CreateTextCollection(string? s)
     {
         var col = new List<ConsoleText>();
+        if (s is null || s.Length == 0) return col;
         var q = Query.Where(ele => !string.IsNullOrEmpty(ele)).ToList();
         var pos = StartPosition > 0 ? StartPosition : 0;
         while (true)

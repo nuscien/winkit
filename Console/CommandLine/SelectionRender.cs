@@ -22,7 +22,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="dispatcher">The command dispatcher.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<string> Select(this StyleConsole console, CommandDispatcher dispatcher, SelectionConsoleOptions options = null)
+    public static SelectionResult<string> Select(this StyleConsole? console, CommandDispatcher dispatcher, SelectionConsoleOptions? options = null)
     {
         var selection = new SelectionData<string>();
         var description = dispatcher.GetDescription();
@@ -52,7 +52,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="data">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(this StyleConsole console, IEnumerable<SelectionItem<T>> data, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(this StyleConsole? console, IEnumerable<SelectionItem<T>>? data, SelectionConsoleOptions? options = null)
     {
         var selection = new SelectionData<T>();
         selection.AddRange(data);
@@ -67,7 +67,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="data">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(this StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(this StyleConsole? console, SelectionData<T>? data, SelectionConsoleOptions? options = null)
     {
         if (data is null) return new(string.Empty, SelectionResultTypes.Empty);
         console ??= StyleConsole.Default;
@@ -181,7 +181,7 @@ public static partial class ConsoleRenderExtensions
 
             console.WriteLine();
             var end = Math.Min(start + absolutePageSize, list.Count);
-            if (string.IsNullOrWhiteSpace(options.PagingTips) || isFullWindow)
+            if (options.PagingTips is null || string.IsNullOrWhiteSpace(options.PagingTips) || isFullWindow)
             {
                 tipsHeight--;
             }
@@ -378,7 +378,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="label">The optional text above the selection.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, SelectionConsoleOptions options, ConsoleText label, CancellationToken cancellationToken = default)
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, SelectionConsoleOptions? options, ConsoleText? label, CancellationToken cancellationToken = default)
     {
         if (dispatcher is null) return;
         var console = dispatcher.Console ?? StyleConsole.Default;
@@ -388,7 +388,7 @@ public static partial class ConsoleRenderExtensions
             return;
         }
 
-        string cmd = null;
+        string? cmd = null;
         await dispatcher.ProcessAsync(() =>
         {
             if (label is not null) console.WriteLine(label);
@@ -413,7 +413,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="label">The optional text above the selection.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, ConsoleText label, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, ConsoleText? label, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, null, label, cancellationToken);
 
     /// <summary>
@@ -423,7 +423,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="disalbeLabel">true if disable the default label; otherwise, false.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, bool disalbeLabel, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, bool disalbeLabel, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, null, disalbeLabel ? null : CreateSelectText(), cancellationToken);
 
     /// <summary>
@@ -434,7 +434,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="disalbeLabel">true if disable the default label; otherwise, false.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, SelectionConsoleOptions options, bool disalbeLabel, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, SelectionConsoleOptions? options, bool disalbeLabel, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, options, disalbeLabel ? null : CreateSelectText(), cancellationToken);
 
     /// <summary>
@@ -444,7 +444,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="options">The selection display options.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, SelectionConsoleOptions options, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, SelectionConsoleOptions? options, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, options, false, cancellationToken);
 
     /// <summary>
@@ -453,7 +453,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="dispatcher">The command dispatcher.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, null, false, cancellationToken);
 
     /// <summary>
@@ -465,7 +465,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="disalbeLabel">true if disable the default label; otherwise, false.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, bool disalbeLabel, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, CommandArguments? args, SelectionConsoleOptions? options, bool disalbeLabel, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, args, options, disalbeLabel ? null : CreateSelectText(), cancellationToken);
 
     /// <summary>
@@ -477,7 +477,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="label">The optional text above the selection.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static async Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, ConsoleText label, CancellationToken cancellationToken = default)
+    public static async Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, CommandArguments? args, SelectionConsoleOptions? options, ConsoleText? label, CancellationToken cancellationToken = default)
     {
         if (dispatcher is null) return;
         var console = dispatcher.Console ?? StyleConsole.Default;
@@ -514,13 +514,13 @@ public static partial class ConsoleRenderExtensions
     /// <param name="options">The selection display options.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
     /// <returns>A task that represents the asynchronous processing operation.</returns>
-    public static Task ProcessOrSelectAsync(this CommandDispatcher dispatcher, CommandArguments args, SelectionConsoleOptions options, CancellationToken cancellationToken = default)
+    public static Task ProcessOrSelectAsync(this CommandDispatcher? dispatcher, CommandArguments? args, SelectionConsoleOptions? options, CancellationToken cancellationToken = default)
         => ProcessOrSelectAsync(dispatcher, args, options, false, cancellationToken);
 
-    internal static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length)
+    internal static void RenderSentence(StyleConsole console, ConsoleTextStyle? style, string? value, int start, int length)
         => RenderSentence(console, style, value, start, length, false, GetBufferSafeWidth(console));
 
-    private static SelectionResult<T> SelectInternal<T>(StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options = null)
+    private static SelectionResult<T> SelectInternal<T>(StyleConsole console, SelectionData<T> data, SelectionConsoleOptions options)
     {
         var list = data.ToList();
         var style = options.FallbackStyle ? new ConsoleTextStyle
@@ -535,7 +535,7 @@ public static partial class ConsoleRenderExtensions
         foreach (var item in list)
         {
             var title = item?.Title?.Trim();
-            if (string.IsNullOrWhiteSpace(title)) continue;
+            if (title is null || string.IsNullOrWhiteSpace(title)) continue;
             if (prefix is null)
             {
                 var pos2 = title.IndexOf('\t');
@@ -568,11 +568,11 @@ public static partial class ConsoleRenderExtensions
         return SelectInternal(console, console.ReadLine(), data, true);
     }
 
-    private static SelectionResult<T> SelectInternal<T>(StyleConsole console, string s, SelectionData<T> data, bool enableIndex = false)
+    private static SelectionResult<T> SelectInternal<T>(StyleConsole console, string? s, SelectionData<T> data, bool enableIndex = false)
     {
-        if (string.IsNullOrEmpty(s))
+        if (s is null || s.Length == 0)
             return new SelectionResult<T>(s, SelectionResultTypes.Canceled);
-        SelectionItem<T> item = null;
+        SelectionItem<T>? item = null;
         int i;
         if (s.Trim().Length == 1)
         {
@@ -613,7 +613,7 @@ public static partial class ConsoleRenderExtensions
 
     }
 
-    private static void RenderSentence(StyleConsole console, ConsoleTextStyle style, string value, int start, int length, bool keepTab, int maxWidth)
+    private static void RenderSentence(StyleConsole console, ConsoleTextStyle? style, string? value, int start, int length, bool keepTab, int maxWidth)
     {
         if (start + length > maxWidth) length = maxWidth - start;
         var left = TryGetCursorLeft(console);
@@ -649,10 +649,10 @@ public static partial class ConsoleRenderExtensions
             console.Write(' ', -diff);
     }
 
-    private static ConsoleText CreateSelectText()
+    private static ConsoleText? CreateSelectText()
     {
         var toSelect = Resource.ToSelect?.Trim();
-        if (string.IsNullOrEmpty(toSelect)) return null;
+        if (toSelect is null || toSelect.Length == 0) return null;
         if (toSelect.EndsWith(": ")) toSelect = toSelect.Substring(0, toSelect.Length - 2).TrimEnd();
         else if (toSelect.EndsWith(":") || toSelect.EndsWith("：")) toSelect = toSelect.Substring(0, toSelect.Length - 1).TrimEnd();
         if (string.IsNullOrEmpty(toSelect)) return null;

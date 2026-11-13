@@ -90,10 +90,10 @@ public class LinearGradientConsoleStyle : IConsoleTextPrettier
     /// </summary>
     /// <param name="s">The text.</param>
     /// <returns>A collection of console text.</returns>
-    IEnumerable<ConsoleText> IConsoleTextPrettier.CreateTextCollection(string s)
+    IEnumerable<ConsoleText> IConsoleTextPrettier.CreateTextCollection(string? s)
     {
         var col = new List<ConsoleText>();
-        if (string.IsNullOrEmpty(s)) return col;
+        if (s is null || s.Length == 0) return col;
         col.Add(s[0], 1, new ConsoleTextStyle(fromFore, FallbackForegroundColor, fromBack, FallbackBackgroundColor)
         {
             Blink = Blink,

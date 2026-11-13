@@ -151,7 +151,7 @@ public class JsonConsoleStyle : ICloneable
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>A console text instance.</returns>
-    public ConsoleText CreateText(string value)
+    public ConsoleText CreateText(string? value)
         => value == null ? CreateByKeyword(JsonValues.Null.ToString()) : new(
             JsonStringNode.ToJson(value),
             StringForegroundRgbColor,
@@ -163,7 +163,7 @@ public class JsonConsoleStyle : ICloneable
     /// Clones an object.
     /// </summary>
     /// <returns>The object copied from this instance.</returns>
-    public virtual JsonConsoleStyle Clone()
+    public virtual JsonConsoleStyle? Clone()
         => MemberwiseClone() as JsonConsoleStyle;
 
     /// <summary>
@@ -179,7 +179,7 @@ public class JsonConsoleStyle : ICloneable
     /// <param name="json">The JSON instance.</param>
     /// <param name="indentLevel">The current indent level.</param>
     /// <returns>A console text instance.</returns>
-    internal List<ConsoleText> CreateTextCollection(IJsonValueNode json, int indentLevel = 0)
+    internal List<ConsoleText> CreateTextCollection(IJsonValueNode? json, int indentLevel = 0)
     {
         var cmd = new List<ConsoleText>();
         if (json == null)
@@ -233,7 +233,7 @@ public class JsonConsoleStyle : ICloneable
     /// <param name="json">The JSON instance.</param>
     /// <param name="indentLevel">The current indent level.</param>
     /// <returns>A console text instance.</returns>
-    private List<ConsoleText> CreateTextCollection(JsonObjectNode json, int indentLevel)
+    private List<ConsoleText> CreateTextCollection(JsonObjectNode? json, int indentLevel)
     {
         var cmd = new List<ConsoleText>();
         if (json == null)
@@ -271,7 +271,7 @@ public class JsonConsoleStyle : ICloneable
     /// <param name="json">The JSON instance.</param>
     /// <param name="indentLevel">The current indent level.</param>
     /// <returns>A console text instance.</returns>
-    private List<ConsoleText> CreateTextCollection(JsonArrayNode json, int indentLevel)
+    private List<ConsoleText> CreateTextCollection(JsonArrayNode? json, int indentLevel)
     {
         var cmd = new List<ConsoleText>();
         if (json == null)
@@ -301,7 +301,7 @@ public class JsonConsoleStyle : ICloneable
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>A console text instance.</returns>
-    private ConsoleText CreateByKeyword(string value)
+    private ConsoleText CreateByKeyword(string? value)
         => new(
             value,
             KeywordForegroundRgbColor,
@@ -314,7 +314,7 @@ public class JsonConsoleStyle : ICloneable
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>A console text instance.</returns>
-    private ConsoleText CreateByPunctuation(string value)
+    private ConsoleText CreateByPunctuation(string? value)
         => new(
             value,
             PunctuationForegroundRgbColor,
@@ -327,7 +327,7 @@ public class JsonConsoleStyle : ICloneable
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>A console text instance.</returns>
-    private ConsoleText CreateByWhitespace(string value)
+    private ConsoleText CreateByWhitespace(string? value)
         => new(
             value,
             null,

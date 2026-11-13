@@ -15,12 +15,12 @@ public class ReadLineConsoleOptions
     /// <summary>
     /// Gets or sets the hint.
     /// </summary>
-    public string Hint { get; set; }
+    public string? Hint { get; set; }
 
     /// <summary>
     /// Gets or sets the prefix. This will show before input cursor.
     /// </summary>
-    public string Prefix { get; set; }
+    public string? Prefix { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the input cursor is in the same line of hint.
@@ -98,8 +98,9 @@ public static partial class ConsoleRenderExtensions
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="OutOfMemoryException">There is insufficient memory to allocate a buffer for the returned string.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The number of characters in the next line of characters is greater than max value of 32-bit integer.</exception>
-    public static string ReadLine(this StyleConsole cli, ReadLineConsoleOptions options)
+    public static string? ReadLine(this StyleConsole? cli, ReadLineConsoleOptions? options)
     {
+        cli ??= StyleConsole.Default;
         if (options is null) return cli.ReadLine();
         if (!string.IsNullOrWhiteSpace(options.Hint))
         {
@@ -118,7 +119,7 @@ public static partial class ConsoleRenderExtensions
                 options.PrefixBackgroundRgbColor,
                 options.PrefixBackgroundColor);
         var padding = false;
-        if (style != null)
+        if (style != null && prefix != null)
         {
             cli.Write(style, prefix);
             if (!options.SkipPrefixPadding)

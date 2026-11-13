@@ -27,7 +27,7 @@ public class RepeatedColorConsoleStyle : IConsoleTextPrettier
     /// </summary>
     /// <param name="fallbackForegroundColor">The fallback foreground color.</param>
     /// <param name="foregroundColors">The foreground colors.</param>
-    public RepeatedColorConsoleStyle(ConsoleColor fallbackForegroundColor, IEnumerable<Color> foregroundColors)
+    public RepeatedColorConsoleStyle(ConsoleColor fallbackForegroundColor, IEnumerable<Color>? foregroundColors)
     {
         ForegroundConsoleColors.Add(fallbackForegroundColor);
         if (foregroundColors != null) ForegroundRgbColors.AddRange(foregroundColors);
@@ -38,7 +38,7 @@ public class RepeatedColorConsoleStyle : IConsoleTextPrettier
     /// </summary>
     /// <param name="foregroundConsoleColors">The foreground console colors.</param>
     /// <param name="foregroundRgbColors">The foreground RGB colors.</param>
-    public RepeatedColorConsoleStyle(IEnumerable<ConsoleColor> foregroundConsoleColors, IEnumerable<Color> foregroundRgbColors)
+    public RepeatedColorConsoleStyle(IEnumerable<ConsoleColor>? foregroundConsoleColors, IEnumerable<Color>? foregroundRgbColors)
     {
         if (foregroundConsoleColors != null) ForegroundConsoleColors.AddRange(foregroundConsoleColors);
         if (foregroundRgbColors != null) ForegroundRgbColors.AddRange(foregroundRgbColors);
@@ -51,7 +51,7 @@ public class RepeatedColorConsoleStyle : IConsoleTextPrettier
     /// <param name="foregroundRgbColors">The foreground RGB colors.</param>
     /// <param name="backgroundConsoleColor">The background console colors.</param>
     /// <param name="backgroundRgbColor">The background RGB colors.</param>
-    public RepeatedColorConsoleStyle(IEnumerable<ConsoleColor> foregroundConsoleColors, IEnumerable<Color> foregroundRgbColors, ConsoleColor? backgroundConsoleColor, Color? backgroundRgbColor)
+    public RepeatedColorConsoleStyle(IEnumerable<ConsoleColor>? foregroundConsoleColors, IEnumerable<Color>? foregroundRgbColors, ConsoleColor? backgroundConsoleColor, Color? backgroundRgbColor)
     {
         if (foregroundConsoleColors != null) ForegroundConsoleColors.AddRange(foregroundConsoleColors);
         if (foregroundRgbColors != null) ForegroundRgbColors.AddRange(foregroundRgbColors);
@@ -66,7 +66,7 @@ public class RepeatedColorConsoleStyle : IConsoleTextPrettier
     /// <param name="foregroundRgbColors">The foreground RGB colors.</param>
     /// <param name="backgroundConsoleColors">The background console colors.</param>
     /// <param name="backgroundRgbColors">The background RGB colors.</param>
-    public RepeatedColorConsoleStyle(IEnumerable<ConsoleColor> foregroundConsoleColors, IEnumerable<Color> foregroundRgbColors, IEnumerable<ConsoleColor> backgroundConsoleColors, IEnumerable<Color> backgroundRgbColors)
+    public RepeatedColorConsoleStyle(IEnumerable<ConsoleColor>? foregroundConsoleColors, IEnumerable<Color>? foregroundRgbColors, IEnumerable<ConsoleColor>? backgroundConsoleColors, IEnumerable<Color>? backgroundRgbColors)
     {
         if (foregroundConsoleColors != null) ForegroundConsoleColors.AddRange(foregroundConsoleColors);
         if (foregroundRgbColors != null) ForegroundRgbColors.AddRange(foregroundRgbColors);
@@ -81,7 +81,7 @@ public class RepeatedColorConsoleStyle : IConsoleTextPrettier
     /// <param name="foregroundRgbColor">The foreground RGB color.</param>
     /// <param name="backgroundConsoleColors">The background console colors.</param>
     /// <param name="backgroundRgbColors">The background RGB colors.</param>
-    public RepeatedColorConsoleStyle(ConsoleColor foregroundConsoleColor, Color foregroundRgbColor, IEnumerable<ConsoleColor> backgroundConsoleColors, IEnumerable<Color> backgroundRgbColors)
+    public RepeatedColorConsoleStyle(ConsoleColor foregroundConsoleColor, Color foregroundRgbColor, IEnumerable<ConsoleColor>? backgroundConsoleColors, IEnumerable<Color>? backgroundRgbColors)
     {
         ForegroundConsoleColors.Add(foregroundConsoleColor);
         ForegroundRgbColors.Add(foregroundRgbColor);
@@ -139,10 +139,10 @@ public class RepeatedColorConsoleStyle : IConsoleTextPrettier
     /// </summary>
     /// <param name="s">The text.</param>
     /// <returns>A collection of console text.</returns>
-    IEnumerable<ConsoleText> IConsoleTextPrettier.CreateTextCollection(string s)
+    IEnumerable<ConsoleText> IConsoleTextPrettier.CreateTextCollection(string? s)
     {
         var col = new List<ConsoleText>();
-        if (string.IsNullOrEmpty(s)) return col;
+        if (s is null || s.Length == 0) return col;
         if (ForegroundConsoleColors.Count < 2 && ForegroundRgbColors.Count < 2 && BackgroundConsoleColors.Count < 2 && BackgroundRgbColors.Count < 2)
         {
             col.Add(s, new ConsoleTextStyle(

@@ -27,7 +27,7 @@ public static partial class DefaultConsole
     /// <param name="convert">The converter.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(IEnumerable<T> collection, Func<T, SelectionItem<T>> convert, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(IEnumerable<T> collection, Func<T, SelectionItem<T>> convert, SelectionConsoleOptions? options = null)
         => StyleConsole.Default.Select(collection, convert, options);
 
     /// <summary>
@@ -36,7 +36,7 @@ public static partial class DefaultConsole
     /// <param name="collection">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(IEnumerable<SelectionItem<T>> collection, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(IEnumerable<SelectionItem<T>>? collection, SelectionConsoleOptions? options = null)
         => StyleConsole.Default.Select(collection, options);
 
     /// <summary>
@@ -49,7 +49,7 @@ public static partial class DefaultConsole
     /// <exception cref="ArgumentException">searchPattern contains one or more invalid characters defined by the System.IO.Path.GetInvalidPathChars method.</exception>
     /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(DirectoryInfo path, SelectionConsoleOptions options = null, string searchPattern = null)
+    public static SelectionResult<FileSystemInfo> Select(DirectoryInfo path, SelectionConsoleOptions? options = null, string? searchPattern = null)
         => StyleConsole.Default.Select(path, options, searchPattern);
 
     /// <summary>
@@ -61,7 +61,7 @@ public static partial class DefaultConsole
     /// <returns>The result of selection.</returns>
     /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-    public static SelectionResult<FileSystemInfo> Select(DirectoryInfo path, Func<FileSystemInfo, bool> predicate, SelectionConsoleOptions options = null)
+    public static SelectionResult<FileSystemInfo> Select(DirectoryInfo path, Func<FileSystemInfo, bool>? predicate, SelectionConsoleOptions? options = null)
         => StyleConsole.Default.Select(path, predicate, options);
 
     /// <summary>
@@ -71,7 +71,7 @@ public static partial class DefaultConsole
     /// <param name="collection">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<T> Select<T>(SelectionData<T> collection, SelectionConsoleOptions options = null)
+    public static SelectionResult<T> Select<T>(SelectionData<T>? collection, SelectionConsoleOptions? options = null)
         => StyleConsole.Default.Select(collection, options);
 
     /// <summary>
@@ -80,7 +80,7 @@ public static partial class DefaultConsole
     /// <param name="collection">The collection data.</param>
     /// <param name="options">The selection display options.</param>
     /// <returns>The result of selection.</returns>
-    public static SelectionResult<string> Select(IEnumerable<string> collection, SelectionConsoleOptions options = null)
+    public static SelectionResult<string> Select(IEnumerable<string?>? collection, SelectionConsoleOptions? options = null)
         => StyleConsole.Default.Select(collection, options);
 
     /// <summary>
@@ -116,7 +116,7 @@ public static partial class DefaultConsole
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="OutOfMemoryException">There is insufficient memory to allocate a buffer for the returned string.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The number of characters in the next line of characters is greater than max value of 32-bit integer.</exception>
-    public static string ReadLine()
+    public static string? ReadLine()
         => StyleConsole.Default.ReadLine();
 
     /// <summary>
@@ -127,7 +127,7 @@ public static partial class DefaultConsole
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="OutOfMemoryException">There is insufficient memory to allocate a buffer for the returned string.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The number of characters in the next line of characters is greater than max value of 32-bit integer.</exception>
-    public static string ReadLine(ReadLineConsoleOptions options)
+    public static string? ReadLine(ReadLineConsoleOptions? options)
         => ConsoleRenderExtensions.ReadLine(StyleConsole.Default, options);
 
     /// <summary>
@@ -146,7 +146,7 @@ public static partial class DefaultConsole
     /// <returns>
     /// The password.
     /// </returns>
-    public static SecureString ReadPassword()
+    public static SecureString? ReadPassword()
         => StyleConsole.Default.ReadPassword(null, null);
 
     /// <summary>
@@ -157,7 +157,7 @@ public static partial class DefaultConsole
     /// <returns>
     /// The password.
     /// </returns>
-    public static SecureString ReadPassword(char replaceChar, bool inline = false)
+    public static SecureString? ReadPassword(char replaceChar, bool inline = false)
         => StyleConsole.Default.ReadPassword(null, replaceChar, inline);
 
     /// <summary>
@@ -169,7 +169,7 @@ public static partial class DefaultConsole
     /// <returns>
     /// The password.
     /// </returns>
-    public static SecureString ReadPassword(ConsoleColor? foreground, char? replaceChar, bool inline = false)
+    public static SecureString? ReadPassword(ConsoleColor? foreground, char? replaceChar, bool inline = false)
         => StyleConsole.Default.ReadPassword(foreground, replaceChar, inline);
 
     /// <summary>

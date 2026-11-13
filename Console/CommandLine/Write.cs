@@ -25,7 +25,7 @@ public static partial class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="content">The text content.</param>
-    public static void Write(ConsoleText content)
+    public static void Write(ConsoleText? content)
         => StyleConsole.Default.Write(content);
 
     /// <summary>
@@ -35,7 +35,7 @@ public static partial class DefaultConsole
     /// <param name="content1">The text content 1.</param>
     /// <param name="content2">The text content 2.</param>
     /// <param name="additionalContext">The additional text content collection.</param>
-    public static void Write(ConsoleText content1, ConsoleText content2, params ConsoleText[] additionalContext)
+    public static void Write(ConsoleText? content1, ConsoleText? content2, params ConsoleText?[]? additionalContext)
         => StyleConsole.Default.Write(content1, content2, additionalContext);
 
     /// <summary>
@@ -43,7 +43,7 @@ public static partial class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="content">The text content collection.</param>
-    public static void Write(IEnumerable<ConsoleText> content)
+    public static void Write(IEnumerable<ConsoleText?>? content)
         => StyleConsole.Default.Write(content);
 
     /// <summary>
@@ -51,7 +51,7 @@ public static partial class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="content">The text content collection.</param>
-    public static void Write(ReadOnlySpan<ConsoleText> content)
+    public static void Write(ReadOnlySpan<ConsoleText?> content)
         => StyleConsole.Default.Write(content);
 
     /// <summary>
@@ -61,7 +61,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(string s, params object[] args)
+    public static void Write(string? s, params object?[]? args)
         => StyleConsole.Default.Write(s, args);
 
     /// <summary>
@@ -72,7 +72,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(ConsoleTextStyle style, string s, params object[] args)
+    public static void Write(ConsoleTextStyle? style, string? s, params object?[]? args)
         => StyleConsole.Default.Write(style, s, args);
 
     /// <summary>
@@ -83,7 +83,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(ConsoleColor foreground, string s, params object[] args)
+    public static void Write(ConsoleColor foreground, string? s, params object?[]? args)
         => StyleConsole.Default.Write(foreground, s, args);
 
     /// <summary>
@@ -95,7 +95,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, string s, params object[] args)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, string? s, params object?[]? args)
         => StyleConsole.Default.Write(foreground, background, s, args);
 
     /// <summary>
@@ -106,7 +106,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(Color foreground, string s, params object[] args)
+    public static void Write(Color foreground, string? s, params object?[]? args)
         => StyleConsole.Default.Write(foreground, s, args);
 
     /// <summary>
@@ -118,7 +118,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(Color foreground, Color background, string s, params object[] args)
+    public static void Write(Color foreground, Color background, string? s, params object?[]? args)
         => StyleConsole.Default.Write(foreground, background, s, args);
 
     /// <summary>
@@ -129,7 +129,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(IConsoleTextPrettier style, string s, params object[] args)
+    public static void Write(IConsoleTextPrettier? style, string? s, params object?[]? args)
         => StyleConsole.Default.Write(style, s, args);
 
 #if NET9_0_OR_GREATER
@@ -140,7 +140,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(string s, params ReadOnlySpan<object> args)
+    public static void Write(string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(s, args);
 
     /// <summary>
@@ -151,7 +151,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(ConsoleTextStyle style, string s, params ReadOnlySpan<object> args)
+    public static void Write(ConsoleTextStyle? style, string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(style, s, args);
 
     /// <summary>
@@ -162,7 +162,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(ConsoleColor foreground, string s, params ReadOnlySpan<object> args)
+    public static void Write(ConsoleColor foreground, string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(foreground, s, args);
 
     /// <summary>
@@ -174,7 +174,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, string s, params ReadOnlySpan<object> args)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(foreground, background, s, args);
 
     /// <summary>
@@ -185,7 +185,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(Color foreground, string s, params ReadOnlySpan<object> args)
+    public static void Write(Color foreground, string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(foreground, s, args);
 
     /// <summary>
@@ -197,7 +197,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(Color foreground, Color background, string s, params ReadOnlySpan<object> args)
+    public static void Write(Color foreground, Color background, string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(foreground, background, s, args);
 
     /// <summary>
@@ -208,7 +208,7 @@ public static partial class DefaultConsole
     /// <param name="s">A composite format string to output.</param>
     /// <param name="args">An object array that contains zero or more objects to format.</param>
     /// <exception cref="FormatException">format is invalid. -or- The index of a format item is less than zero, or greater than or equal to the length of the args array.</exception>
-    public static void Write(IConsoleTextPrettier style, string s, params ReadOnlySpan<object> args)
+    public static void Write(IConsoleTextPrettier? style, string? s, params ReadOnlySpan<object?> args)
         => StyleConsole.Default.Write(style, s, args);
 #endif
 
@@ -217,7 +217,7 @@ public static partial class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(StringBuilder s)
+    public static void Write(StringBuilder? s)
         => StyleConsole.Default.Write(s);
 
     /// <summary>
@@ -226,7 +226,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(ConsoleTextStyle style, StringBuilder s)
+    public static void Write(ConsoleTextStyle? style, StringBuilder? s)
         => StyleConsole.Default.Write(style, s);
 
     /// <summary>
@@ -235,7 +235,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(ConsoleColor foreground, StringBuilder s)
+    public static void Write(ConsoleColor foreground, StringBuilder? s)
         => StyleConsole.Default.Write(foreground, s);
 
     /// <summary>
@@ -245,7 +245,7 @@ public static partial class DefaultConsole
     /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, StringBuilder s)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, StringBuilder? s)
         => StyleConsole.Default.Write(foreground, background, s);
 
     /// <summary>
@@ -254,7 +254,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(Color foreground, StringBuilder s)
+    public static void Write(Color foreground, StringBuilder? s)
         => StyleConsole.Default.Write(foreground, s);
 
     /// <summary>
@@ -264,7 +264,7 @@ public static partial class DefaultConsole
     /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(Color foreground, Color background, StringBuilder s)
+    public static void Write(Color foreground, Color background, StringBuilder? s)
         => StyleConsole.Default.Write(foreground, background, s);
 
     /// <summary>
@@ -273,7 +273,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The style.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(IConsoleTextPrettier style, StringBuilder s)
+    public static void Write(IConsoleTextPrettier? style, StringBuilder? s)
         => StyleConsole.Default.Write(style, s);
 
     /// <summary>
@@ -281,7 +281,7 @@ public static partial class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(SecureString s)
+    public static void Write(SecureString? s)
         => StyleConsole.Default.Write(s.ToUnsecureString());
 
     /// <summary>
@@ -290,7 +290,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(ConsoleTextStyle style, SecureString s)
+    public static void Write(ConsoleTextStyle? style, SecureString? s)
         => StyleConsole.Default.Write(style, s.ToUnsecureString());
 
     /// <summary>
@@ -299,7 +299,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="foreground">The foreground color.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(ConsoleColor foreground, SecureString s)
+    public static void Write(ConsoleColor foreground, SecureString? s)
         => StyleConsole.Default.Write(foreground, s.ToUnsecureString());
 
     /// <summary>
@@ -309,7 +309,7 @@ public static partial class DefaultConsole
     /// <param name="foreground">The foreground color.</param>
     /// <param name="background">The background color.</param>
     /// <param name="s">A composite format string to output.</param>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, SecureString s)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, SecureString? s)
         => StyleConsole.Default.Write(foreground, background, s.ToUnsecureString());
 
     /// <summary>
@@ -327,7 +327,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(int number, string format)
+    public static void Write(int number, string? format)
         => StyleConsole.Default.Write(number, format);
 
     /// <summary>
@@ -336,7 +336,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
-    public static void Write(ConsoleTextStyle style, int number)
+    public static void Write(ConsoleTextStyle? style, int number)
         => StyleConsole.Default.Write(style, number);
 
     /// <summary>
@@ -347,7 +347,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleTextStyle style, int number, string format)
+    public static void Write(ConsoleTextStyle? style, int number, string? format)
         => StyleConsole.Default.Write(style, number, format);
 
     /// <summary>
@@ -367,7 +367,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor foreground, int number, string format)
+    public static void Write(ConsoleColor foreground, int number, string? format)
         => StyleConsole.Default.Write(foreground, number, format);
 
     /// <summary>
@@ -389,7 +389,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, int number, string format)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, int number, string? format)
         => StyleConsole.Default.Write(foreground, background, number, format);
 
     /// <summary>
@@ -407,7 +407,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(long number, string format)
+    public static void Write(long number, string? format)
         => StyleConsole.Default.Write(number, format);
 
     /// <summary>
@@ -416,7 +416,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
-    public static void Write(ConsoleTextStyle style, long number)
+    public static void Write(ConsoleTextStyle? style, long number)
         => StyleConsole.Default.Write(style, number);
 
     /// <summary>
@@ -427,7 +427,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleTextStyle style, long number, string format)
+    public static void Write(ConsoleTextStyle? style, long number, string? format)
         => StyleConsole.Default.Write(style, number, format);
 
     /// <summary>
@@ -447,7 +447,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor foreground, long number, string format)
+    public static void Write(ConsoleColor foreground, long number, string? format)
         => StyleConsole.Default.Write(foreground, number, format);
 
     /// <summary>
@@ -469,7 +469,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, long number, string format)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, long number, string? format)
         => StyleConsole.Default.Write(foreground, background, number, format);
 
     /// <summary>
@@ -486,7 +486,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
-    public static void Write(ConsoleTextStyle style, ulong number)
+    public static void Write(ConsoleTextStyle? style, ulong number)
         => StyleConsole.Default.Write(style, number);
 
     /// <summary>
@@ -523,7 +523,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(float number, string format)
+    public static void Write(float number, string? format)
         => StyleConsole.Default.Write(number, format);
 
     /// <summary>
@@ -532,7 +532,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
-    public static void Write(ConsoleTextStyle style, float number)
+    public static void Write(ConsoleTextStyle? style, float number)
         => StyleConsole.Default.Write(style, number);
 
     /// <summary>
@@ -543,7 +543,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleTextStyle style, float number, string format)
+    public static void Write(ConsoleTextStyle? style, float number, string? format)
         => StyleConsole.Default.Write(style, number, format);
 
     /// <summary>
@@ -563,7 +563,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor foreground, float number, string format)
+    public static void Write(ConsoleColor foreground, float number, string? format)
         => StyleConsole.Default.Write(foreground, number, format);
 
     /// <summary>
@@ -585,7 +585,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, float number, string format)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, float number, string? format)
         => StyleConsole.Default.Write(foreground, background, number, format);
 
     /// <summary>
@@ -602,7 +602,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
-    public static void Write(ConsoleTextStyle style, decimal number)
+    public static void Write(ConsoleTextStyle? style, decimal number)
         => StyleConsole.Default.Write(style, number);
 
     /// <summary>
@@ -639,7 +639,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(double number, string format)
+    public static void Write(double number, string? format)
         => StyleConsole.Default.Write(number, format);
 
     /// <summary>
@@ -648,7 +648,7 @@ public static partial class DefaultConsole
     /// </summary>
     /// <param name="style">The content style.</param>
     /// <param name="number">A number to output.</param>
-    public static void Write(ConsoleTextStyle style, double number)
+    public static void Write(ConsoleTextStyle? style, double number)
         => StyleConsole.Default.Write(style, number);
 
     /// <summary>
@@ -659,7 +659,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleTextStyle style, double number, string format)
+    public static void Write(ConsoleTextStyle? style, double number, string? format)
         => StyleConsole.Default.Write(style, number, format);
 
     /// <summary>
@@ -679,7 +679,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor foreground, double number, string format)
+    public static void Write(ConsoleColor foreground, double number, string? format)
         => StyleConsole.Default.Write(foreground, number, format);
 
     /// <summary>
@@ -701,7 +701,7 @@ public static partial class DefaultConsole
     /// <param name="number">A number to output.</param>
     /// <param name="format">A standard or custom numeric format string.</param>
     /// <exception cref="FormatException">format is invalid or not supported.</exception>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, double number, string format)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, double number, string? format)
         => StyleConsole.Default.Write(foreground, background, number, format);
 
     /// <summary>
@@ -711,7 +711,7 @@ public static partial class DefaultConsole
     /// <param name="value">The value to write.</param>
     /// <param name="start">The starting position in value.</param>
     /// <param name="count">The number of characters to write.</param>
-    public static void Write(char[] value, int start = 0, int? count = null)
+    public static void Write(char[]? value, int start = 0, int? count = null)
         => StyleConsole.Default.Write(value, start, count);
 
     /// <summary>
@@ -722,7 +722,7 @@ public static partial class DefaultConsole
     /// <param name="value">The value to write.</param>
     /// <param name="start">The starting position in value.</param>
     /// <param name="count">The number of characters to write.</param>
-    public static void Write(ConsoleTextStyle style, char[] value, int start = 0, int? count = null)
+    public static void Write(ConsoleTextStyle? style, char[]? value, int start = 0, int? count = null)
         => StyleConsole.Default.Write(style, value, start, count);
 
     /// <summary>
@@ -733,7 +733,7 @@ public static partial class DefaultConsole
     /// <param name="value">The value to write.</param>
     /// <param name="start">The starting position in value.</param>
     /// <param name="count">The number of characters to write.</param>
-    public static void Write(ConsoleColor foreground, char[] value, int start = 0, int? count = null)
+    public static void Write(ConsoleColor foreground, char[]? value, int start = 0, int? count = null)
         => StyleConsole.Default.Write(foreground, value, start, count);
 
     /// <summary>
@@ -745,7 +745,7 @@ public static partial class DefaultConsole
     /// <param name="value">The value to write.</param>
     /// <param name="start">The starting position in value.</param>
     /// <param name="count">The number of characters to write.</param>
-    public static void Write(ConsoleColor? foreground, ConsoleColor? background, char[] value, int start = 0, int? count = null)
+    public static void Write(ConsoleColor? foreground, ConsoleColor? background, char[]? value, int start = 0, int? count = null)
         => StyleConsole.Default.Write(foreground, background, value, start, count);
 
     /// <summary>
@@ -756,7 +756,7 @@ public static partial class DefaultConsole
     /// <param name="value">The value to write.</param>
     /// <param name="start">The starting position in value.</param>
     /// <param name="count">The number of characters to write.</param>
-    public static void Write(IConsoleTextPrettier style, char[] value, int start = 0, int? count = null)
+    public static void Write(IConsoleTextPrettier? style, char[]? value, int start = 0, int? count = null)
         => StyleConsole.Default.Write(style, value, start, count);
 
     /// <summary>
@@ -775,7 +775,7 @@ public static partial class DefaultConsole
     /// <param name="style">The content style.</param>
     /// <param name="value">The value to write.</param>
     /// <param name="repeatCount">The number of times to append value.</param>
-    public static void Write(ConsoleTextStyle style, char value, int repeatCount = 1)
+    public static void Write(ConsoleTextStyle? style, char value, int repeatCount = 1)
         => StyleConsole.Default.Write(style, value, repeatCount);
 
     /// <summary>
@@ -795,7 +795,7 @@ public static partial class DefaultConsole
     /// <param name="style">The style.</param>
     /// <param name="value">The value to write.</param>
     /// <param name="repeatCount">The number of times to append value.</param>
-    public static void Write(IConsoleTextPrettier style, char value, int repeatCount = 1)
+    public static void Write(IConsoleTextPrettier? style, char value, int repeatCount = 1)
         => StyleConsole.Default.Write(style, value, repeatCount);
 
     /// <summary>
@@ -803,7 +803,7 @@ public static partial class DefaultConsole
     /// Note it may not flush immediately.
     /// </summary>
     /// <param name="model">A representation model.</param>
-    public static void Write(IConsoleTextCreator model)
+    public static void Write(IConsoleTextCreator? model)
         => StyleConsole.Default.Write(model);
 
     /// <summary>
@@ -813,7 +813,7 @@ public static partial class DefaultConsole
     /// <typeparam name="T">The type of data model.</typeparam>
     /// <param name="style">The style.</param>
     /// <param name="data">A data model.</param>
-    public static void Write<T>(IConsoleTextCreator<T> style, T data)
+    public static void Write<T>(IConsoleTextCreator<T?>? style, T? data)
         => StyleConsole.Default.Write(style, data);
 
     /// <summary>
@@ -825,7 +825,7 @@ public static partial class DefaultConsole
     /// <param name="style">The style.</param>
     /// <param name="data">A data model.</param>
     /// <param name="options">The additional options.</param>
-    public static void Write<TData, TOptions>(IConsoleTextCreator<TData, TOptions> style, TData data, TOptions options)
+    public static void Write<TData, TOptions>(IConsoleTextCreator<TData?, TOptions?>? style, TData? data, TOptions? options)
         => StyleConsole.Default.Write(style, data, options);
 
     /// <summary>

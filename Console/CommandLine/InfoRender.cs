@@ -23,7 +23,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="ex">The exception.</param>
     /// <param name="stackTrace">true if output stack trace; otherwise, false.</param>
-    public static void WriteLine(this StyleConsole cli, Exception ex, bool stackTrace = false)
+    public static void WriteLine(this StyleConsole? cli, Exception? ex, bool stackTrace = false)
         => WriteLine(cli, new ConsoleTextStyle
         {
             ForegroundConsoleColor = ConsoleColor.Red
@@ -38,7 +38,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="messageStyle">The style of details.</param>
     /// <param name="ex">The exception.</param>
     /// <param name="stackTrace">true if output stack trace; otherwise, false.</param>
-    public static void WriteLine(this StyleConsole cli, ConsoleTextStyle captionStyle, ConsoleTextStyle messageStyle, Exception ex, bool stackTrace = false)
+    public static void WriteLine(this StyleConsole? cli, ConsoleTextStyle? captionStyle, ConsoleTextStyle? messageStyle, Exception? ex, bool stackTrace = false)
     {
         if (ex == null) return;
         cli ??= StyleConsole.Default;
@@ -84,7 +84,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="ex">The error information.</param>
-    public static void WriteLine(this StyleConsole cli, Data.ErrorMessageResult ex)
+    public static void WriteLine(this StyleConsole? cli, Data.ErrorMessageResult? ex)
         => WriteLine(cli, new ConsoleTextStyle
         {
             ForegroundConsoleColor = ConsoleColor.Red
@@ -98,7 +98,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="captionStyle">The style of header.</param>
     /// <param name="messageStyle">The style of details.</param>
     /// <param name="ex">The error information.</param>
-    public static void WriteLine(this StyleConsole cli, ConsoleTextStyle captionStyle, ConsoleTextStyle messageStyle, Data.ErrorMessageResult ex)
+    public static void WriteLine(this StyleConsole? cli, ConsoleTextStyle? captionStyle, ConsoleTextStyle? messageStyle, Data.ErrorMessageResult? ex)
     {
         if (ex == null) return;
         cli ??= StyleConsole.Default;
@@ -125,7 +125,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, IJsonValueNode json)
+    public static void WriteLine(this StyleConsole? cli, IJsonValueNode? json)
         => (cli ?? StyleConsole.Default).WriteLine(new JsonConsoleStyle().CreateTextCollection(json, 0));
 
     /// <summary>
@@ -135,7 +135,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="style">The style.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, JsonConsoleStyle style, IJsonValueNode json)
+    public static void WriteLine(this StyleConsole? cli, JsonConsoleStyle? style, IJsonValueNode? json)
         => (cli ?? StyleConsole.Default).WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json, 0));
 
     /// <summary>
@@ -144,7 +144,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, System.Text.Json.Nodes.JsonObject json)
+    public static void WriteLine(this StyleConsole? cli, System.Text.Json.Nodes.JsonObject? json)
         => (cli ?? StyleConsole.Default).WriteLine(new JsonConsoleStyle().CreateTextCollection(json == null ? null : (JsonObjectNode)json, 0));
 
     /// <summary>
@@ -154,7 +154,7 @@ public static partial class ConsoleRenderExtensions
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="style">The style.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, JsonConsoleStyle style, System.Text.Json.Nodes.JsonObject json)
+    public static void WriteLine(this StyleConsole? cli, JsonConsoleStyle? style, System.Text.Json.Nodes.JsonObject? json)
         => (cli ?? StyleConsole.Default).WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json == null ? null : (JsonObjectNode)json, 0));
 
     /// <summary>
@@ -163,7 +163,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, System.Text.Json.Nodes.JsonArray json)
+    public static void WriteLine(this StyleConsole? cli, System.Text.Json.Nodes.JsonArray? json)
         => (cli ?? StyleConsole.Default).WriteLine(new JsonConsoleStyle().CreateTextCollection(json == null ? null : (JsonArrayNode)json, 0));
 
     /// <summary>
@@ -173,14 +173,14 @@ public static partial class ConsoleRenderExtensions
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="style">The style.</param>
     /// <param name="json">The JSON instance.</param>
-    public static void WriteLine(this StyleConsole cli, JsonConsoleStyle style, System.Text.Json.Nodes.JsonArray json)
+    public static void WriteLine(this StyleConsole? cli, JsonConsoleStyle? style, System.Text.Json.Nodes.JsonArray? json)
         => (cli ?? StyleConsole.Default).WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json == null ? null : (JsonArrayNode)json, 0));
 
     /// <summary>
     /// Adds an empty line.
     /// </summary>
     /// <param name="list">The console text collection.</param>
-    public static void AddEmptyLine(this IList<ConsoleText> list)
+    public static void AddEmptyLine(this IList<ConsoleText>? list)
         => list?.Add(new ConsoleText(Environment.NewLine));
 
     /// <summary>
@@ -188,7 +188,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface proxy.</param>
     /// <param name="style">The style.</param>
-    public static void PressAnyKeyToContinue(StyleConsole cli, ConsoleTextStyle style = null)
+    public static void PressAnyKeyToContinue(StyleConsole? cli, ConsoleTextStyle? style = null)
     {
         cli ??= StyleConsole.Default;
         cli.WriteLine(style, Resource.PressAnyKeyToCont);
@@ -231,7 +231,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="s">The console text instance to limit length.</param>
     /// <param name="length">The length at most.</param>
-    public static void RemoveRest(this ConsoleText s, int length)
+    public static void RemoveRest(this ConsoleText? s, int length)
     {
         if (s == null) return;
         var sb = s.Content;
@@ -275,11 +275,11 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface.</param>
     /// <returns>The row position of the cursor within the buffer area; or null if failed.</returns>
-    public static int? TryGetCursorTop(this StyleConsole cli)
+    public static int? TryGetCursorTop(this StyleConsole? cli)
     {
         try
         {
-            return cli.CursorTop;
+            return (cli ?? StyleConsole.Default).CursorTop;
         }
         catch (IOException)
         {
@@ -302,7 +302,7 @@ public static partial class ConsoleRenderExtensions
     /// </summary>
     /// <param name="cli">The command line interface.</param>
     /// <returns>The column position of the cursor within the buffer area; or null if failed.</returns>
-    public static int? TryGetCursorLeft(this StyleConsole cli)
+    public static int? TryGetCursorLeft(this StyleConsole? cli)
     {
         try
         {

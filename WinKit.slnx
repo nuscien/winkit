@@ -7,6 +7,8 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="CNAME" />
     <File Path="CONTRIBUTING.md" />
     <File Path="Directory.Packages.props" />
     <File Path="docs/docs.json" />

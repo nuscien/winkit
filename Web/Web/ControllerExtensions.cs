@@ -393,6 +393,36 @@ public static class ControllerExtensions
         return q;
     }
 
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets the query data.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>The string value; or null, if non-exist.</returns>
+    public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, CancellationToken cancellationToken)
+    {
+        if (request == null || request.Body == null) return null;
+        using var reader = new StreamReader(request.Body, Encoding.UTF8);
+        return await reader.ReadToEndAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the query data.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>The string value; or null, if non-exist.</returns>
+    public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, CancellationToken cancellationToken)
+    {
+        var query = await ReadBodyAsStringAsync(request, cancellationToken);
+        if (query == null) return null;
+        var q = new QueryData();
+        q.ParseSet(query, false, Encoding.UTF8);
+        return q;
+    }
+#endif
+
     /// <summary>
     /// Gets the JSON object from body.
     /// </summary>

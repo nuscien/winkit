@@ -139,6 +139,35 @@ public static partial class ConsoleRenderExtensions
         => (cli ?? StyleConsole.Default).WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json, 0));
 
     /// <summary>
+    /// Writes a list of JSON objects, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="cli">The command line interface proxy.</param>
+    /// <param name="jsonl">The JSON objects.</param>
+    public static void WriteLine(this StyleConsole? cli, List<JsonObjectNode> jsonl)
+    {
+        foreach (var json in jsonl)
+        {
+            (cli ?? StyleConsole.Default).WriteLine(new JsonConsoleStyle().CreateTextCollection(json, 0));
+        }
+    }
+
+    /// <summary>
+    /// Writes a list of JSON objects, followed by the current line terminator, to the standard output stream.
+    /// It will flush immediately.
+    /// </summary>
+    /// <param name="cli">The command line interface proxy.</param>
+    /// <param name="style">The style.</param>
+    /// <param name="jsonl">The JSON objects.</param>
+    public static void WriteLine(this StyleConsole? cli, JsonConsoleStyle? style, List<JsonObjectNode> jsonl)
+    {
+        foreach (var json in jsonl)
+        {
+            (cli ?? StyleConsole.Default).WriteLine((style ?? new JsonConsoleStyle()).CreateTextCollection(json, 0));
+        }
+    }
+
+    /// <summary>
     /// Writes a JSON object, followed by the current line terminator, to the standard output stream.
     /// It will flush immediately.
     /// </summary>

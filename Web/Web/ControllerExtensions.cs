@@ -1123,7 +1123,7 @@ public static class ControllerExtensions
             if (stream is null)
             {
                 result = tokenMaker();
-                result.ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest;
+                result.ErrorCode = TokenPropertyKeys.ErrorCodes.InvalidRequest;
                 result.ErrorDescription = "The request body was empty.";
                 return default;
             }
@@ -1138,21 +1138,21 @@ public static class ControllerExtensions
             var signInResult = r?.ItemSelected as TToken;
             if (signInResult != null) return signInResult;
             result = tokenMaker();
-            result.ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest;
+            result.ErrorCode = TokenPropertyKeys.ErrorCodes.InvalidRequest;
             result.ErrorDescription = "Cannot sign in.";
             return result;
         }
         catch (ArgumentException ex)
         {
             result = tokenMaker!();
-            result.ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest;
+            result.ErrorCode = TokenPropertyKeys.ErrorCodes.InvalidRequest;
             result.ErrorDescription = ex.Message;
             return result;
         }
         catch (IOException ex)
         {
             result = tokenMaker!();
-            result.ErrorCode = TokenInfo.ErrorCodeConstants.ServerError;
+            result.ErrorCode = TokenPropertyKeys.ErrorCodes.ServerError;
             result.ErrorDescription = ex.Message;
             return result;
         }
